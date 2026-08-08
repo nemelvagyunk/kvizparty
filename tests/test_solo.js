@@ -49,7 +49,7 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
     captured = []; __kv.host.phase = 'q'; __kv.host.qDur = 20000;
     __kv.host.qData = { type: 'mc', q: 'x', o: ['jó', 'r1', 'r2', 'r3'], c: 0, note: '' };
     __kv.host.qCorrectIndex = 2;
-    __kv.host.players.forEach(p => p.score = 0);
+    __kv.host.players.forEach(p => { p.score = 0; p.streak = 0; p.best = 0; });
     __kv.host.answers = { A: { value: 2, ms: 2000 }, B: { value: 2, ms: 18000 }, C: { value: 0, ms: 1000 } };
     finishQuestion(); clearTimeout(__kv.host.autoNextT);
     const rev3 = captured.find(m => m.t === 'reveal');
@@ -57,11 +57,161 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
     out.mcSlow = rev3.results.find(r => r.pid === 'B').pts;  // várt: 102
     out.mcWrong = rev3.results.find(r => r.pid === 'C').pts; // várt: 0
 
+    // 4) SOROZAT-BÓNUSZ – csak MC-n épül, a tippelős semleges, 2,50×-nél megáll
+    const mcRound = (ansA) => {
+      captured = []; __kv.host.phase = 'q'; __kv.host.qDur = 20000;
+      __kv.host.qData = { type: 'mc', q: 'x', o: ['jó', 'r1', 'r2', 'r3'], c: 0, note: '' };
+      __kv.host.qCorrectIndex = 2;
+      // A a paraméter szerint, B mindig hibázik
+      __kv.host.answers = { A: { value: ansA, ms: 20000 }, B: { value: 0, ms: 20000 } };
+      finishQuestion(); clearTimeout(__kv.host.autoNextT);
+      return captured.find(m => m.t === 'reveal').results.find(r => r.pid === 'A');
+    };
+    const tipRound = () => {
+      captured = []; __kv.host.phase = 'q'; __kv.host.qDur = 25000;
+      __kv.host.qData = { type: 'tip', a: 100, unit: '', note: '' };
+      __kv.host.answers = { A: { value: 900, ms: 5000 }, B: { value: 100, ms: 5000 } }; // A veszít
+      finishQuestion(); clearTimeout(__kv.host.autoNextT);
+      return captured.find(m => m.t === 'reveal').results.find(r => r.pid === 'A');
+    };
+    __kv.host.qFinal = false;
+    __kv.host.players.forEach(p => { p.score = 0; p.streak = 0; p.best = 0; });
+    out.multSeq = [];      // az első 12 egymás utáni helyes válasz szorzója
+    out.ptsSeq = [];
+    for (let i = 0; i < 12; i++) { const r = mcRound(2); out.multSeq.push(r.mult); out.ptsSeq.push(r.pts); }
+    // lassú helyes válasz (ms=qDur) -> nincs gyorsasági bónusz, tehát pts = 100 * szorzó
+    out.streakScore = __kv.host.players.find(p => p.pid === 'A').score;
+
+    // tippelős: se nem folytat, se nem tör, és nem kap szorzót
+    const t1 = tipRound();
+    out.tipKeepsStreak = t1.streak;         // várt: 12 (változatlan)
+    out.tipMult = t1.mult;                  // várt: 1 (nincs szorzó a tippelősön)
+    const afterTip = mcRound(2);
+    out.afterTipStreak = afterTip.streak;   // várt: 13 – a tippelős nem törte meg
+    out.afterTipMult = afterTip.mult;       // várt: 2.5 (plafon)
+
+    // hibás válasz nullázza, és jelzi a megszakadást
+    const brk = mcRound(0);
+    out.brokeFlag = brk.broke;              // várt: 13
+    out.brokeStreak = brk.streak;           // várt: 0
+    const restart = mcRound(2);
+    out.restartMult = restart.mult;         // várt: 1 (elölről)
+    out.bestKept = __kv.host.players.find(p => p.pid === 'A').best;  // várt: 13
+
+    // 5) DUPLA PONTOS FINÁLÉ – a pakli utolsó 20%-a
+    out.decks = {};
+    for (const c of Q_COUNTS) {
+      __kv.host.settings.count = c;
+      __kv.host.usedIds = new Set();
+      buildDeck();
+      const d = __kv.host.deck, ff = __kv.host.finalFrom;
+      // a pakli szerkezete: [sima MC-k][sima tippek][dupla MC-k][dupla tippek]
+      const simple = d.slice(0, ff), fin = d.slice(ff);
+      const firstTip = simple.findIndex(q => q.type === 'tip');
+      out.decks[c] = {
+        len: d.length,
+        mc: simple.filter(q => q.type === 'mc').length,
+        tip: simple.filter(q => q.type === 'tip').length,
+        fmc: fin.filter(q => q.type === 'mc').length,
+        ftip: fin.filter(q => q.type === 'tip').length,
+        // sorrend: a sima blokkban minden MC megelőz minden tippet …
+        mcBlockFirst: firstTip < 0 || simple.slice(firstTip).every(q => q.type === 'tip'),
+        // … a dupla blokkban is előbb az MC-k jönnek
+        finMcFirst: (() => { const i = fin.findIndex(q => q.type === 'tip'); return i < 0 || fin.slice(i).every(q => q.type === 'tip'); })(),
+        uniq: new Set(d.map(q => q.id)).size === d.length,
+      };
+    }
+    out.qCounts = Q_COUNTS.slice();
+
+    // a sorozat átível a tipp-blokkon és a dupla MC-ken is folytatódik (20-as pakli szerkezete)
+    __kv.host.qFinal = false;
+    __kv.host.players.forEach(p => { p.score = 0; p.streak = 0; p.best = 0; });
+    const play = (type, isFinal, correct) => {
+      __kv.host.qFinal = isFinal;
+      captured = []; __kv.host.phase = 'q'; __kv.host.qDur = 20000;
+      __kv.host.qData = type === 'mc'
+        ? { type: 'mc', d: 3, q: 'x', o: ['jó', 'r1', 'r2', 'r3'], c: 0, note: '' }
+        : { type: 'tip', d: 3, a: 100, unit: '', note: '' };
+      __kv.host.qCorrectIndex = 2;
+      __kv.host.answers = type === 'mc'
+        ? { A: { value: correct ? 2 : 0, ms: 20000 }, B: { value: 0, ms: 20000 } }
+        : { A: { value: 900, ms: 5000 }, B: { value: 100, ms: 5000 } };   // a tippet A veszíti
+      finishQuestion(); clearTimeout(__kv.host.autoNextT);
+      return captured.find(m => m.t === 'reveal').results.find(r => r.pid === 'A');
+    };
+    for (let i = 0; i < 10; i++) play('mc', false, true);       // 10 sima MC hibátlanul
+    for (let i = 0; i < 6; i++) play('tip', false, false);      // 6 tippelős, mind vesztes
+    const fm1 = play('mc', true, true);                          // 1. dupla MC
+    out.acrossTips = [fm1.streak, fm1.mult, fm1.pts];            // várt: [11, 2.5, 500]
+    __kv.host.qFinal = false;
+
+    // értékelés: ugyanaz a kérdés normál és finálé alatt
+    __kv.host.players.forEach(p => { p.score = 0; p.streak = 0; p.best = 0; });
+    const one = (isFinal) => {
+      __kv.host.qFinal = isFinal;
+      captured = []; __kv.host.phase = 'q'; __kv.host.qDur = 20000;
+      __kv.host.qData = { type: 'mc', d: 3, q: 'x', o: ['jó', 'r1', 'r2', 'r3'], c: 0, note: '' };
+      __kv.host.qCorrectIndex = 2;
+      __kv.host.players.forEach(p => { p.streak = 0; });          // szorzó nélkül mérjünk
+      __kv.host.answers = { A: { value: 2, ms: 20000 }, B: { value: 0, ms: 20000 } };
+      finishQuestion(); clearTimeout(__kv.host.autoNextT);
+      return captured.find(m => m.t === 'reveal').results.find(r => r.pid === 'A').pts;
+    };
+    out.normalPts = one(false);   // várt: 100
+    out.finalPts  = one(true);    // várt: 200
+    // finálé + sorozat: a szorzó a duplázott értékre megy
+    __kv.host.players.find(p => p.pid === 'A').streak = 4;   // a következő az 5. -> 1,7×
+    out.finalStreakPts = one2();
+    function one2() {
+      __kv.host.qFinal = true;
+      captured = []; __kv.host.phase = 'q'; __kv.host.qDur = 20000;
+      __kv.host.qData = { type: 'mc', d: 3, q: 'x', o: ['jó', 'r1', 'r2', 'r3'], c: 0, note: '' };
+      __kv.host.qCorrectIndex = 2;
+      __kv.host.answers = { A: { value: 2, ms: 20000 }, B: { value: 0, ms: 20000 } };
+      finishQuestion(); clearTimeout(__kv.host.autoNextT);
+      return captured.find(m => m.t === 'reveal').results.find(r => r.pid === 'A').pts;
+    }
+    __kv.host.qFinal = false;
+
     window.hostBroadcast = origBc;
     window.__kv.host = null;
     return out;
   });
-  console.log('LOGIKA:', JSON.stringify(logic));
+  console.log('LOGIKA:', JSON.stringify({ tieWinner: logic.tieWinner, tieFlag: logic.tieFlag, tieWinnerPts: logic.tieWinnerPts,
+    loserPts: logic.loserPts, exactPts: logic.exactPts, mcFast: logic.mcFast, mcSlow: logic.mcSlow, mcWrong: logic.mcWrong }));
+
+  let sf = 0;
+  const ck = (n, got, want) => { const ok = JSON.stringify(got) === JSON.stringify(want); if (!ok) sf++;
+    console.log((ok ? '  ✔ ' : '  ✘ ') + n + '  → ' + JSON.stringify(got) + (ok ? '' : ' (várt: ' + JSON.stringify(want) + ')')); };
+  console.log('SOROZAT-BÓNUSZ:');
+  ck('szorzók az 1–12. helyes válaszra (2,50-nél plafon)', logic.multSeq,
+     [1, 1.1, 1.3, 1.5, 1.7, 1.9, 2.1, 2.3, 2.5, 2.5, 2.5, 2.5]);
+  ck('pontok ugyanezekre (100 alapérték, gyorsbónusz nélkül)', logic.ptsSeq,
+     [100, 110, 130, 150, 170, 190, 210, 230, 250, 250, 250, 250]);
+  ck('összpont = a szorzók összege × 100 (22,90 × 100)', logic.streakScore, 2290);
+  ck('tippelős nem töri meg a sorozatot', logic.tipKeepsStreak, 12);
+  ck('tippelős pontja nem kap szorzót', logic.tipMult, 1);
+  ck('a tippelős után a sorozat folytatódik', [logic.afterTipStreak, logic.afterTipMult], [13, 2.5]);
+  ck('hibás válasz nullázza és jelzi a megszakadást', [logic.brokeFlag, logic.brokeStreak], [13, 0]);
+  ck('utána elölről indul', logic.restartMult, 1);
+  ck('a leghosszabb sorozat megmarad a végeredményhez', logic.bestKept, 13);
+  console.log('DUPLA PONTOS FINÁLÉ:');
+  ck('választható kérdésszámok (50 nincs)', logic.qCounts, [10, 15, 20, 30]);
+  const plan = { 10: [5, 3, 1, 1], 15: [7, 5, 2, 1], 20: [10, 6, 2, 2], 30: [14, 10, 4, 2] };
+  for (const c of [10, 15, 20, 30]) {
+    const d = logic.decks[c], w = plan[c];
+    ck(c + ' kérdés = ' + w[0] + ' MC + ' + w[1] + ' tipp + ' + w[2] + ' dupla MC + ' + w[3] + ' dupla tipp',
+       [d.len, d.mc, d.tip, d.fmc, d.ftip], [c, w[0], w[1], w[2], w[3]]);
+    ck(c + ': előbb az összes sima MC, utána a tippek', d.mcBlockFirst, true);
+    ck(c + ': a dupla blokkban is előbb az MC-k', d.finMcFirst, true);
+    ck(c + ': nincs ismétlődő kérdés a pakliban', d.uniq, true);
+  }
+  ck('3★ kérdés normál körben 100 pont', logic.normalPts, 100);
+  ck('ugyanaz a fináléban 200 pont', logic.finalPts, 200);
+  ck('finálé + 5-ös sorozat (1,7×) = 340 pont', logic.finalStreakPts, 340);
+  ck('a sorozat átível a tipp-blokkon: 10 MC → 6 tipp → dupla MC = 11. találat, 2,5×, 500 pont',
+     logic.acrossTips, [11, 2.5, 500]);
+  if (sf) { console.error('❌ ' + sf + ' hibás sorozat-ellenőrzés'); process.exitCode = 1; }
 
   // --- teljes szóló játék végigjátszása ---
   await page.reload();

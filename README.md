@@ -52,6 +52,31 @@ A meccs végén a pontszám = **a saját várérték + az összes birtokolt ter�
 
 A kérdés értéke a nehézségétől függ: **1★ = 75 · 2★ = 90 · 3★ = 100 · 4★ = 110 · 5★ = 125 pont.**
 
+### 🔥 Sorozat-bónusz (klasszikus mód)
+
+Az egymás utáni helyes válaszok egyre többet érnek:
+
+| Hányadik helyes egymás után | 1. | 2. | 3. | 4. | 5. | 6. | 7. | 8. | 9.+ |
+|---|---|---|---|---|---|---|---|---|---|
+| Szorzó | 1,0× | 1,1× | 1,3× | 1,5× | 1,7× | 1,9× | 2,1× | 2,3× | **2,5×** |
+
+A szorzó a teljes pontra vonatkozik (alapérték + gyorsasági bónusz), és a 9. találat után nem nő tovább. **A sorozat csak a „1 a 4-ből" kérdéseken épül és szakad meg** — a tippelős kérdés semleges: nem folytatja, nem töri meg, és nem kap szorzót. Az eredményhirdetésnél látod a sorozatodat és a következő szorzót, a végeredménynél pedig a meccs leghosszabb sorozatát.
+
+### 🎬 A meccs felépítése (klasszikus mód)
+
+A kérdések nem véletlenszerű sorrendben jönnek, hanem blokkokban: **előbb az összes „1 a 4-ből", utána a tippelősök, végül a dupla pontos finálé.**
+
+| Kérdésszám | 1 a 4-ből | Tippelős | 🎬 Dupla 1 a 4-ből | 🎬 Dupla tippelős |
+|---|---|---|---|---|
+| **10** | 5 | 3 | 1 | 1 |
+| **15** | 7 | 5 | 2 | 1 |
+| **20** | 10 | 6 | 2 | 2 |
+| **30** | 14 | 10 | 4 | 2 |
+
+Ennek a sorrendnek az a lényege, hogy a **sorozatod egyben építhető fel** a meccs elején, a tippelős blokk pedig nem töri meg — így a dupla pontos zárókérdésekre már a felépített szorzóval érkezel. Egy hibátlan 20-as meccsen ez azt jelenti, hogy az első dupla pontos „1 a 4-ből" kérdés 2,5×-es szorzóval **és** dupla értékkel jön: egy 3★-os kérdés így 500 pontot ér a szokásos 100 helyett.
+
+A finálé alatt arany sáv jelzi a kérdés fölött, és a pontérték-jelző is a duplázott értéket mutatja.
+
 ## Kérdésbázis
 
 **1000 kérdés, 20 kategória** (kategóriánként 50), négy pillérre építve: magyar és nemzetközi általános műveltség, magyar és nemzetközi popkultúra. Nehézségi eloszlás: 1★×100, 2★×200, 3★×400, 4★×200, 5★×100. A lobbyban kategóriacsoportra és nehézségre is szűrhetsz.

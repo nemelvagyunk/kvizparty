@@ -83,6 +83,12 @@ input:focus{border-color:var(--acc);}
 #g-timer-num{font-weight:900; font-size:1.25rem; min-width:44px; text-align:right;}
 #g-timerbar{height:10px; border-radius:99px; background:rgba(0,0,0,.35); overflow:hidden; margin-bottom:16px;}
 #g-timerfill{height:100%; width:100%; border-radius:99px; background:linear-gradient(90deg,#22c55e,#fbbf24,#ef4444); transition:none;}
+#g-final{display:none; text-align:center; font-weight:900; letter-spacing:.1em; font-size:.82rem;
+  padding:8px 12px; border-radius:12px; margin:0 0 12px;
+  background:linear-gradient(90deg,rgba(251,191,36,.2),rgba(244,114,182,.2));
+  border:1px solid rgba(251,191,36,.55); color:#fde68a;}
+#g-final.on{display:block; animation:finalGlow 2.4s ease-in-out infinite;}
+@keyframes finalGlow{0%,100%{box-shadow:0 0 0 rgba(251,191,36,0)}50%{box-shadow:0 0 18px rgba(251,191,36,.4)}}
 #g-question{font-size:1.35rem; font-weight:800; line-height:1.35; margin:6px 0 18px; min-height:60px;}
 .mcgrid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
 @media (max-width:480px){ .mcgrid{grid-template-columns:1fr;} }
@@ -123,6 +129,15 @@ input:focus{border-color:var(--acc);}
 .rrow .tm{color:var(--dim); font-size:.8rem; min-width:44px; text-align:right;}
 .rrow .pts{font-weight:900; color:var(--good); min-width:44px; text-align:right;}
 .rrow .pts.zero{color:var(--dim); font-weight:600;}
+.rrow .strk{font-size:.78rem; font-weight:800; color:#fbbf24; white-space:nowrap;}
+.sc .fl{color:#fbbf24; font-weight:900; margin-left:2px;}
+.strk-line{text-align:center; font-weight:800; font-size:.92rem; margin-top:10px; color:#fbbf24;}
+.strk-line.broke{color:#fca5a5;}
+.strk-scale{display:flex; gap:3px; justify-content:center; flex-wrap:wrap; margin-top:7px;}
+.strk-scale span{font-size:.63rem; font-weight:800; padding:2px 5px; border-radius:7px;
+  background:rgba(255,255,255,.06); color:var(--dim); letter-spacing:-.02em;}
+.strk-scale span.on{background:rgba(251,191,36,.22); color:#fde68a;}
+.strk-scale span.now{background:#fbbf24; color:#3b2a05;}
 .standings{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; justify-content:center;}
 .sc{display:flex; align-items:center; gap:6px; background:rgba(0,0,0,.35); padding:6px 11px; border-radius:999px; font-weight:800; font-size:.9rem; border:1px solid rgba(255,255,255,.1);}
 .sc .s{color:#fbbf24;}
@@ -272,6 +287,7 @@ input:focus{border-color:var(--acc);}
     <span id="g-timer-num"></span>
   </div>
   <div id="g-timerbar"><div id="g-timerfill"></div></div>
+  <div id="g-final"></div>
   <div id="g-question"></div>
   <div id="g-answers"></div>
   <div id="g-status"></div>
@@ -2093,6 +2109,27 @@ const MAXP = 6;
 const QVAL = [75, 90, 100, 110, 125];
 const MC_SPEED_BONUS = 0.20;   // "1 a 4-ből": max +20% gyorsasági bónusz
 const TIP_EXACT_BONUS = 0.25;  // tippelős: telitalálat +25%
+/* Sorozat-bónusz (CSAK a klasszikus módban, CSAK a „4 válaszos” kérdéseken).
+   Az n-edik egymás utáni helyes válasz szorzója; a 9. után nem nő tovább.
+   A tippelős kérdés semleges: nem folytatja és nem is töri meg a sorozatot,
+   és a rajta szerzett pont nem kap szorzót. */
+const STREAK_MULT = [1.00, 1.10, 1.30, 1.50, 1.70, 1.90, 2.10, 2.30, 2.50];
+/* A pakli felépítése és SORRENDJE (csak klasszikus mód).
+   Előbb az összes sima „4 válaszos” kérdés egymás után – így a sorozat jól követhető –,
+   utána a sima tippelősök, végül a DUPLA PONTOS blokk (előbb MC, aztán tipp).
+   A tippelős semleges a sorozatra nézve, ezért a sorozat átível a tipp-blokkon,
+   és a dupla pontos MC-k már a felépített szorzóval indulnak. */
+const Q_PLAN = {
+  10: { mc: 5,  tip: 3,  fmc: 1, ftip: 1 },
+  15: { mc: 7,  tip: 5,  fmc: 2, ftip: 1 },
+  20: { mc: 10, tip: 6,  fmc: 2, ftip: 2 },
+  30: { mc: 14, tip: 10, fmc: 4, ftip: 2 },
+};
+const Q_COUNTS = Object.keys(Q_PLAN).map(Number).sort((a,b)=>a-b);
+function qPlan(n){ return Q_PLAN[n] || Q_PLAN[15]; }
+function finalLen(n){ const p=Q_PLAN[n]; return p ? p.fmc+p.ftip : 0; }
+function streakMult(n){ return STREAK_MULT[Math.min(Math.max(n|0,1), STREAK_MULT.length)-1]; }
+function fmtMult(m){ return m.toFixed(2).replace('.',',').replace(/,?0+$/,'')+'×'; }
 /* ---- AI-szintek ----------------------------------------------------------
    p[]  : találati esély a „4 válaszos” kérdésre nehézségenként (d1..d5)
    spr  : a tippelős szórás szorzója (minél nagyobb, annál pontatlanabb a tipp)
@@ -2233,7 +2270,7 @@ function makeHost(solo){
     phase:'lobby', deck:[], qi:-1, answers:{}, qData:null, qCorrectIndex:0, qDur:0,
     qDeadlineT:null, autoNextT:null, aiTimers:[], usedIds:new Set() };
 }
-function playersMin(){ return host.players.map(p=>({pid:p.pid,name:p.name,avatar:p.avatar,isAI:!!p.isAI,isHost:!!p.isHost,connected:p.connected!==false,score:p.score||0})); }
+function playersMin(){ return host.players.map(p=>({pid:p.pid,name:p.name,avatar:p.avatar,isAI:!!p.isAI,isHost:!!p.isHost,connected:p.connected!==false,score:p.score||0,streak:p.streak||0,best:p.best||0})); }
 function hostLobbyMsg(){
   return {t:'lobby', code:net.code, solo:host.solo, players:playersMin(),
     settings:{...host.settings, groups:host.settings.groups.slice(), diffs:host.settings.diffs.slice()}, phase:host.phase};
@@ -2362,12 +2399,15 @@ function buildDeck(){
   const pool=QUESTIONS.filter(q=>g[Math.floor((q.cat-1)/5)] && df[q.d-1]);
   let fresh=pool.filter(q=>!host.usedIds.has(q.id));
   if(fresh.length<host.settings.count){ host.usedIds.clear(); fresh=pool; }
+  const plan=qPlan(host.settings.count);
   const mcs=shuffle(fresh.filter(q=>q.type==='mc'));
   const tips=shuffle(fresh.filter(q=>q.type==='tip'));
-  let mcN=Math.round(host.settings.count*0.6), tipN=host.settings.count-mcN;
-  if(mcs.length<mcN){ tipN+=mcN-mcs.length; mcN=mcs.length; }
-  if(tips.length<tipN){ mcN=Math.min(mcs.length, mcN+(tipN-tips.length)); tipN=tips.length; }
-  host.deck=shuffle(mcs.slice(0,mcN).concat(tips.slice(0,tipN)));
+  const take=(arr,n)=>arr.splice(0, Math.min(n, arr.length));
+  /* szűkös szűrőnél inkább rövidebb a pakli, de a szerkezet és a sorrend marad */
+  const sMc=take(mcs,plan.mc), fMc=take(mcs,plan.fmc);
+  const sTip=take(tips,plan.tip), fTip=take(tips,plan.ftip);
+  host.deck = sMc.concat(sTip, fMc, fTip);
+  host.finalFrom = sMc.length + sTip.length;    // innentől dupla pont
 }
 function hostStart(){
   if(host.players.length<2){ toast('Legalább 2 játékos kell – adj hozzá AI-t vagy várd meg a többieket!'); return; }
@@ -2382,7 +2422,9 @@ function hostStart(){
   }
   buildDeck();
   if(!host.deck.length){ toast('Nincs elég kérdés a választott kategóriákban.'); return; }
-  host.players.forEach(p=>p.score=0);
+  if(host.deck.length<host.settings.count)
+    toast('A szűrők miatt csak '+host.deck.length+' kérdés jött össze '+host.settings.count+' helyett.',4500);
+  host.players.forEach(p=>{ p.score=0; p.streak=0; p.best=0; });
   host.qi=-1;
   hostNext();
 }
@@ -2395,8 +2437,11 @@ function hostNext(){
   const cat=CATEGORIES[q.cat-1];
   const dur=q.type==='mc'?MC_DUR:TIP_DUR;
   host.qDur=dur;
+  host.qFinal = host.qi >= (host.finalFrom!=null?host.finalFrom:Infinity);
   const msg={t:'question', qi:host.qi, total:host.deck.length, cat:{name:cat.name,icon:cat.icon},
-             type:q.type, d:q.d, q:q.q, dur, players:playersMin(), last:host.qi===host.deck.length-1};
+             type:q.type, d:q.d, q:q.q, dur, players:playersMin(), last:host.qi===host.deck.length-1,
+             final:host.qFinal, finalLen:finalLen(host.deck.length),
+             val:QVAL[(q.d||3)-1]*(host.qFinal?2:1)};
   if(q.type==='mc'){ const order=shuffle([0,1,2,3]); msg.options=order.map(i=>q.o[i]); host.qCorrectIndex=order.indexOf(0); }
   else msg.unit=q.unit||'';
   hostBroadcast(msg);
@@ -2423,17 +2468,26 @@ function finishQuestion(){
   clearTimeout(host.qDeadlineT);
   host.aiTimers.forEach(clearTimeout); host.aiTimers=[];
   const q=host.qData;
-  const V=QVAL[(q.d||3)-1];
+  const V=QVAL[(q.d||3)-1]*(host.qFinal?2:1);   // dupla pontos finálé
   const results=[]; let tie=false;
   if(q.type==='mc'){
     for(const p of host.players){
       const a=host.answers[p.pid];
-      let pts=0, ok=false, val=null, ms=null;
+      let pts=0, ok=false, val=null, ms=null, base=0, mult=1;
       if(a&&typeof a.value==='number'&&a.value>=0&&a.value<=3){
         val=a.value; ms=a.ms; ok=(val===host.qCorrectIndex);
-        if(ok){ pts=V+Math.max(0,Math.round(V*MC_SPEED_BONUS*(1-ms/host.qDur))); p.score+=pts; }
       }
-      results.push({pid:p.pid,val,ms,pts,ok,win:ok});
+      const prev=p.streak||0;
+      p.streak = ok ? prev+1 : 0;                     // a sorozat csak MC-n épül és szakad
+      p.best = Math.max(p.best||0, p.streak);
+      if(ok){
+        base = V+Math.max(0,Math.round(V*MC_SPEED_BONUS*(1-ms/host.qDur)));
+        mult = streakMult(p.streak);
+        pts  = Math.round(base*mult);
+        p.score += pts;
+      }
+      results.push({pid:p.pid,val,ms,pts,ok,win:ok,base,mult,streak:p.streak,
+                    broke:(!ok&&prev>=2)?prev:0});
     }
   } else {
     const cands=[];
@@ -2450,7 +2504,8 @@ function finishQuestion(){
       const isW=!!(win&&win.pid===p.pid);
       let pts=0;
       if(isW){ pts=V+(win.dist===0?Math.round(V*TIP_EXACT_BONUS):0); p.score+=pts; }
-      results.push({pid:p.pid, val:c?c.val:null, ms:c?c.ms:null, dist:c?c.dist:null, pts, win:isW});
+      results.push({pid:p.pid, val:c?c.val:null, ms:c?c.ms:null, dist:c?c.dist:null, pts, win:isW,
+                    base:pts, mult:1, streak:p.streak||0});
     }
   }
   const msg={t:'reveal', qi:host.qi, type:q.type, results, players:playersMin(),
@@ -2469,7 +2524,7 @@ function hostEnd(){
 function hostRematch(){
   clearHostTimers();
   host.players=host.players.filter(p=>p.isAI||p.connected!==false);
-  host.players.forEach(p=>{ p.score=0; p.team=undefined; });
+  host.players.forEach(p=>{ p.score=0; p.streak=0; p.best=0; p.team=undefined; });
   host.cq=null; host.phase='lobby'; host.qi=-1;
   cqState=null; $('cq-wrap').classList.remove('on');
   hostBroadcast(hostLobbyMsg());
@@ -2876,8 +2931,12 @@ function renderLobby(m){
           '<div class="hint" style="text-align:left;margin:2px 0 6px">⚔️ <b>Hódítás:</b> '+
           CQ_MAPS[m.settings.mapKey||'big'].desc+'. Pontosan 2 játékos kell (AI is jó); a kérdésszámot a térkép adja.</div>'
         : '<div class="setrow"><span class="lab">Kérdések száma</span><span class="seg" id="seg-count">'+
-        [10,15,20,30,50].map(v=>'<button data-c="'+v+'" class="'+(m.settings.count===v?'sel':'')+'">'+v+'</button>').join('')+
-      '</span></div>')+
+        Q_COUNTS.map(v=>'<button data-c="'+v+'" class="'+(m.settings.count===v?'sel':'')+'">'+v+'</button>').join('')+
+      '</span></div>'+
+      '<div class="hint" style="text-align:left;margin:0 0 4px">'+
+        qPlan(m.settings.count).mc+' × 1 a 4-ből → '+qPlan(m.settings.count).tip+' × tippelős → '+
+        '🎬 <b>'+qPlan(m.settings.count).fmc+' dupla 1 a 4-ből + '+qPlan(m.settings.count).ftip+' dupla tippelős</b>'+
+      '</div>')+
       '<div class="setrow"><span class="lab">Kategóriák</span><span class="seg" id="seg-groups">'+
         GROUP_LABELS.map((g,i)=>'<button class="gtoggle '+(m.settings.groups[i]?'sel':'')+'" data-g="'+i+'">'+g+'</button>').join('')+
       '</span></div>'+
@@ -2923,7 +2982,7 @@ function renderLobby(m){
     const diffs=(m.settings.diffs||[]).map((v,i)=>v?(i+1)+'★':null).filter(Boolean).join(' ');
     const head=m.settings.mode==='conquest'
       ? '⚔️ <b>Hódítás</b> – '+CQ_MAPS[m.settings.mapKey||'big'].desc
-      : m.settings.count+' kérdés';
+      : m.settings.count+' kérdés · 🎬 az utolsó '+finalLen(m.settings.count)+' dupla pontos';
     $('lobby-settings').innerHTML='<div class="hint">'+head+' · '+groups+'<br>Nehézség: '+(diffs||'vegyes')+'</div>';
     $('lobby-actions').innerHTML='<div class="hint"><span class="spinner"></span>Várakozás, hogy a host elindítsa a játékot…</div>';
     $('lobby-hint').textContent='';
@@ -2936,10 +2995,13 @@ function renderQuestion(m){
   view={qi:m.qi,type:m.type,dur:m.dur,qStart:performance.now(),answered:false,total:m.total,raf:0,locked:false,cdT:null,mcLabels:m.options||[]};
   $('g-count').textContent = m.label ? m.label : ((m.qi+1)+' / '+m.total);
   $('g-cat').textContent=m.cat.icon+' '+m.cat.name;
-  const gd=$('g-diff');
+  const gd=$('g-diff'), qv=m.val||QVAL[(m.d||3)-1];
   gd.className='chip diffchip diff'+(m.d||3);
-  gd.textContent='★'.repeat(m.d||3)+' · '+QVAL[(m.d||3)-1]+' p';
-  gd.title=DIFF_NAMES[(m.d||3)-1]+' – '+QVAL[(m.d||3)-1]+' pont';
+  gd.textContent='★'.repeat(m.d||3)+' · '+qv+' p';
+  gd.title=DIFF_NAMES[(m.d||3)-1]+' – '+qv+' pont'+(m.final?' (dupla pontos finálé)':'');
+  const gf=$('g-final');
+  gf.className=m.final?'on':'';
+  gf.textContent=m.final?('🎬 DUPLA PONTOS FINÁLÉ · az utolsó '+(m.finalLen||'')+' kérdés kétszer annyit ér'):'';
   $('g-question').textContent=m.q;
   $('g-reveal').innerHTML='';
   if(m.type==='mc'){
@@ -3155,6 +3217,7 @@ function cqRenderPickUI(){
   $('g-count').textContent = st.phase==='war' ? '⚔️ HARC' : '🚩 FOGLALÁS';
   $('g-cat').textContent   = st.phase==='war' ? (CQ_TEAM_NAME[st.atkTeam]+' támad') : (st.round+'. forduló');
   $('g-diff').className='chip diffchip';
+  $('g-final').className=''; $('g-final').textContent='';
   $('g-diff').textContent  = st.phase==='war' ? ('🔴 '+st.attacks[1]+' | '+st.attacks[2]+' 🔵') : (st.free+' szabad');
   if(!st.turn){
     $('g-question').textContent = st.log || 'Egy pillanat…';
@@ -3250,6 +3313,24 @@ function cqRenderEnd(m){
   $('btn-exit').onclick=resetAll;
 }
 
+/* Saját sorozat visszajelzése a 4 válaszos kérdések után (klasszikus mód). */
+function streakBlock(m){
+  if(m.type!=='mc') return '';
+  const r=(m.results||[]).find(x=>x.pid===me.pid);
+  if(!r) return '';
+  if(r.broke) return '<div class="strk-line broke">💔 Megszakadt a '+r.broke+'-es sorozatod</div>';
+  if(!r.streak) return '';
+  const next=streakMult(r.streak+1), maxed=(next<=r.mult);
+  const scale=STREAK_MULT.map((v,i)=>{
+    const n=i+1, cls=(n===r.streak)?'now':(n<r.streak?'on':'');
+    return '<span class="'+cls+'">'+fmtMult(v)+'</span>';
+  }).join('');
+  return '<div class="strk-line">🔥 '+r.streak+' helyes egymás után · '+
+    (maxed ? 'a szorzód a csúcson: '+fmtMult(r.mult)
+           : 'a következő helyes válasz '+fmtMult(next)+'-es')+
+    '</div><div class="strk-scale">'+scale+'</div>';
+}
+
 /* ---------------- render: eredmény ---------------- */
 function renderReveal(m){
   stopTimers(); view.locked=true;
@@ -3285,14 +3366,16 @@ function renderReveal(m){
     else val=(r.val==null)?'– nem tippelt':(fmtNum(r.val)+(r.dist!=null&&r.dist>0?' <span style="color:var(--dim)">(±'+fmtNum(r.dist)+')</span>':r.dist===0?' 🎯':''));
     const tm=(r.ms!=null)?((r.ms/1000).toFixed(1)+'s'):'';
     const pts=r.pts>0?('+'+r.pts):'0';
+    const strk=(r.mult>1)?'<span class="strk">🔥'+fmtMult(r.mult)+'</span>':'';
     return '<div class="rrow'+(r.win?' win':'')+(r.pid===me.pid?' me':'')+'">'+
       '<span class="av">'+p.avatar+'</span><span class="nm">'+esc(p.name)+(r.win?' 👑':'')+'</span>'+
-      '<span class="val">'+val+'</span><span class="tm">'+tm+'</span>'+
+      '<span class="val">'+val+'</span><span class="tm">'+tm+'</span>'+strk+
       '<span class="pts'+(r.pts>0?'':' zero')+'">'+pts+'</span></div>';
   }).join('');
   const standings=m.players.slice().sort((a,b)=>b.score-a.score).map((p,i)=>{
     const med=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-    return '<span class="sc">'+med+p.avatar+' '+esc(p.name)+' <span class="s">'+p.score+'</span></span>';
+    const fl=(p.streak>=2)?'<span class="fl">🔥'+p.streak+'</span>':'';
+    return '<span class="sc">'+med+p.avatar+' '+esc(p.name)+fl+' <span class="s">'+p.score+'</span></span>';
   }).join('');
   const correctLine = m.type==='mc'
     ? 'Helyes válasz: <b>'+esc(m.correctText)+'</b>'
@@ -3301,7 +3384,7 @@ function renderReveal(m){
     '<div class="rev-correct">'+correctLine+'</div>'+
     (m.note?'<div class="rev-note">💡 '+esc(m.note)+'</div>':'')+
     (m.tie?'<div class="rev-tie">⚡ Holtverseny volt – a gyorsabb tipp vitte a pontot!</div>':'')+
-    rowsHtml+
+    rowsHtml+ streakBlock(m) +
     '<div class="standings">'+standings+'</div>'+
     '<div class="nextzone">'+
       (me.isHost?'<button class="btn small primary" id="btn-next">▶ '+(m.last?'Eredményhirdetés':'Következő')+'</button>':'')+
@@ -3329,10 +3412,15 @@ function renderEnd(m){
       '<span class="nm">'+esc(p.name)+'</span><span class="scr">'+p.score+' pont</span>'+
       '<div class="base">'+(i+1)+'.</div></div>';
   }).join('');
+  const bestN=Math.max.apply(null,r.map(p=>p.best||0));
+  const bestWho=r.filter(p=>(p.best||0)===bestN);
   $('end-list').innerHTML=r.map((p,i)=>
     '<div class="rrow'+(p.pid===me.pid?' me':'')+'"><span class="av">'+p.avatar+'</span>'+
     '<span class="nm">'+(i+1)+'. '+esc(p.name)+(p.isAI?' 🤖':'')+'</span>'+
-    '<span class="pts">'+p.score+' pont</span></div>').join('');
+    ((p.best||0)>=2?'<span class="strk">🔥'+p.best+'</span>':'')+
+    '<span class="pts">'+p.score+' pont</span></div>').join('')+
+    (bestN>=2 ? '<div class="strk-line">🔥 Leghosszabb sorozat: '+
+       bestWho.map(p=>esc(p.name)).join(', ')+' ('+bestN+' helyes egymás után)</div>' : '');
   $('end-actions').innerHTML= me.isHost
     ? '<button class="btn primary" id="btn-rematch">🔁 Új meccs (vissza a lobbyba)</button>'+
       '<button class="btn ghost" id="btn-exit">🏠 Főmenü</button>'

@@ -23,8 +23,29 @@
 - Két kérdéstípus: **„1 a 4-ből”** (mc) és **tippelős** (tip; számot tippel mindenki, a legközelebbi nyer, **egyenlőségnél a gyorsabb**).
 - Kérdésérték nehézség szerint (`QVAL`): **1★=75, 2★=90, 3★=100, 4★=110, 5★=125 pont.**
 - MC: minden helyes válaszoló megkapja az értéket + gyorsasági bónusz max. **+20%** (`MC_SPEED_BONUS`). Tip: csak a nyertes kap pontot, telitalálatra **+25%** (`TIP_EXACT_BONUS`).
+- **Sorozat-bónusz (`STREAK_MULT`) – CSAK a klasszikus módban:** `[1.00, 1.10, 1.30, 1.50, 1.70, 1.90, 2.10, 2.30, 2.50]`, az n-edik egymás utáni helyes válasz szorzója; a 9. után **plafon 2,50×**. `streakMult(n)` klampol.
+  - A sorozat **kizárólag a 4 válaszos kérdéseken épül és szakad meg**. A **tippelős semleges**: nem folytatja, nem töri meg, és a rajta szerzett pont **nem kap szorzót** (`mult:1`).
+  - A szorzó a teljes MC-pontra megy (alapérték + gyorsasági bónusz), kerekítve: `Math.round(base*mult)`.
+  - Játékos-mezők: `p.streak` (aktuális), `p.best` (meccs legjobbja, a végeredményhez). `hostStart()`/`hostRematch()` nullázza, `playersMin()` átküldi.
+  - A `reveal` sorok extra mezői: `base`, `mult`, `streak`, `broke` (ha egy ≥2-es sorozat most szakadt meg – a saját sorodra a `streakBlock()` írja ki).
+  - **Hódítás módban nincs sorozat** – ott a terület értéke fixen `QVAL[d-1]`.
+- **Pakli-felépítés és SORRENd (`Q_PLAN`) – CSAK a klasszikus módban.** A pakli **nincs összekeverve**; fix blokkokból áll: `[sima MC-k][sima tippek][dupla MC-k][dupla tippek]`. Blokkon belül a kérdések véletlenszerűek.
+
+  | count | sima MC | sima tipp | dupla MC | dupla tipp |
+  |---|---|---|---|---|
+  | 10 | 5 | 3 | 1 | 1 |
+  | 15 | 7 | 5 | 2 | 1 |
+  | 20 | 10 | 6 | 2 | 2 |
+  | 30 | 14 | 10 | 4 | 2 |
+
+  Az indok: a sima MC-k egy tömbben jönnek, így **a sorozat követhető**; a tipp-blokk semleges, ezért a sorozat **átível rajta**, és a dupla pontos MC-k már a felépített szorzóval indulnak (10 hibátlan MC → a tippek után az első dupla MC 2,5× **és** dupla = 500 pont egy 3★-oson).
+- **Dupla pontos finálé:** a `Q_PLAN` dupla blokkja. `finalLen(n)=fmc+ftip` → **10→2 · 15→3 · 20→4 · 30→6**.
+  - `buildDeck()` beállítja a `host.finalFrom`-ot = `simaMC.length + simaTipp.length` (a ténylegesen felvett kérdésekből, nem a tervből – szűkös szűrőnél is helyes; ilyenkor a pakli rövidebb lesz, és `hostStart()` szól róla toasttal).
+  - `hostNext()` beteszi a `host.qFinal`-t és a `question` üzenetbe a `final` / `finalLen` / `val` (már duplázott pontérték) mezőket; `finishQuestion()` a `V`-t duplázza.
+  - **A sorozat-szorzó a duplázott értékre megy** (pl. 3★ + finálé + 1,7× = 340 pont).
+  - Kliens: `#g-final` sáv a kérdés fölött, és a `#g-diff` chip a valós (duplázott) pontértéket mutatja. Hódításban a `cqRenderPickUI()` üríti a sávot.
 - Időzítők: MC 20 mp, tip 25 mp; `#fast` hash-sel rövidítve (teszthez).
-- Lobby-beállítások: **játékmód (Klasszikus / Hódítás)**, **hódításnál térkép (Nagy 13 / Kicsi 10)**, kérdésszám (10/15/20/30/50 – hódításban rejtve), 4 kategóriacsoport-kapcsoló, nehézségszűrő (1★–5★), AI hozzáadása (max 6 játékos összesen).
+- Lobby-beállítások: **játékmód (Klasszikus / Hódítás)**, **hódításnál térkép (Nagy 13 / Kicsi 10)**, kérdésszám (`Q_COUNTS` = **10/15/20/30** – hódításban rejtve), 4 kategóriacsoport-kapcsoló, nehézségszűrő (1★–5★), AI hozzáadása (max 6 játékos összesen).
 - **AI-szintek (`AI_TIERS`)** – a lobbyban három gomb (`#seg-ai`), a szint a játékoson `p.ai` (0/1/2):
 
   | | MC-találat d1..d5 | 3★-on | tippszórás (`spr`) |
@@ -71,7 +92,7 @@ Térképes párbaj két választható pályán. Csapatkód: **1 = piros** (a hos
 
 ## Tesztek (Playwright, `tests/`)
 
-- `npm test` → `test_solo.js` (pontozási logika a `window.__kv` teszt-hookon át + teljes szóló játszma), `test_diff.js` (nehézségszűrő + jelzés), `test_ai.js` (AI-szintek: 800 mintás találati arány szintenként, tipppontosság, Robot Idő Büntetés – **éles időzítőkkel fut, nincs `#fast`**), `test_conquest.js` (hódítás: logikai ellenőrzések + teljes szóló játszma AI ellen **mindkét térképen**).
+- `npm test` → `test_solo.js` (pontozási logika a `window.__kv` teszt-hookon át, **sorozat-bónusz 9 ellenőrzéssel** + teljes szóló játszma), `test_diff.js` (nehézségszűrő + jelzés), `test_ai.js` (AI-szintek: 800 mintás találati arány szintenként, tipppontosság, Robot Idő Büntetés – **éles időzítőkkel fut, nincs `#fast`**), `test_conquest.js` (hódítás: logikai ellenőrzések + teljes szóló játszma AI ellen **mindkét térképen**).
 - `npm run test:cq` → csak a hódítás mód.
 - `npm run test:net` → `test_net.js` (klasszikus) és `test_conquest_net.js` (hódítás host+vendég a kis térképen, a két kliens állapotának egyezését is ellenőrzi), **helyi PeerJS szerverrel**: `node_modules/.bin/peerjs --port 9000 --host 127.0.0.1`, URL-hash: `#fast&srv=127.0.0.1:9000`.
 - Chromium a sandboxban: `executablePath: '/opt/pw-browsers/chromium'` (fallback: sima launch).
