@@ -71,7 +71,9 @@ async function play(page, tag, tipBase, stats) {
 
   await A.click('#seg-mode button[data-m="conquest"]');
   await B.waitForFunction(() => /Hódítás/.test(document.getElementById('lobby-settings').innerText), undefined, { timeout: 8000 });
-  console.log('MÓD: a vendég is látja a Hódítás módot ✔');
+  await A.click('#seg-map button[data-k="small"]');
+  await B.waitForFunction(() => /10 terület/.test(document.getElementById('lobby-settings').innerText), undefined, { timeout: 8000 });
+  console.log('MÓD: a vendég is látja a Hódítás módot és a kis térképet ✔');
   await A.screenshot({ path: 'shots/cqnet_01_lobby_host.png' });
 
   await A.click('#btn-start');
@@ -95,12 +97,13 @@ async function play(page, tag, tipBase, stats) {
   const snap = p => p.evaluate(() => {
     const s = __kv.cq;
     return { owner: s.owner, val: s.val, castle: s.castle, tot: s.tot, attacks: s.attacks,
-             free: s.owner.filter(o => o === 0).length };
+             map: s.map, free: s.owner.filter(o => o === 0).length };
   });
   const [fa, fb] = await Promise.all([snap(A), snap(B)]);
 
+  check('a kis térkép fut mindkét oldalon', [fa.map, fb.map, fa.owner.length], ['small', 'small', 10]);
   check('minden terület elkelt', fa.free, 0);
-  check('mindkét fél elhasználta a 6 támadást', [fa.attacks[1], fa.attacks[2]], [0, 0]);
+  check('elfogytak a 4-4 támadások', [fa.attacks[1], fa.attacks[2]], [0, 0]);
   check('a két kliens térképe azonos (tulajdonos)', fb.owner, fa.owner);
   check('a két kliens térképe azonos (értékek)', fb.val, fa.val);
   check('a két kliens várértékei azonosak', fb.castle, fa.castle);

@@ -2083,29 +2083,55 @@ const CQ_CASTLE0   = 100;   // vár alapértéke
 const CQ_DEF_BONUS = 50;    // sikeres védekezés → a védő várának bónusza
 const CQ_ATK_GAIN  = 25;    // sikeres foglalás → a terület ennyivel többet ér
 const CQ_VAL_MAX   = 150;   // terület maximális értéke (a várra nem vonatkozik)
-const CQ_ATTACKS   = 6;     // hány támadás jár csapatonként a HARC fázisban
 const CQ_DRY_LIMIT = 6;     // biztonsági szelep: ennyi eredménytelen foglalás-forduló után gazdára talál a kijelölt terület
+const CQ_TEAM_NAME = {1:'🔴 Piros', 2:'🔵 Kék'};
 
-/* 13 terület képernyő-koordinátái (a felhasználó rajza alapján) */
-const CQ_POS = [[288,98],[376,84],[450,86],[198,168],[290,204],[376,210],[462,202],
-                [550,170],[554,250],[198,274],[286,340],[378,342],[460,332]];
-/* Szomszédság (0-indexelt; a felirat a térképen 1..13) */
-const CQ_ADJ = [
-  [1,3,4,5],              /*1*/   [0,2,4,5,6],            /*2*/
-  [1,5,6,7],              /*3*/   [0,4,9],                /*4*/
-  [0,1,3,5,9,10,11],      /*5*/   [0,1,2,4,6,10,11,12],   /*6*/
-  [1,2,5,7,8,11,12],      /*7*/   [2,6,8],                /*8*/
-  [6,7,12],               /*9*/   [3,4,10],               /*10*/
-  [4,5,9,11],             /*11*/  [4,5,6,10,12],          /*12*/
-  [5,6,8,11]              /*13*/
-];
-/* A várakból közvetlenül elérhető területek */
-const CQ_CASTLE_ADJ = {1:[3,9], 2:[7,8]};
-const CQ_CASTLE_TRI = {1:'60,268 165,268 112,180', 2:'600,290 712,290 656,205'};
-const CQ_CASTLE_TXT = {1:[112,246], 2:[656,266]};
-const CQ_CASTLE_ANC = {1:[152,252], 2:[618,244]};   // ahonnan a vár élei indulnak
-const CQ_TEAM_NAME  = {1:'🔴 Piros', 2:'🔵 Kék'};
-const CQ_R = 26;
+/* ---- Térképek ----------------------------------------------------------
+   Mindkettő a felhasználó rajzából származik (képelemzéssel kiolvasva).
+   pos: körök koordinátái · adj: 0-indexelt szomszédság · cadj: a várak kijáratai
+   tri/txt/anc: a vár háromszöge, felirata és az éleinek kiindulópontja
+   attacks: hány támadás jár csapatonként a HARC fázisban
+   ------------------------------------------------------------------------ */
+const CQ_MAPS = {
+  big: {
+    key:'big', label:'🗺️ Nagy', n:13, r:26, attacks:6, vb:'45 45 685 335',
+    desc:'13 terület · 6–6 támadás',
+    pos:[[288,98],[376,84],[450,86],[198,168],[290,204],[376,210],[462,202],
+         [550,170],[554,250],[198,274],[286,340],[378,342],[460,332]],
+    adj:[
+      [1,3,4,5],              /*1*/   [0,2,4,5,6],            /*2*/
+      [1,5,6,7],              /*3*/   [0,4,9],                /*4*/
+      [0,1,3,5,9,10,11],      /*5*/   [0,1,2,4,6,10,11,12],   /*6*/
+      [1,2,5,7,8,11,12],      /*7*/   [2,6,8],                /*8*/
+      [6,7,12],               /*9*/   [3,4,10],               /*10*/
+      [4,5,9,11],             /*11*/  [4,5,6,10,12],          /*12*/
+      [5,6,8,11]              /*13*/
+    ],
+    cadj:{1:[3,9], 2:[7,8]},
+    tri:{1:'60,268 165,268 112,180', 2:'600,290 712,290 656,205'},
+    txt:{1:[112,246], 2:[656,266]},
+    anc:{1:[152,252], 2:[618,244]}
+  },
+  small: {
+    key:'small', label:'🧭 Kicsi', n:10, r:28, attacks:4, vb:'78 22 652 372',
+    desc:'10 terület · 4–4 támadás',
+    pos:[[356,57],[448,55],[238,110],[552,107],[358,180],
+         [442,181],[240,283],[554,277],[358,356],[448,351]],
+    adj:[
+      [1,2,4,5],              /*1*/   [0,3,4,5],              /*2*/
+      [0,4,6],                /*3*/   [1,5,7],                /*4*/
+      [0,1,2,5,6,8,9],        /*5*/   [0,1,3,4,7,8,9],        /*6*/
+      [2,4,8],                /*7*/   [3,5,9],                /*8*/
+      [4,5,6,9],              /*9*/   [4,5,7,8]               /*10*/
+    ],
+    cadj:{1:[2,6], 2:[3,7]},
+    tri:{1:'88,232 195,232 141,154', 2:'605,232 712,232 658,154'},
+    txt:{1:[141,212], 2:[658,212]},
+    anc:{1:[166,208], 2:[630,208]}
+  }
+};
+function cqMap(){ return CQ_MAPS[(host&&host.settings&&host.settings.mapKey)||'big']; }
+function cqM(){ return CQ_MAPS[(cqState&&cqState.map)||'big']; }
 
 const $ = id=>document.getElementById(id);
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -2165,7 +2191,7 @@ function sendToHost(msg){ try{ net.conn.send(msg); }catch(e){} }
 
 /* ---------------- host: szoba ---------------- */
 function makeHost(solo){
-  return { solo, players:[], settings:{count:15, mode:'classic', groups:[true,true,true,true], diffs:[true,true,true,true,true]},
+  return { solo, players:[], settings:{count:15, mode:'classic', mapKey:'big', groups:[true,true,true,true], diffs:[true,true,true,true,true]},
     cq:null, cqPool:{mc:[],tip:[]},
     phase:'lobby', deck:[], qi:-1, answers:{}, qData:null, qCorrectIndex:0, qDur:0,
     qDeadlineT:null, autoNextT:null, aiTimers:[], usedIds:new Set() };
@@ -2414,12 +2440,12 @@ function hostRematch(){
    HÓDÍTÁS mód – hostoldali állapotgép
    ============================================================ */
 function cqPlayer(team){ return host.players.find(p=>p.team===team); }
-function cqOwned(team){ const a=[]; for(let i=0;i<13;i++) if(host.cq.owner[i]===team) a.push(i); return a; }
-function cqFree(){ const a=[]; for(let i=0;i<13;i++) if(!host.cq.owner[i]) a.push(i); return a; }
+function cqOwned(team){ const a=[],n=cqMap().n; for(let i=0;i<n;i++) if(host.cq.owner[i]===team) a.push(i); return a; }
+function cqFree(){ const a=[],n=cqMap().n; for(let i=0;i<n;i++) if(!host.cq.owner[i]) a.push(i); return a; }
 /* Amire a csapat "rálát": a vára szomszédai + a saját területei szomszédai */
 function cqReach(team){
-  const s=new Set(CQ_CASTLE_ADJ[team]);
-  cqOwned(team).forEach(i=>CQ_ADJ[i].forEach(j=>s.add(j)));
+  const M=cqMap(), s=new Set(M.cadj[team]);
+  cqOwned(team).forEach(i=>M.adj[i].forEach(j=>s.add(j)));
   return s;
 }
 function cqPickable(team){
@@ -2448,6 +2474,7 @@ function cqSnap(){
     turn:c.turn, target:c.target, atkTeam:c.atkTeam, round:c.round,
     attacks:{1:c.attacks[1],2:c.attacks[2]}, tot:{1:cqTotal(1),2:cqTotal(2)},
     free:cqFree().length, sel:cqPickList(c.turn), log:c.log, pickMs:CQ_PICK_DUR,
+    map:cqMap().key, maxAtk:cqMap().attacks,
     teams:host.players.map(p=>({pid:p.pid,team:p.team,name:p.name,avatar:p.avatar,isAI:!!p.isAI})) };
 }
 function cqBroadcast(){ hostBroadcast({t:'cq', st:cqSnap()}); }
@@ -2468,10 +2495,10 @@ function cqStart(){
   host.players[0].team=1; host.players[1].team=2;   // host/ember = piros, ellenfél = kék
   host.players.forEach(p=>p.score=0);
   cqBuildPools();
-  const startTeam=Math.random()<0.5?1:2;
-  host.cq={ on:true, phase:'grab', sub:'pick', owner:new Array(13).fill(0), val:new Array(13).fill(0),
+  const startTeam=Math.random()<0.5?1:2, M=cqMap();
+  host.cq={ on:true, phase:'grab', sub:'pick', owner:new Array(M.n).fill(0), val:new Array(M.n).fill(0),
     castle:{1:CQ_CASTLE0,2:CQ_CASTLE0}, first:startTeam, startTeam, picks:{1:null,2:null}, turn:null,
-    qtype:'mc', single:false, attacks:{1:CQ_ATTACKS,2:CQ_ATTACKS}, atkTeam:null, target:null,
+    qtype:'mc', single:false, attacks:{1:M.attacks,2:M.attacks}, atkTeam:null, target:null,
     decider:false, round:1, dry:0, log:'🎲 Sorsolás: '+CQ_TEAM_NAME[startTeam]+' kezd a területválasztással!',
     pickT:null, aiT:null, nextT:null };
   host.phase='cq'; host.qi=-1;
@@ -2674,7 +2701,8 @@ function cqStartWar(){
   const c=host.cq;
   c.phase='war'; c.sub='pick'; c.picks={1:null,2:null}; c.single=false; c.turn=null; c.target=null;
   c.atkTeam=(c.startTeam===1?2:1);   // aki a foglalásnál másodikként választott, itt kezd
-  c.log='⚔️ Minden terület elkelt! Jön a HARC: '+CQ_ATTACKS+'–'+CQ_ATTACKS+' támadás, kezd '+CQ_TEAM_NAME[c.atkTeam]+'.';
+  const A=cqMap().attacks;
+  c.log='⚔️ Minden terület elkelt! Jön a HARC: '+A+'–'+A+' támadás, kezd '+CQ_TEAM_NAME[c.atkTeam]+'.';
   cqBroadcast();
   cqLater(()=>{ const l=cqTargets(c.atkTeam); if(!l.length) cqAfterAttack(); else cqAskPick(c.atkTeam); }, FAST?500:3400);
 }
@@ -2712,10 +2740,10 @@ function cqAiPick(team,list){
     for(const i of list) if(c.val[i]>c.val[best]) best=i;
     return best;
   }
-  const r=cqReach(team);          // foglalás: kapcsolódó és jól hálózott mező
+  const r=cqReach(team), M=cqMap();   // foglalás: kapcsolódó és jól hálózott mező
   let best=list[0], bs=-Infinity;
   for(const i of list){
-    const s=CQ_ADJ[i].length*1.0 + (r.has(i)?4:0) + Math.random()*0.9;
+    const s=M.adj[i].length*1.0 + (r.has(i)?4:0) + Math.random()*0.9;
     if(s>bs){ bs=s; best=i; }
   }
   return best;
@@ -2797,8 +2825,12 @@ function renderLobby(m){
         '<button data-m="conquest" class="'+(conq?'sel':'')+'">⚔️ Hódítás (2 fő)</button>'+
       '</span></div>'+
       (conq
-        ? '<div class="hint" style="text-align:left;margin:2px 0 6px">⚔️ <b>Hódítás:</b> 13 terület elfoglalása, majd 6–6 támadás. '+
-          'Pontosan 2 játékos kell (AI is jó). A kérdésszámot a térkép adja.</div>'
+        ? '<div class="setrow"><span class="lab">Térkép</span><span class="seg" id="seg-map">'+
+            Object.keys(CQ_MAPS).map(k=>'<button data-k="'+k+'" class="'+((m.settings.mapKey||'big')===k?'sel':'')+'">'+
+              CQ_MAPS[k].label+'</button>').join('')+
+          '</span></div>'+
+          '<div class="hint" style="text-align:left;margin:2px 0 6px">⚔️ <b>Hódítás:</b> '+
+          CQ_MAPS[m.settings.mapKey||'big'].desc+'. Pontosan 2 játékos kell (AI is jó); a kérdésszámot a térkép adja.</div>'
         : '<div class="setrow"><span class="lab">Kérdések száma</span><span class="seg" id="seg-count">'+
         [10,15,20,30,50].map(v=>'<button data-c="'+v+'" class="'+(m.settings.count===v?'sel':'')+'">'+v+'</button>').join('')+
       '</span></div>')+
@@ -2819,6 +2851,8 @@ function renderLobby(m){
         toast('A Hódítás módhoz pontosan 2 játékos kell – most '+host.players.length+' van.',4000);
       hostBroadcast(hostLobbyMsg());
     });
+    document.querySelectorAll('#seg-map button').forEach(b=>b.onclick=()=>{
+      host.settings.mapKey=b.dataset.k; hostBroadcast(hostLobbyMsg()); });
     document.querySelectorAll('#seg-count button').forEach(b=>b.onclick=()=>{ host.settings.count=+b.dataset.c; hostBroadcast(hostLobbyMsg()); });
     document.querySelectorAll('#seg-groups .gtoggle').forEach(b=>b.onclick=()=>{
       const i=+b.dataset.g;
@@ -2840,7 +2874,7 @@ function renderLobby(m){
     const groups=m.settings.groups.map((v,i)=>v?GROUP_LABELS[i]:null).filter(Boolean).join(' · ');
     const diffs=(m.settings.diffs||[]).map((v,i)=>v?(i+1)+'★':null).filter(Boolean).join(' ');
     const head=m.settings.mode==='conquest'
-      ? '⚔️ <b>Hódítás mód</b> – 13 terület, majd 6–6 támadás'
+      ? '⚔️ <b>Hódítás</b> – '+CQ_MAPS[m.settings.mapKey||'big'].desc
       : m.settings.count+' kérdés';
     $('lobby-settings').innerHTML='<div class="hint">'+head+' · '+groups+'<br>Nehézség: '+(diffs||'vegyes')+'</div>';
     $('lobby-actions').innerHTML='<div class="hint"><span class="spinner"></span>Várakozás, hogy a host elindítsa a játékot…</div>';
@@ -2935,36 +2969,36 @@ function cqMyTeam(){
 }
 function cqTeamPl(t){ return (cqState.teams.find(x=>x.team===t))||{name:'?',avatar:'❓'}; }
 function cqSvg(domId){
-  const st=cqState, my=cqMyTeam();
+  const st=cqState, my=cqMyTeam(), M=cqM(), P=M.pos, R=M.r;
   const sel=(st.sub==='pick'&&st.turn===my)?(st.sel||[]):[];
-  let s='<svg class="cqsvg" id="'+(domId||'cq-svg')+'" viewBox="45 45 685 335" xmlns="http://www.w3.org/2000/svg">';
+  let s='<svg class="cqsvg" id="'+(domId||'cq-svg')+'" viewBox="'+M.vb+'" xmlns="http://www.w3.org/2000/svg">';
   const seen={};
-  for(let i=0;i<13;i++) for(const j of CQ_ADJ[i]){
+  for(let i=0;i<M.n;i++) for(const j of M.adj[i]){
     const k=Math.min(i,j)+'-'+Math.max(i,j); if(seen[k]) continue; seen[k]=1;
-    s+='<line class="lnk" x1="'+CQ_POS[i][0]+'" y1="'+CQ_POS[i][1]+'" x2="'+CQ_POS[j][0]+'" y2="'+CQ_POS[j][1]+'"/>';
+    s+='<line class="lnk" x1="'+P[i][0]+'" y1="'+P[i][1]+'" x2="'+P[j][0]+'" y2="'+P[j][1]+'"/>';
   }
   for(const t of [1,2]){
-    const a=CQ_CASTLE_ANC[t];
-    for(const i of CQ_CASTLE_ADJ[t])
-      s+='<line class="lnk" x1="'+a[0]+'" y1="'+a[1]+'" x2="'+CQ_POS[i][0]+'" y2="'+CQ_POS[i][1]+'"/>';
+    const a=M.anc[t];
+    for(const i of M.cadj[t])
+      s+='<line class="lnk" x1="'+a[0]+'" y1="'+a[1]+'" x2="'+P[i][0]+'" y2="'+P[i][1]+'"/>';
   }
   for(const t of [1,2]){
-    s+='<polygon class="cas t'+t+'" points="'+CQ_CASTLE_TRI[t]+'"/>'+
-       '<text class="vv" x="'+CQ_CASTLE_TXT[t][0]+'" y="'+CQ_CASTLE_TXT[t][1]+'">'+st.castle[t]+'</text>';
+    s+='<polygon class="cas t'+t+'" points="'+M.tri[t]+'"/>'+
+       '<text class="vv" x="'+M.txt[t][0]+'" y="'+M.txt[t][1]+'">'+st.castle[t]+'</text>';
   }
-  for(let i=0;i<13;i++){
-    const x=CQ_POS[i][0], y=CQ_POS[i][1], o=st.owner[i];
-    s+='<circle class="nd '+(o?'t'+o:'free')+'" cx="'+x+'" cy="'+y+'" r="'+CQ_R+'"/>';
+  for(let i=0;i<M.n;i++){
+    const x=P[i][0], y=P[i][1], o=st.owner[i];
+    s+='<circle class="nd '+(o?'t'+o:'free')+'" cx="'+x+'" cy="'+y+'" r="'+R+'"/>';
     s+=o ? '<text class="vv" x="'+x+'" y="'+y+'">'+st.val[i]+'</text>'
          : '<text class="idn" x="'+x+'" y="'+y+'">'+(i+1)+'</text>';
     if(st.phase==='grab'){
-      if(st.picks[1]===i) s+='<circle class="mark1" cx="'+x+'" cy="'+y+'" r="'+(CQ_R+6)+'"/>';
-      if(st.picks[2]===i) s+='<circle class="mark2" cx="'+x+'" cy="'+y+'" r="'+(CQ_R+12)+'"/>';
+      if(st.picks[1]===i) s+='<circle class="mark1" cx="'+x+'" cy="'+y+'" r="'+(R+6)+'"/>';
+      if(st.picks[2]===i) s+='<circle class="mark2" cx="'+x+'" cy="'+y+'" r="'+(R+12)+'"/>';
     }
-    if(st.target===i) s+='<circle class="tgt" cx="'+x+'" cy="'+y+'" r="'+(CQ_R+8)+'"/>';
+    if(st.target===i) s+='<circle class="tgt" cx="'+x+'" cy="'+y+'" r="'+(R+8)+'"/>';
     if(sel.indexOf(i)>=0)
-      s+='<circle class="sel-ring" cx="'+x+'" cy="'+y+'" r="'+(CQ_R+5)+'"/>'+
-         '<circle class="hit" data-cq="'+i+'" cx="'+x+'" cy="'+y+'" r="'+(CQ_R+10)+'" fill="transparent"/>';
+      s+='<circle class="sel-ring" cx="'+x+'" cy="'+y+'" r="'+(R+5)+'"/>'+
+         '<circle class="hit" data-cq="'+i+'" cx="'+x+'" cy="'+y+'" r="'+(R+10)+'" fill="transparent"/>';
   }
   return s+'</svg>';
 }

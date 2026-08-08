@@ -122,14 +122,55 @@ function check(name, got, want) {
     h.cq.owner[3] = 1; h.cq.owner[0] = 2; h.cq.owner[12] = 2;
     out.targets = cqTargets(1).slice().sort((a, b) => a - b);                   // idx3 szomszédai közül a 0 ellenséges
 
-    // --- gráf épsége: szimmetrikus és összefüggő
-    let sym = true;
-    for (let i = 0; i < 13; i++) for (const j of CQ_ADJ[i]) if (CQ_ADJ[j].indexOf(i) < 0) sym = false;
-    out.symmetric = sym;
-    const seen = new Set([0]); const st = [0];
-    while (st.length) { const x = st.pop(); for (const y of CQ_ADJ[x]) if (!seen.has(y)) { seen.add(y); st.push(y); } }
-    out.connected = seen.size;                                                  // várt: 13
-    out.edges = CQ_ADJ.reduce((s, a) => s + a.length, 0) / 2;                   // várt: 30
+    // --- mindkét térkép épsége: szimmetrikus, összefüggő, a várak nem lógnak a levegőben
+    out.maps = {};
+    for (const key of Object.keys(CQ_MAPS)) {
+      const M = CQ_MAPS[key];
+      let sym = true, range = true;
+      for (let i = 0; i < M.n; i++) for (const j of M.adj[i]) {
+        if (M.adj[j].indexOf(i) < 0) sym = false;
+        if (j < 0 || j >= M.n || j === i) range = false;
+      }
+      const seen = new Set([0]), stk = [0];
+      while (stk.length) { const x = stk.pop(); for (const y of M.adj[x]) if (!seen.has(y)) { seen.add(y); stk.push(y); } }
+      const cast = [].concat(M.cadj[1], M.cadj[2]);
+
+      /* Tükörszimmetria: a két vár felezőtengelyére tükrözve a gráfnak önmagába kell
+         mennie – különben az egyik csapat eleve jobb pozícióból indulna. */
+      const C = M.txt[1][0] + M.txt[2][0];
+      const mir = M.pos.map(p => {
+        let b = 0, bd = Infinity;
+        for (let j = 0; j < M.n; j++) {
+          const d = Math.pow(M.pos[j][0] - (C - p[0]), 2) + Math.pow(M.pos[j][1] - p[1], 2);
+          if (d < bd) { bd = d; b = j; }
+        }
+        return b;
+      });
+      let mEdges = new Set(mir).size === M.n;            // párosítás-e egyáltalán
+      for (let i = 0; i < M.n; i++) for (const j of M.adj[i]) if (M.adj[mir[i]].indexOf(mir[j]) < 0) mEdges = false;
+      const c1 = M.cadj[1].map(i => mir[i]).sort((a, b) => a - b);
+      const c2 = M.cadj[2].slice().sort((a, b) => a - b);
+      const deg = M.adj.map(a => a.length);
+      for (const t of [1, 2]) for (const i of M.cadj[t]) deg[i]++;
+
+      out.maps[key] = {
+        n: M.n, pos: M.pos.length, sym, range, conn: seen.size,
+        edges: M.adj.reduce((s, a) => s + a.length, 0) / 2,
+        castOk: cast.every(i => i >= 0 && i < M.n) && new Set(cast).size === cast.length,
+        atk: M.attacks,
+        mirror: mEdges && JSON.stringify(c1) === JSON.stringify(c2)
+                && deg.every((d, i) => d === deg[mir[i]]),
+      };
+    }
+
+    // --- kis térkép: rálátás és támadhatóság
+    host.settings.mapKey = 'small';
+    h.cq = Object.assign(freshCq({}), { owner: new Array(10).fill(0), val: new Array(10).fill(0) });
+    out.smallPickP = cqPickList(1).slice().sort((a, b) => a - b);              // piros vár: 3,7 -> idx 2,6
+    out.smallPickK = cqPickList(2).slice().sort((a, b) => a - b);              // kék vár: 4,8 -> idx 3,7
+    h.cq.phase = 'war'; h.cq.owner[2] = 1; h.cq.owner[4] = 2; h.cq.owner[0] = 2;
+    out.smallTargets = cqTargets(1).slice().sort((a, b) => a - b);             // idx2 szomszédai: 0,4,6 -> ellenséges: 0,4
+    host.settings.mapKey = 'big';
 
     window.hostBroadcast = origBc; window.__kv.host = null;
     return out;
@@ -157,85 +198,95 @@ function check(name, got, want) {
   check('foglalás után bővül a rálátás', L.pickP2, [0, 4, 9]);
   check('elzárt helyzetben bármelyik szabad mező', L.pickIsolated, 11);
   check('támadható célpontok (várat nem)', L.targets, [0]);
-  check('gráf szimmetrikus', L.symmetric, true);
-  check('gráf összefüggő (13 csúcs)', L.connected, 13);
-  check('élek száma', L.edges, 30);
+  check('nagy térkép', L.maps.big,
+        { n: 13, pos: 13, sym: true, range: true, conn: 13, edges: 30, castOk: true, atk: 6, mirror: true });
+  check('kis térkép', L.maps.small,
+        { n: 10, pos: 10, sym: true, range: true, conn: 10, edges: 21, castOk: true, atk: 4, mirror: true });
+  check('kis térkép: piros vár kijáratai', L.smallPickP, [2, 6]);
+  check('kis térkép: kék vár kijáratai', L.smallPickK, [3, 7]);
+  check('kis térkép: támadható célpontok', L.smallTargets, [0, 4]);
 
-  /* ================= 2) teljes szóló játszma ================= */
-  console.log('— teljes hódítás-játszma AI ellen —');
-  await page.reload();
-  await page.fill('#inp-name', 'Attila');
-  await page.click('#btn-solo');
-  await page.waitForSelector('#s-lobby.on');
-  await page.click('#seg-mode button[data-m="conquest"]');
-  await page.waitForSelector('#seg-mode button[data-m="conquest"].sel');
-  await page.screenshot({ path: 'shots/cq_01_lobby.png' });
-  await page.click('#btn-start');
-  await page.waitForSelector('#cq-wrap.on', { timeout: 10000 });
+  /* ================= 2) teljes szóló játszma – mindkét térképen ================= */
+  for (const [mapKey, nTerr, tag] of [['big', 13, 'nagy'], ['small', 10, 'kis']]) {
+    console.log('— teljes hódítás-játszma AI ellen: ' + tag + ' térkép —');
+    await page.reload();
+    await page.fill('#inp-name', 'Attila');
+    await page.click('#btn-solo');
+    await page.waitForSelector('#s-lobby.on');
+    await page.click('#seg-mode button[data-m="conquest"]');
+    await page.waitForSelector('#seg-mode button[data-m="conquest"].sel');
+    await page.click('#seg-map button[data-k="' + mapKey + '"]');
+    await page.waitForSelector('#seg-map button[data-k="' + mapKey + '"].sel');
+    await page.screenshot({ path: 'shots/cq_' + mapKey + '_01_lobby.png' });
+    await page.click('#btn-start');
+    await page.waitForSelector('#cq-wrap.on', { timeout: 10000 });
 
-  let picks = 0, mcs = 0, tips = 0, shots = {};
-  const t0 = Date.now();
-  while (Date.now() - t0 < 300000) {
-    if (await page.$('#s-end.on')) break;
-    const hit = await page.$('#cq-svg .hit');
-    if (hit) {
-      const st = await page.evaluate(() => __kv.cq && __kv.cq.phase);
-      if (!shots[st + 'pick']) { await page.screenshot({ path: 'shots/cq_' + (st === 'war' ? '04_warpick' : '02_grabpick') + '.png' }); shots[st + 'pick'] = 1; }
-      const hits = await page.$$('#cq-svg .hit');
-      await hits[Math.floor(Math.random() * hits.length)].click().catch(() => {});
-      picks++;
-      continue;
+    let picks = 0, mcs = 0, tips = 0; const shots = {};
+    const t0 = Date.now();
+    while (Date.now() - t0 < 300000) {
+      if (await page.$('#s-end.on')) break;
+      const hit = await page.$('#cq-svg .hit');
+      if (hit) {
+        const ph = await page.evaluate(() => __kv.cq && __kv.cq.phase);
+        if (!shots[ph]) {
+          await page.screenshot({ path: 'shots/cq_' + mapKey + (ph === 'war' ? '_04_warpick' : '_02_grabpick') + '.png' });
+          shots[ph] = 1;
+        }
+        const hits = await page.$$('#cq-svg .hit');
+        await hits[Math.floor(Math.random() * hits.length)].click().catch(() => {});
+        picks++;
+        continue;
+      }
+      const mcb = await page.$('.mcbtn:not(.dis)');
+      if (mcb) {
+        mcs++;
+        if (!shots.mc) { await page.screenshot({ path: 'shots/cq_' + mapKey + '_03_mc.png' }); shots.mc = 1; }
+        // vegyesen: néha válaszolunk, néha hagyjuk lejárni az időt
+        if (mcs % 4 !== 0) await page.click('.mcbtn:nth-child(' + (1 + (mcs % 4)) + ')').catch(() => {});
+        await page.waitForTimeout(150);
+        continue;
+      }
+      const ti = await page.$('#tip-inp:not([disabled])');
+      if (ti) {
+        tips++;
+        await page.fill('#tip-inp', String(50 + tips * 7)).catch(() => {});
+        await page.click('#tip-btn').catch(() => {});
+        await page.waitForTimeout(150);
+        continue;
+      }
+      await page.waitForTimeout(120);
     }
-    const mcb = await page.$('.mcbtn:not(.dis)');
-    if (mcb) {
-      mcs++;
-      if (!shots.mc) { await page.screenshot({ path: 'shots/cq_03_mc.png' }); shots.mc = 1; }
-      // szándékosan vegyesen: néha jó eséllyel, néha hagyjuk lejárni
-      if (mcs % 4 !== 0) await page.click('.mcbtn:nth-child(' + (1 + (mcs % 4)) + ')').catch(() => {});
-      await page.waitForTimeout(150);
-      continue;
-    }
-    const ti = await page.$('#tip-inp:not([disabled])');
-    if (ti) {
-      tips++;
-      await page.fill('#tip-inp', String(50 + tips * 7)).catch(() => {});
-      await page.click('#tip-btn').catch(() => {});
-      await page.waitForTimeout(150);
-      continue;
-    }
-    await page.waitForTimeout(120);
+
+    await page.waitForSelector('#s-end.on', { timeout: 30000 });
+    await page.screenshot({ path: 'shots/cq_' + mapKey + '_05_end.png', fullPage: true });
+
+    const fin = await page.evaluate(() => {
+      const st = __kv.cq;
+      return {
+        map: st.map, maxAtk: st.maxAtk, n: st.owner.length,
+        free: st.owner.filter(o => o === 0).length,
+        red: st.owner.filter(o => o === 1).length,
+        blue: st.owner.filter(o => o === 2).length,
+        attacks: st.attacks, castle: st.castle, tot: st.tot, vals: st.val.slice(),
+        sum: { 1: st.castle[1] + st.owner.reduce((s, o, i) => s + (o === 1 ? st.val[i] : 0), 0),
+               2: st.castle[2] + st.owner.reduce((s, o, i) => s + (o === 2 ? st.val[i] : 0), 0) },
+      };
+    });
+    check(tag + ': a választott térkép fut', [fin.map, fin.n, fin.maxAtk], [mapKey, nTerr, mapKey === 'big' ? 6 : 4]);
+    check(tag + ': minden terület elkelt', fin.free, 0);
+    check(tag + ': ' + nTerr + ' terület oszlik szét', fin.red + fin.blue, nTerr);
+    check(tag + ': elfogytak a támadások', [fin.attacks[1], fin.attacks[2]], [0, 0]);
+    check(tag + ': végösszeg = várak + területek', fin.tot, fin.sum);
+    check(tag + ': nincs 150 fölötti terület', fin.vals.filter(v => v > 150).length, 0);
+    console.log('  piros:', fin.red, 'terület /', fin.tot[1], 'pont (vár ' + fin.castle[1] + ')  |  kék:',
+                fin.blue, 'terület /', fin.tot[2], 'pont (vár ' + fin.castle[2] + ')');
+    console.log('  választások:', picks, '| 4 válaszos:', mcs, '| tippelős:', tips,
+                '| játékidő:', Math.round((Date.now() - t0) / 1000) + 's');
+
+    await page.click('#btn-rematch');
+    await page.waitForSelector('#s-lobby.on', { timeout: 8000 });
+    check(tag + ': rematch visszavisz a lobbyba', await page.$eval('#s-lobby', e => e.classList.contains('on')), true);
   }
-
-  await page.waitForSelector('#s-end.on', { timeout: 30000 });
-  await page.screenshot({ path: 'shots/cq_05_end.png', fullPage: true });
-
-  const fin = await page.evaluate(() => {
-    const st = __kv.cq;
-    return {
-      free: st.owner.filter(o => o === 0).length,
-      red: st.owner.filter(o => o === 1).length,
-      blue: st.owner.filter(o => o === 2).length,
-      attacks: st.attacks,
-      castle: st.castle,
-      tot: st.tot,
-      sum: { 1: st.castle[1] + st.owner.reduce((s, o, i) => s + (o === 1 ? st.val[i] : 0), 0),
-             2: st.castle[2] + st.owner.reduce((s, o, i) => s + (o === 2 ? st.val[i] : 0), 0) },
-      vals: st.val.slice(),
-    };
-  });
-  check('minden terület elkelt', fin.free, 0);
-  check('13 terület oszlik szét', fin.red + fin.blue, 13);
-  check('mindkét fél elhasználta a 6 támadást', [fin.attacks[1], fin.attacks[2]], [0, 0]);
-  check('végösszeg = várak + területek', fin.tot, fin.sum);
-  check('egyik terület sem lépi túl a 150-et', fin.vals.filter(v => v > 150).length, 0);
-  console.log('  piros:', fin.red, 'terület /', fin.tot[1], 'pont (vár ' + fin.castle[1] + ')  |  kék:',
-              fin.blue, 'terület /', fin.tot[2], 'pont (vár ' + fin.castle[2] + ')');
-  console.log('  választások:', picks, '| 4 válaszos:', mcs, '| tippelős:', tips,
-              '| játékidő:', Math.round((Date.now() - t0) / 1000) + 's');
-
-  await page.click('#btn-rematch');
-  await page.waitForSelector('#s-lobby.on', { timeout: 8000 });
-  check('rematch visszavisz a lobbyba', await page.$eval('#s-lobby', e => e.classList.contains('on')), true);
 
   console.log(errors.length ? 'HIBÁK:\n' + errors.join('\n') : 'KONZOL: tiszta ✔');
   if (errors.length) failures++;

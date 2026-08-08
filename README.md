@@ -12,16 +12,23 @@
 
 ## ⚔️ Hódítás mód (2 játékos)
 
-A lobbyban átkapcsolható játékmód, pontosan 2 játékossal (ember vagy AI). A pálya **13 területből** és **2 várból** áll: a piros vár balra, a kék jobbra. A várak alapból 100 pontot érnek.
+A lobbyban átkapcsolható játékmód, pontosan 2 játékossal (ember vagy AI). A piros vár balra, a kék jobbra; a várak alapból 100 pontot érnek. **Két pálya közül lehet választani:**
+
+| Térkép | Területek | Támadás a HARC fázisban | Jellege |
+|---|---|---|---|
+| 🗺️ **Nagy** | 13 | 6–6 | Hosszabb meccs; a középső mező 8 szomszéddal a térkép szíve |
+| 🧭 **Kicsi** | 10 | 4–4 | Rövidebb meccs; két központi csomópont 7-7 szomszéddal |
+
+Mindkét pálya **tükörszimmetrikus** a két vár felezőtengelyére, tehát egyik csapat sem indul jobb pozícióból – csak a kezdés sorsolása dönt.
 
 **1. TERÜLETFOGLALÁS.** Sorsolás dönti el, ki választ először. Minden fordulóban előbb az egyik, majd a másik játékos jelöl ki egy szabad területet — csak olyat, amelyik a saját várához vagy egy már megszerzett területéhez kapcsolódik. (Ha nincs ilyen, bármelyik szabad terület választható.) Ugyanazt a mezőt nem lehet kijelölni; ha már csak egy terület maradt, nincs választás. Ezután jön a kérdés:
 
 - **4 válaszos kérdés (35 mp):** aki eltalálja, megkapja a saját kijelölt területét — akár mindketten.
 - **Tippelős kérdés (30 mp):** csak a nyertes foglal, holtversenynél a gyorsabb.
 
-A terület annyit ér, amennyit a kérdés: **75 / 90 / 100 / 110 / 125 pont** a nehézség szerint. A két kérdéstípus váltakozik. A fázis addig tart, míg mind a 13 terület gazdára nem talál. A választási sorrend fordulónként cserélődik.
+A terület annyit ér, amennyit a kérdés: **75 / 90 / 100 / 110 / 125 pont** a nehézség szerint. A két kérdéstípus váltakozik. A fázis addig tart, míg minden terület gazdára nem talál. A választási sorrend fordulónként cserélődik.
 
-**2. HARC.** Mindkét fél **6 alkalommal** támad, felváltva. Támadni csak olyan ellenséges területet lehet, amelyre a támadó rálát (a várából vagy valamelyik területéről). *A bétában a várakat nem lehet támadni.*
+**2. HARC.** Mindkét fél a térképnek megfelelő számú alkalommal támad (nagy: 6, kicsi: 4), felváltva. Támadni csak olyan ellenséges területet lehet, amelyre a támadó rálát (a várából vagy valamelyik területéről). *A bétában a várakat nem lehet támadni.*
 
 | Kimenetel | Következmény |
 |---|---|
