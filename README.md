@@ -25,7 +25,7 @@ A térkép „Frontvonal" hadműveleti kijelző stílusban jelenik meg: hatszög
 
 **1. TERÜLETFOGLALÁS.** Sorsolás dönti el, ki választ először. Minden fordulóban előbb az egyik, majd a másik játékos jelöl ki egy szabad területet — csak olyat, amelyik a saját várához vagy egy már megszerzett területéhez kapcsolódik. (Ha nincs ilyen, bármelyik szabad terület választható.) Ugyanazt a mezőt nem lehet kijelölni; ha már csak egy terület maradt, nincs választás. Ezután jön a kérdés:
 
-- **4 válaszos kérdés (35 mp):** aki eltalálja, megkapja a saját kijelölt területét — akár mindketten.
+- **4 válaszos kérdés (30 mp):** aki eltalálja, megkapja a saját kijelölt területét — akár mindketten.
 - **Tippelős kérdés (30 mp):** csak a nyertes foglal, holtversenynél a gyorsabb.
 
 A terület annyit ér, amennyit a kérdés: **75 / 90 / 100 / 110 / 125 pont** a nehézség szerint. A két kérdéstípus váltakozik. A fázis addig tart, míg minden terület gazdára nem talál. A választási sorrend fordulónként cserélődik.
