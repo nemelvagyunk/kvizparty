@@ -53,7 +53,7 @@ A lobbyban négy témát lehet kikapcsolni, ha a társasághoz nem illik:
 
 🧠 **Filozófia** · 🚀 **Űrkutatás és informatika** · 🎻 **Komolyzene** · 😂 **Mémek és internetkultúra**
 
-A többi kategória mindig játékban van. A szűrő **csak a „1 a 4-ből" kérdésekre hat** — a tippelős kérdéseknek saját, rövidebb kategórialistájuk van (történelem, földrajz, természettudomány, állatok, növények, feltalálók, filmek, sport), és azokból mindig jön kérdés.
+A többi kategória mindig játékban van. A szűrő **csak a „1 a 4-ből" kérdésekre hat** — a tippelős kérdéseknek saját, rövidebb listájuk van (magyar történelem, világtörténelem, földrajz, fizika-kémia-biológia, állatok, növények, feltalálók, filmek, sport), és azokból mindig jön kérdés.
 
 ## Kérdéstípusok és pontozás
 
@@ -114,7 +114,7 @@ A 🙈 díj **arányos hibát** mér, nem abszolútat — így nem az nyeri, aki
 
 ## Kérdésbázis
 
-**1000 kérdés, 20 kategória** (kategóriánként 50), négy pillérre építve: magyar és nemzetközi általános műveltség, magyar és nemzetközi popkultúra. Nehézségi eloszlás: 1★×100, 2★×200, 3★×400, 4★×200, 5★×100. A lobbyban kategóriacsoportra és nehézségre is szűrhetsz.
+**1074 kérdés, 23 kategória**, négy pillérre építve: magyar és nemzetközi általános műveltség, magyar és nemzetközi popkultúra – a családi játszhatóság jegyében. A tippelős kérdések kilenc témaköre mind legalább 40 kérdéssel van feltöltve. A lobbyban a kihagyható témákra és nehézségre is szűrhetsz.
 
 ## AI-ellenfelek
 

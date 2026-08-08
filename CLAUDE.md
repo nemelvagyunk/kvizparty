@@ -8,7 +8,15 @@
 - **Claude SOHA nem pushol GitHubra** (a felhő-sandbox git-proxyja blokkolja, a Zapier-feltöltés pedig tiltott a felhasználó kérésére).
 - A folyamat mindig: **Claude elkészíti/módosítja a fájlokat és elküldi a chatben → a felhasználó a `C:\SCRIPTS\sbch\kvizparty` mappába másolja és GitHub Desktoppal commitol+pushol.**
 - A GitHub Pages a `main` branch gyökeréből szolgál ki (branch-mód, NINCS CI): az `index.html` maga a kész játék, buildelt állapotban van commitolva. Módosítás után mindig új `index.html`-t kell buildelni és küldeni (a módosult `src/` fájlokkal együtt).
-- Backup készül minden nagyobb változtatás után (a felhasználó általános szabálya).
+- Backup készül minden nagyobb változtatás után (a felhasználó általános szabálya) – a `backup/` mappába, dátumos `.bak` néven.
+- A felhasználó gépén a repo: `C:\SCRIPTS\sbch\kvizparty` (a Cowork-munkamenetben csatolt mappa). Fájlt ide írni szabad, **de commitolni/pusholni SOHA nem** – azt ő intézi GitHub Desktoppal.
+
+## Jelenlegi állapot (röviden)
+
+**Éles, tesztelt és kész** (120+ ellenőrzés zöld + mindkét hálózati teszt):
+Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő Büntetéssel · sorozat-bónusz · dupla pontos finálé · fix pakli-terv (10/15/20/30) · kategória-sorsolás + 10 mp visszaszámlálás · tipp-érték skálázás a létszámmal · végi díjátadó · egyszerűsített kategória-szűrő külön tipp-zsákkal · **23 kategóriás kérdésbázis (2026-08-08 óta), mind a 9 tippelős tétel feltöltve (tételenként ≥40)**.
+
+**Nyitott, még nem kódolt:** ~398 új „1 a 4-ből" kérdés megírása a 23 kategóriás célszámokhoz – lásd a „🔜 FOLYAMATBAN" szekciót lent.
 
 ## Architektúra
 
@@ -59,12 +67,12 @@
 - **`catBag(pool)` – kategória-zsák.** A pakli nem a nyers kérdéspoolból épül, hanem megkevert kategórialistából: minden kategória sorra kerül, mielőtt bármelyik ismétlődne. Így a 100 kérdéses kategória **ugyanakkora eséllyel** jön, mint az 50 kérdéses – a kategóriaméret nem befolyásolja a gyakoriságot. A hódítás mód `cqDraw()`-ja is ezt használja (ott nincs sorsolás-képernyő).
 - Lobby-beállítások: **játékmód (Klasszikus / Hódítás)**, **hódításnál térkép (Nagy 13 / Kicsi 10)**, kérdésszám (`Q_COUNTS` = **10/15/20/30** – hódításban rejtve), **kategória-szűrő**, nehézségszűrő (1★–5★), AI hozzáadása (max 6 játékos összesen).
 - **Kategória-szűrő – csak a „kihagyható témák".** `host.settings.cats` = kategóriánkénti boolean tömb, de a lobbyban **kizárólag az `opt:true` jelzőjű kategóriák** jelennek meg kapcsolóként (`#seg-opt`, `optCats()`); a többi mindig játékban van. A `catOn(q)` szűri a négy válaszos paklit. Az új meccs megőrzi a beállítást, oldal-újratöltés nullázza.
-  - Kihagyható a végleges listán: **🧠 Filozófia · 🚀 Űrkutatás és informatika · 🎻 Komolyzene · 😂 Mémek és internetkultúra**. (A mostani 20-as listán ebből kettő létezik: Technika/űrkutatás/informatika és Mémek.)
+  - Kihagyható: **🧠 Filozófia · 🚀 Űrkutatás és informatika · 🎻 Komolyzene · 😂 Mémek és internetkultúra** – a 23-as listán már mind a négy létezik és kapcsolható a lobbyban. (A Filozófiában még nincs kérdés, a Komolyzenében 3 van – a kapcsoló attól még működik.)
   - **Vezérelv: családi játék.**
 - **Külön, rövidebb kategórialista a TIPPELŐS kérdéseknek.** Sok témában a tippelős kérdés erőltetett lenne, ezért csak a `tip:true` jelzőjű kategóriákba kell (és szabad) tippet írni. Több kategória közös tételként szerepelhet a tippsorsolásban a `tipg` csoportkulccsal.
   - **A lobby kategória-szűrője a tippekre NEM hat** – a tipplista mindig teljes. Így akkor is van elég tippelős kérdés, ha a szűrő szűkre van húzva (akár egyetlen kategóriára).
   - `isTipCat(cat)` / `tipKey(cat)` a segédfüggvények; a `catBag(mcPool, tipPool)` külön zsákot vezet a két típusnak (MC-nél kategóriánként, tippnél `tipg` szerint).
-  - Jelenlegi tipp-tételek (7): Magyar történelem · Világtörténelem · Természettudomány · **foldrajz** (magyar + világ) · **feltalalo** (magyar tudósok + technika/űrkutatás) · **film** (magyar film + magyar tévé + nemzetközi film) · **sport** (magyar + nemzetközi).
+  - Tipp-tételek (9, mind feltöltve ≥40 kérdésre): Magyar történelem (40) · Világtörténelem (40) · Állatok (40) · Növények és kertészet (40) · Fizika-kémia-biológia (40) · Sport (40) · **foldrajz** (magyar + világ, 41) · **feltalalo** (feltalálók + űrkutatás/informatika, 40) · **film** (magyar film-tévé + nemzetközi film, 53).
   - **Következmény:** a `tip:false` kategóriák meglévő tippelős kérdései nem kerülnek elő. Ez tudatos döntés, nem hiba.
 - **AI-szintek (`AI_TIERS`)** – a lobbyban három gomb (`#seg-ai`), a szint a játékoson `p.ai` (0/1/2):
 
@@ -99,14 +107,29 @@
   - A válasz nélkül lejárt idő **nem** kerül be sem a jó, sem a rossz statisztikába (csak tényleges válasz).
   - A 🙈 díj **relatív** hibában mér (`dist / max(1,|a|)`) – abszolút hibával a nagy számú kérdések (lakosság, távolság) mindig elnyomnák az évszámokat. A kérdés nyertesét nem büntetjük. Ez az egyetlen díj, ami `sub` részletező sort is kap („1 504 nap – a jó válasz 27 nap volt"); a kártya ilyenkor `wsub` osztályt kap.
 
-## Kérdésbázis (1000 kérdés)
+## Kérdésbázis (jelenleg 1074 kérdés = 561 mc + 513 tip, 23 kategória)
 
-- **20 kategória** (cat 1–20), 4 pillér: 1–5 magyar általános műveltség, 6–10 nemzetközi általános műveltség, 11–15 magyar popkultúra, 16–20 nemzetközi popkultúra. Csoportindex: `Math.floor((cat-1)/5)`.
-- Kategóriánként **50 kérdés = 30 mc + 20 tip**. Nehézség-eloszlás globálisan: **1★×100, 2★×200, 3★×400, 4★×200, 5★×100** (kategóriánként kb. mc [3,6,12,6,3] és tip [2,4,8,4,2]).
+- **A kódban a 23 kategóriás lista él** (cat 1–23, a 2026-08-08-i átállás óta). A part-fájlok: `part1_kat01-05.js` · `part2_kat06-10.js` · `part3_kat11-15.js` · `part4_kat16-19.js` · `part5_kat20-23.js`.
+- A `CATEGORIES` tömb a `src/questions/part1_kat01-05.js` elején él, egy sor egy kategória:
+  `{"id":16,"name":"…","icon":"🚀","tip":true,"tipg":"feltalalo","opt":true}`
+  – `tip` = szabad-e ide tippelős kérdést írni · `tipg` = közös tippsorsolási tétel kulcsa (hiányzik → saját tétel) · `opt` = kikapcsolható-e a lobbyban.
+- A 23 kategória: 1 🏰 Magyar történelem · 2 📜 Magyar irodalom · 3 🗺️ Magyarország földrajza · 4 🗣️ Magyar nyelv és szólások · 5 🎎 Magyar néphagyomány · 6 🌶️ Gasztronómia · 7 ⚔️ Világtörténelem · 8 🌍 Világföldrajz · 9 📖 Világirodalom · 10 🖼️ Képzőművészet · 11 🧠 Filozófia · 12 🦁 Állatok · 13 🌿 Növények és kertészet · 14 ⚗️ Fizika, kémia, biológia · 15 💡 Feltalálók és találmányok · 16 🚀 Űrkutatás és informatika · 17 🎬 Magyar film, tévé és sorozatok · 18 🎸 Magyar könnyűzene · 19 🎻 Komolyzene · 20 🍿 Nemzetközi filmek · 21 🎤 Nemzetközi popzene · 22 😂 Mémek és internetkultúra · 23 ⚽ Sport.
+- **Az átállás során eldobva:** a Videójátékok kategória (50), a nemzetközi sorozat-kérdések (13) és 6 duplikátum/szivárgó kérdés. A `tip:false` kategóriák tippjei (139 db) **megmaradtak a fájlokban** – nem kerülnek sorsolásba, de nem vesztek el.
+- Nehézség-eloszlás célja kategóriánként (40 kérdésnél): mc [4,8,16,8,4] és tip [4,8,16,8,4].
 - Formátum (`src/questions/part*.js`, a részek összefűzve adnak érvényes JS-t):
   - mc: `{cat, type:'mc', d, q, o:[4 opció], c:0}` — **a helyes válasz MINDIG az első opció** (`c:0`), a játék futásidőben kever.
   - tip: `{cat, type:'tip', d, q, a:<egész szám>, unit, note}` — évszámnál `unit:""`; a `note` az eredményhirdetésnél jelenik meg.
-- Új kérdésnél kötelező: időtálló, ellenőrzött tény (semmi „jelenlegi/aktuális”); egyértelműen EGY helyes válasz; hihető disztraktorok; nincs duplikáció (más kategóriákkal sem, és egy kérdés szövege ne árulja el egy másik válaszát); politikailag semleges, családbarát; a kvóták megtartása.
+- Új kérdésnél kötelező: időtálló, ellenőrzött tény (semmi „jelenlegi/aktuális”); egyértelműen EGY helyes válasz; hihető disztraktorok; nincs duplikáció (más kategóriákkal sem, és egy kérdés szövege – vagy note-ja – ne árulja el egy másik ÉLŐ kérdés válaszát); politikailag semleges, családbarát; a kvóták megtartása.
+
+## 🔜 FOLYAMATBAN: a 23 kategóriás célszámok feltöltése (átállás KÉSZ, ~398 mc írandó)
+
+**A 23 kategóriás átállás 2026-08-08-án megtörtént** (új `CATEGORIES`, átsorolt kérdések, újragenerált part-fájlok, zöld tesztek). **A 9 tippelős tétel is feltöltve** – tételenként legalább 40 kérdés (143 új tipp készült). A terv változatlanul a `design/kategoriak.md` + `design/tipp_kategoriak.md` fájlokban él.
+
+- **Vezérelv: családi játék** – a szülők generációja is tudja játszani. Ezért esett ki a Videójátékok és a nemzetközi sorozatok; a magyar tévé a 17-es kategóriába olvadt.
+- **Ami maradt: ~398 új „1 a 4-ből" kérdés.** Célszám 40/kategória; kivételek: 🌶️ Gasztronómia **70** (30 magyar + 40 nemzetközi), 🧠 Filozófia **25**, 🎻 Komolyzene **25**.
+- **Legnagyobb mc-lyukak:** Néphagyomány +40 · Gasztronómia +40 · Növények +39 · Állatok +35 · Világirodalom +27 · Filozófia +25 · Képzőművészet +25 · Komolyzene +22 · Nemz. filmek +18 · FKB +15 · Űrkutatás +15 · M. könnyűzene +11 · +10-esek (M.tört, M.irod, Mo. földrajza, M.nyelv, Világtört, Világföldrajz, Nemz. popzene, Mémek) · Feltalálók +6. A pontos táblázat: `design/kategoriak.md`.
+- **Nyitott kérdések a felhasználó felé:** (1) a Komolyzene 25 kérdésén belüli magyar/nemzetközi arány; (2) a Gasztronómia 40 nemzetközi kérdése inkább konyhák/ételek vagy alapanyagok legyen-e.
+- **Új mc-kérdések írásakor:** blokkokban érdemes haladni (kategóriánként), minden blokk után `python3 src/build.py` + `npm test`, és kötelező az átfedés-ellenőrzés a meglévő kérdésekkel (más kategóriák mc-i és tippjei ellen is).
 
 ## ⚔️ Hódítás mód (2 játékos, `settings.mode='conquest'`)
 
@@ -138,6 +161,7 @@ Térképes párbaj két választható pályán. Csapatkód: **1 = piros** (a hos
 - `npm run test:net` → `test_net.js` (klasszikus) és `test_conquest_net.js` (hódítás host+vendég a kis térképen, a két kliens állapotának egyezését is ellenőrzi), **helyi PeerJS szerverrel**: `node_modules/.bin/peerjs --port 9000 --host 127.0.0.1`, URL-hash: `#fast&srv=127.0.0.1:9000`.
 - Chromium a sandboxban: `executablePath: '/opt/pw-browsers/chromium'` (fallback: sima launch).
 - Teszt-hook a játékban: `window.__kv` (host/me/cq getter-setter); a globális függvények (pl. `finishQuestion`, `makeHost`, `cqPickList`, `cqTargets`) window-szintűek.
+- A `test_solo.js` kategória-egyenlőség ellenőrzése csak azokat a kategóriákat számolja, amelyekben VAN mc-kérdés (a Néphagyomány és a Filozófia még üres), és külön ellenőrzi, hogy üres kategória sosem kerül a pakliba.
 - `#fast` a hódítás módban is rövidít (MC 2,5 mp / tip 2,2 mp / választás 1,4 mp) – egy teljes játszma így ~70–110 mp.
 
 ## Ismert finomságok

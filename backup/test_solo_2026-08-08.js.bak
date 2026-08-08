@@ -181,13 +181,9 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
         if (q.type === 'mc') seenMc[q.cat] = (seenMc[q.cat] || 0) + 1;
         else seenTip[tipKey(q.cat)] = (seenTip[tipKey(q.cat)] || 0) + 1;
       } }
-    // csak azok a kategóriák számítanak, amelyekben VAN 4 válaszos kérdés
-    // (az új 23-as listán a Néphagyomány és a Filozófia még üres – ők nem jöhetnek)
-    const hasMc = {}; QUESTIONS.forEach(q => { if (q.type === 'mc') hasMc[q.cat] = 1; });
-    const mcC = []; for (let c = 1; c <= nCat; c++) if (hasMc[c]) mcC.push(seenMc[c] || 0);
-    out.emptyNever = []; for (let c = 1; c <= nCat; c++) if (!hasMc[c] && seenMc[c]) out.emptyNever.push(c);
-    const mcAvg = mcC.reduce((a, b) => a + b, 0) / mcC.length;
-    out.catFair = { cats: mcC.length, min: Math.min.apply(null, mcC), max: Math.max.apply(null, mcC),
+    const mcC = []; for (let c = 1; c <= nCat; c++) mcC.push(seenMc[c] || 0);
+    const mcAvg = mcC.reduce((a, b) => a + b, 0) / nCat;
+    out.catFair = { cats: nCat, min: Math.min.apply(null, mcC), max: Math.max.apply(null, mcC),
       avg: Math.round(mcAvg),
       spread: Math.round(100 * (Math.max.apply(null, mcC) - Math.min.apply(null, mcC)) / mcAvg) };
     // a tippelős saját, rövidebb listája – ott is egyenletesen
@@ -313,7 +309,6 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
     + logic.catFair.avg + ' (min ' + logic.catFair.min + ' / max ' + logic.catFair.max + ')');
   ck('minden kategória egyenlő eséllyel jön a 4 válaszosnál (szórás < 20%)', logic.catFair.spread < 20, true);
   ck('a 4 válaszos blokkban nem ismétlődik kategória, amíg mind sorra nem került', logic.noRepeat, true);
-  ck('üres (kérdés nélküli) kategória sosem kerül a pakliba', logic.emptyNever, []);
   console.log('    tippelős tételek (' + logic.tipFair.items + '): ' + logic.tipFair.keys.join(' · '));
   ck('a tippelős saját, rövidebb listája is egyenletes (szórás < 20%)', logic.tipFair.spread < 20, true);
   console.log('TIPPELŐS ÉRTÉK A MEZŐNY MÉRETE SZERINT (3★ = 100 pont):');
