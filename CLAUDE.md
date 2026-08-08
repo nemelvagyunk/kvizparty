@@ -59,6 +59,23 @@
 - **AI-időzítés – „Robot Idő Büntetés":** `AI_THINK` (1–2 mp) múlva **ténylegesen** válaszol, hogy sose kelljen rá várni; a `collectAnswer`-nek viszont `think + AI_LAG` (5–25 mp) időt ad át, a kérdés hosszára vágva. **Következmény:** az AI gyakorlatilag soha nem kap gyorsasági bónuszt és minden holtversenyt elveszít az emberrel szemben – ez szándékos.
 - `scheduleAI(p,q,dur)` és `aiTip(q,tier)` a szintet a `p.ai` alapján kapja (`aiTier(p)`).
 
+## Végi statisztikák – „A meccs díjai" (csak klasszikus mód)
+
+- Gyűjtő: `host.stats[pid] = {okMc, okTip, badMc, badTip, exact}` – a `finishQuestion()` tölti, `hostStart()`/`hostRematch()` üríti. A `p.best` (leghosszabb sorozat) a játékos-objektumon él.
+- `buildAwards()` állítja össze a listát, a `hostEnd()` küldi az `end` üzenet `awards` mezőjében; a kliens a `renderEnd()`-ben rendereli a végeredmény-lista alá.
+- Hat díj, mind **csak akkor jelenik meg, ha van érvényes birtokosa** (holtversenynél több név is szerepelhet):
+
+  | | Díj | Alap |
+  |---|---|---|
+  | ⚡ | Leggyorsabb helyes válasz · 1 a 4-ből | `min(okMc)` |
+  | 🎯 | Leggyorsabb nyerő tipp | `min(okTip)` – csak nyert tippekre |
+  | 🔥 | Leghosszabb sorozat | `max(p.best)`, csak ≥2 |
+  | 💯 | Legtöbb telitalálat | `max(exact)`, csak ≥1 |
+  | 🤦 | Leggyorsabb rossz válasz · 1 a 4-ből | `min(badMc)` |
+  | 🙈 | Leggyorsabb melléfogás · tippelős | `min(badTip)` – a nem nyertes tippek közül |
+
+- **Fontos részletek:** a telitalálat (`dist===0`) akkor is számít, ha a játékos a holtversenyt elvesztette; a válasz nélkül lejárt idő **nem** kerül be sem a jó, sem a rossz statisztikába (csak tényleges válasz).
+
 ## Kérdésbázis (1000 kérdés)
 
 - **20 kategória** (cat 1–20), 4 pillér: 1–5 magyar általános műveltség, 6–10 nemzetközi általános műveltség, 11–15 magyar popkultúra, 16–20 nemzetközi popkultúra. Csoportindex: `Math.floor((cat-1)/5)`.

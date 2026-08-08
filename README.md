@@ -77,6 +77,14 @@ Ennek a sorrendnek az a lényege, hogy a **sorozatod egyben építhető fel** a 
 
 A finálé alatt arany sáv jelzi a kérdés fölött, és a pontérték-jelző is a duplázott értéket mutatja.
 
+### 📊 A meccs díjai
+
+A végeredmény alatt hat díj jelenik meg (mindegyik csak akkor, ha van kire kiosztani):
+
+⚡ leggyorsabb helyes válasz · 🎯 leggyorsabb nyerő tipp · 🔥 leghosszabb sorozat · 💯 legtöbb telitalálat · 🤦 leggyorsabb rossz válasz · 🙈 leggyorsabb melléfogás tippelősön
+
+A gyorsasági díjak a „1 a 4-ből" és a tippelős kérdésekre külön mennek, és holtverseny esetén több név is szerepelhet.
+
 ## Kérdésbázis
 
 **1000 kérdés, 20 kategória** (kategóriánként 50), négy pillérre építve: magyar és nemzetközi általános műveltség, magyar és nemzetközi popkultúra. Nehézségi eloszlás: 1★×100, 2★×200, 3★×400, 4★×200, 5★×100. A lobbyban kategóriacsoportra és nehézségre is szűrhetsz.

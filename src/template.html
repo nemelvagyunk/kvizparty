@@ -154,6 +154,16 @@ input:focus{border-color:var(--acc);}
 .pod.p2 .base{height:80px;} .pod.p3 .base{height:58px;}
 .endlist{margin-top:8px;}
 .end-actions{display:flex; flex-direction:column; gap:10px; margin-top:20px;}
+.awards{margin-top:18px; display:flex; flex-direction:column; gap:7px;}
+.awards .hd{text-align:center; font-weight:800; font-size:.85rem; color:var(--dim);
+  letter-spacing:.1em; text-transform:uppercase; margin-bottom:2px;}
+.aw{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:1px 11px; align-items:center;
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.07);
+  border-radius:13px; padding:9px 13px;}
+.aw .ic{grid-row:1 / span 2; font-size:1.5rem; line-height:1;}
+.aw .ti{grid-column:2 / span 2; font-size:.75rem; font-weight:700; color:var(--dim); line-height:1.3;}
+.aw .wh{font-weight:800; font-size:.96rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.aw .vl{font-weight:900; color:#fbbf24; white-space:nowrap; font-size:.95rem;}
 #toast{position:fixed; top:14px; left:50%; transform:translateX(-50%); background:#1f2937; color:#fff; border:1px solid rgba(255,255,255,.2);
   padding:12px 20px; border-radius:14px; font-weight:700; opacity:0; pointer-events:none; transition:opacity .25s; z-index:99; max-width:90vw; text-align:center;}
 #toast.on{opacity:1;}
@@ -480,7 +490,7 @@ function sendToHost(msg){ try{ net.conn.send(msg); }catch(e){} }
 /* ---------------- host: szoba ---------------- */
 function makeHost(solo){
   return { solo, players:[], settings:{count:15, mode:'classic', mapKey:'big', groups:[true,true,true,true], diffs:[true,true,true,true,true]},
-    cq:null, cqPool:{mc:[],tip:[]},
+    cq:null, cqPool:{mc:[],tip:[]}, stats:{},
     phase:'lobby', deck:[], qi:-1, answers:{}, qData:null, qCorrectIndex:0, qDur:0,
     qDeadlineT:null, autoNextT:null, aiTimers:[], usedIds:new Set() };
 }
@@ -639,6 +649,7 @@ function hostStart(){
   if(host.deck.length<host.settings.count)
     toast('A szűrők miatt csak '+host.deck.length+' kérdés jött össze '+host.settings.count+' helyett.',4500);
   host.players.forEach(p=>{ p.score=0; p.streak=0; p.best=0; });
+  host.stats={};
   host.qi=-1;
   hostNext();
 }
@@ -675,6 +686,38 @@ function maybeAllAnswered(){
   const act=host.players.filter(p=>p.isAI||p.connected!==false);
   if(act.length && act.every(p=>host.answers[p.pid])) setTimeout(finishQuestion, FAST?150:600);
 }
+/* ---- Végi statisztikák: a host úgyis ismer minden adatot, csak eltesszük. ---- */
+function statOf(pid){
+  if(!host.stats) host.stats={};
+  if(!host.stats[pid]) host.stats[pid]={okMc:null, okTip:null, badMc:null, badTip:null, exact:0};
+  return host.stats[pid];
+}
+function statMin(cur,v){ return (cur==null||v<cur) ? v : cur; }
+function buildAwards(){
+  const S=host.stats||{}, out=[];
+  const P=pid=>host.players.find(x=>x.pid===pid)||{name:'?',avatar:'❓'};
+  const sec=ms=>((ms/1000).toFixed(1).replace('.',','))+' mp';
+  const add=(icon,title,get,wantMax,fmt,floor)=>{
+    let best=null, who=[];
+    for(const p of host.players){
+      const v=get(S[p.pid]||{}, p);
+      if(v==null) continue;
+      if(floor!=null && v<floor) continue;
+      if(best===null || (wantMax ? v>best : v<best)){ best=v; who=[p.pid]; }
+      else if(v===best) who.push(p.pid);
+    }
+    if(best!==null) out.push({icon, title, value:fmt(best),
+      names:who.map(x=>P(x).name), avatars:who.map(x=>P(x).avatar)});
+  };
+  add('⚡','Leggyorsabb helyes válasz · 1 a 4-ből', s=>s.okMc,  false, sec);
+  add('🎯','Leggyorsabb nyerő tipp',               s=>s.okTip, false, sec);
+  add('🔥','Leghosszabb sorozat',        (s,p)=>p.best||null,   true,  v=>v+' egymás után', 2);
+  add('💯','Legtöbb telitalálat',        s=>s.exact||null,      true,  v=>v+' db', 1);
+  add('🤦','Leggyorsabb rossz válasz · 1 a 4-ből', s=>s.badMc,  false, sec);
+  add('🙈','Leggyorsabb melléfogás · tippelős',    s=>s.badTip, false, sec);
+  return out;
+}
+
 function finishQuestion(){
   if(!host||host.phase!=='q') return;
   if(host.cq&&host.cq.on){ cqFinishQuestion(); return; }
@@ -694,6 +737,7 @@ function finishQuestion(){
       const prev=p.streak||0;
       p.streak = ok ? prev+1 : 0;                     // a sorozat csak MC-n épül és szakad
       p.best = Math.max(p.best||0, p.streak);
+      if(val!=null){ const st=statOf(p.pid); if(ok) st.okMc=statMin(st.okMc,ms); else st.badMc=statMin(st.badMc,ms); }
       if(ok){
         base = V+Math.max(0,Math.round(V*MC_SPEED_BONUS*(1-ms/host.qDur)));
         mult = streakMult(p.streak);
@@ -716,6 +760,11 @@ function finishQuestion(){
     for(const p of host.players){
       const c=cands.find(c=>c.pid===p.pid);
       const isW=!!(win&&win.pid===p.pid);
+      if(c){
+        const st=statOf(p.pid);
+        if(c.dist===0) st.exact++;                       // telitalálat akkor is, ha nem ő volt a gyorsabb
+        if(isW) st.okTip=statMin(st.okTip,c.ms); else st.badTip=statMin(st.badTip,c.ms);
+      }
       let pts=0;
       if(isW){ pts=V+(win.dist===0?Math.round(V*TIP_EXACT_BONUS):0); p.score+=pts; }
       results.push({pid:p.pid, val:c?c.val:null, ms:c?c.ms:null, dist:c?c.dist:null, pts, win:isW,
@@ -733,13 +782,13 @@ function hostAdvance(){ if(!host)return; clearTimeout(host.autoNextT); hostNext(
 function hostEnd(){
   host.phase='end';
   const ranking=playersMin().sort((a,b)=>b.score-a.score);
-  hostBroadcast({t:'end', ranking});
+  hostBroadcast({t:'end', ranking, awards:buildAwards()});
 }
 function hostRematch(){
   clearHostTimers();
   host.players=host.players.filter(p=>p.isAI||p.connected!==false);
   host.players.forEach(p=>{ p.score=0; p.streak=0; p.best=0; p.team=undefined; });
-  host.cq=null; host.phase='lobby'; host.qi=-1;
+  host.cq=null; host.stats={}; host.phase='lobby'; host.qi=-1;
   cqState=null; $('cq-wrap').classList.remove('on');
   hostBroadcast(hostLobbyMsg());
 }
@@ -1626,15 +1675,17 @@ function renderEnd(m){
       '<span class="nm">'+esc(p.name)+'</span><span class="scr">'+p.score+' pont</span>'+
       '<div class="base">'+(i+1)+'.</div></div>';
   }).join('');
-  const bestN=Math.max.apply(null,r.map(p=>p.best||0));
-  const bestWho=r.filter(p=>(p.best||0)===bestN);
+  const awards=(m.awards||[]).map(a=>
+    '<div class="aw"><span class="ic">'+a.icon+'</span>'+
+    '<span class="ti">'+esc(a.title)+'</span>'+
+    '<span class="wh">'+a.avatars.join('')+' '+esc(a.names.join(', '))+'</span>'+
+    '<span class="vl">'+esc(a.value)+'</span></div>').join('');
   $('end-list').innerHTML=r.map((p,i)=>
     '<div class="rrow'+(p.pid===me.pid?' me':'')+'"><span class="av">'+p.avatar+'</span>'+
     '<span class="nm">'+(i+1)+'. '+esc(p.name)+(p.isAI?' 🤖':'')+'</span>'+
     ((p.best||0)>=2?'<span class="strk">🔥'+p.best+'</span>':'')+
     '<span class="pts">'+p.score+' pont</span></div>').join('')+
-    (bestN>=2 ? '<div class="strk-line">🔥 Leghosszabb sorozat: '+
-       bestWho.map(p=>esc(p.name)).join(', ')+' ('+bestN+' helyes egymás után)</div>' : '');
+    (awards?'<div class="awards"><div class="hd">📊 A meccs díjai</div>'+awards+'</div>':'');
   $('end-actions').innerHTML= me.isHost
     ? '<button class="btn primary" id="btn-rematch">🔁 Új meccs (vissza a lobbyba)</button>'+
       '<button class="btn ghost" id="btn-exit">🏠 Főmenü</button>'

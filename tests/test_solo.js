@@ -173,6 +173,35 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
     }
     __kv.host.qFinal = false;
 
+    // 6) VÉGI STATISZTIKÁK – díjak
+    __kv.host.qFinal = false; __kv.host.stats = {};
+    __kv.host.players = [
+      { pid: 'A', name: 'Anna', avatar: '🦊', connected: true, score: 0, streak: 0, best: 0 },
+      { pid: 'B', name: 'Bea',  avatar: '🐼', connected: true, score: 0, streak: 0, best: 0 },
+      { pid: 'C', name: 'Cili', avatar: '🦁', connected: true, score: 0, streak: 0, best: 0 },
+    ];
+    const mcQ = (ans) => {
+      captured = []; __kv.host.phase = 'q'; __kv.host.qDur = 20000;
+      __kv.host.qData = { type: 'mc', d: 3, q: 'x', o: ['jó', 'r1', 'r2', 'r3'], c: 0, note: '' };
+      __kv.host.qCorrectIndex = 2; __kv.host.answers = ans;
+      finishQuestion(); clearTimeout(__kv.host.autoNextT);
+    };
+    const tipQ = (a, ans) => {
+      captured = []; __kv.host.phase = 'q'; __kv.host.qDur = 25000;
+      __kv.host.qData = { type: 'tip', d: 3, a, unit: '', note: '' };
+      __kv.host.answers = ans;
+      finishQuestion(); clearTimeout(__kv.host.autoNextT);
+    };
+    // MC: Anna gyors+jó (1,2s), Bea lassabb+jó, Cili villámgyorsan rossz (0,4s)
+    mcQ({ A: { value: 2, ms: 1200 }, B: { value: 2, ms: 8000 }, C: { value: 0, ms: 400 } });
+    mcQ({ A: { value: 2, ms: 3000 }, B: { value: 0, ms: 9000 }, C: { value: 2, ms: 7000 } });
+    // Anna 2 sorozatot épített; Bea megszakadt
+    // TIP: Bea nyer gyorsan (2,0s), Anna telitalálat de lassabb, Cili gyorsan mellé (0,9s)
+    tipQ(100, { A: { value: 100, ms: 6000 }, B: { value: 100, ms: 2000 }, C: { value: 5, ms: 900 } });
+    tipQ(50,  { A: { value: 55, ms: 4000 },  B: { value: 51, ms: 3000 }, C: { value: 900, ms: 1500 } });
+    out.awards = buildAwards().map(a => ({ t: a.title, who: a.names.join(','), v: a.value }));
+    out.statA = __kv.host.stats['A'];
+
     window.hostBroadcast = origBc;
     window.__kv.host = null;
     return out;
@@ -211,6 +240,16 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   ck('finálé + 5-ös sorozat (1,7×) = 340 pont', logic.finalStreakPts, 340);
   ck('a sorozat átível a tipp-blokkon: 10 MC → 6 tipp → dupla MC = 11. találat, 2,5×, 500 pont',
      logic.acrossTips, [11, 2.5, 500]);
+  console.log('VÉGI DÍJAK:');
+  const aw = Object.fromEntries(logic.awards.map(a => [a.t, a.who + ' / ' + a.v]));
+  logic.awards.forEach(a => console.log('    ' + a.t + ' → ' + a.who + ' (' + a.v + ')'));
+  ck('leggyorsabb helyes 1 a 4-ből', aw['Leggyorsabb helyes válasz · 1 a 4-ből'], 'Anna / 1,2 mp');
+  ck('leggyorsabb rossz 1 a 4-ből', aw['Leggyorsabb rossz válasz · 1 a 4-ből'], 'Cili / 0,4 mp');
+  ck('leggyorsabb nyerő tipp', aw['Leggyorsabb nyerő tipp'], 'Bea / 2,0 mp');
+  ck('leggyorsabb melléfogás tippen', aw['Leggyorsabb melléfogás · tippelős'], 'Cili / 0,9 mp');
+  ck('leghosszabb sorozat', aw['Leghosszabb sorozat'], 'Anna / 2 egymás után');
+  ck('legtöbb telitalálat (Anna és Bea is eltalálta a 100-at)',
+     aw['Legtöbb telitalálat'], 'Anna,Bea / 1 db');
   if (sf) { console.error('❌ ' + sf + ' hibás sorozat-ellenőrzés'); process.exitCode = 1; }
 
   // --- teljes szóló játék végigjátszása ---
