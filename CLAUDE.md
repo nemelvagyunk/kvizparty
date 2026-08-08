@@ -24,7 +24,7 @@
 - Kérdésérték nehézség szerint (`QVAL`): **1★=75, 2★=90, 3★=100, 4★=110, 5★=125 pont.**
 - MC: minden helyes válaszoló megkapja az értéket + gyorsasági bónusz max. **+20%** (`MC_SPEED_BONUS`). Tip: csak a nyertes kap pontot, telitalálatra **+25%** (`TIP_EXACT_BONUS`).
 - Időzítők: MC 20 mp, tip 25 mp; `#fast` hash-sel rövidítve (teszthez).
-- Lobby-beállítások: kérdésszám (10/15/20/30/50), 4 kategóriacsoport-kapcsoló, nehézségszűrő (1★–5★), AI hozzáadása (max 6 játékos összesen).
+- Lobby-beállítások: **játékmód (Klasszikus / Hódítás)**, kérdésszám (10/15/20/30/50 – hódításban rejtve), 4 kategóriacsoport-kapcsoló, nehézségszűrő (1★–5★), AI hozzáadása (max 6 játékos összesen).
 - **AI (közepes, nehézséghez skálázva):** MC-találat esélye `AI_MC_P=[0.85,0.72,0.60,0.45,0.32]` (d1..d5), tippszórás szorzó `AI_SPREAD=[0.55,0.75,1.00,1.40,1.90]`.
 
 ## Kérdésbázis (1000 kérdés)
@@ -36,12 +36,27 @@
   - tip: `{cat, type:'tip', d, q, a:<egész szám>, unit, note}` — évszámnál `unit:""`; a `note` az eredményhirdetésnél jelenik meg.
 - Új kérdésnél kötelező: időtálló, ellenőrzött tény (semmi „jelenlegi/aktuális”); egyértelműen EGY helyes válasz; hihető disztraktorok; nincs duplikáció (más kategóriákkal sem, és egy kérdés szövege ne árulja el egy másik válaszát); politikailag semleges, családbarát; a kvóták megtartása.
 
+## ⚔️ Hódítás mód (2 játékos, `settings.mode='conquest'`)
+
+Térképes párbaj: **13 terület + 2 vár**. Csapatkód: **1 = piros** (a host / szólóban az ember), **2 = kék**.
+
+- **Térkép:** `CQ_POS` (koordináták), `CQ_ADJ` (0-indexelt szomszédság, 30 él, szimmetrikus és összefüggő), `CQ_CASTLE_ADJ` (piros vár → 3,9; kék vár → 7,8). A térkép a felhasználó rajzából készült, képelemzéssel kiolvasva. A 6-os (idx 5) a legcentrálisabb, 8 szomszéddal.
+- **Állandók:** `CQ_MC_DUR` 35 mp, `CQ_TIP_DUR` 30 mp, `CQ_PICK_DUR` 20 mp, `CQ_CASTLE0`=100, `CQ_ATK_GAIN`=+25, `CQ_VAL_MAX`=150 (a várra nem vonatkozik), `CQ_DEF_BONUS`=+50, `CQ_ATTACKS`=6, `CQ_DRY_LIMIT`=6.
+- **FOGLALÁS fázis:** sorsolt kezdő, felváltva jelölnek területet (csak amire rálátnak – ha semmire, bármelyik szabadot; a másik kijelöltjét nem). MC-nél mindkét helyes válaszoló foglal, tippnél csak a nyertes (holtversenynél a gyorsabb). Terület értéke = `QVAL[d-1]`, **gyorsasági bónusz nélkül**. A kérdéstípus váltakozik (MC → tip → MC…), a választási sorrend fordulónként cserélődik. 1 szabad terület esetén nincs választás, és MC-nél is csak a leggyorsabb helyes válaszoló foglal.
+- **HARC fázis:** 6-6 támadás felváltva, kezd az, aki a foglalásnál másodikként választott. Mindig MC; ha **mindketten** tudják, tippelős döntő jön. Támadó nyer → foglalás, érték +25 (max 150). Védő nyer → a **védő vára** +50. Mindkettő rossz → nem történik semmi (a támadás elfogy). **Várat a bétában nem lehet támadni.**
+- **Végeredmény:** vár + birtokolt területek összege.
+- **Biztonsági szelep:** `CQ_DRY_LIMIT` egymást követő eredménytelen foglalás-forduló után a kijelölt területek gazdára találnak (különben AFK-nál végtelen ciklus lenne).
+- **Protokoll:** új `{t:'cq', st}` host-broadcast (teljes térképállapot minden változáskor) és `{t:'cqpick', idx}` vendég→host üzenet. A `question`/`reveal`/`end` üzenetek `cq:true` mezőt kapnak, és a kliens ilyenkor a `cqRender*` függvényekre ágazik. A `finishQuestion()` a `host.cq.on` flag alapján delegál a `cqFinishQuestion()`-nek, így a `collectAnswer`/`scheduleAI`/`maybeAllAnswered` változatlanul működik.
+- **Kliensállapot:** `cqState` (nem window-szintű, teszthez `window.__kv.cq`), térkép inline SVG-ként a `#cq-wrap`-ben, ami a `#s-game` képernyő tetején él.
+
 ## Tesztek (Playwright, `tests/`)
 
-- `npm test` → `test_solo.js` (pontozási logika ellenőrzése a `window.__kv` teszt-hookon át + teljes szóló játszma) és `test_diff.js` (nehézségszűrő + jelzés).
-- `npm run test:net` → `test_net.js`: host+vendég két böngésző-kontextben, **helyi PeerJS szerverrel**: `node_modules/.bin/peerjs --port 9000 --host 127.0.0.1`, URL-hash: `#fast&srv=127.0.0.1:9000`.
+- `npm test` → `test_solo.js` (pontozási logika a `window.__kv` teszt-hookon át + teljes szóló játszma), `test_diff.js` (nehézségszűrő + jelzés), `test_conquest.js` (hódítás: 22 logikai ellenőrzés + teljes szóló játszma AI ellen).
+- `npm run test:cq` → csak a hódítás mód.
+- `npm run test:net` → `test_net.js` (klasszikus) és `test_conquest_net.js` (hódítás host+vendég, a két kliens térképének egyezését is ellenőrzi), **helyi PeerJS szerverrel**: `node_modules/.bin/peerjs --port 9000 --host 127.0.0.1`, URL-hash: `#fast&srv=127.0.0.1:9000`.
 - Chromium a sandboxban: `executablePath: '/opt/pw-browsers/chromium'` (fallback: sima launch).
-- Teszt-hook a játékban: `window.__kv` (host/me getter-setter); a globális függvények (pl. `finishQuestion`, `makeHost`) window-szintűek.
+- Teszt-hook a játékban: `window.__kv` (host/me/cq getter-setter); a globális függvények (pl. `finishQuestion`, `makeHost`, `cqPickList`, `cqTargets`) window-szintűek.
+- `#fast` a hódítás módban is rövidít (MC 2,5 mp / tip 2,2 mp / választás 1,4 mp) – egy teljes játszma így ~70–110 mp.
 
 ## Ismert finomságok
 

@@ -8,6 +8,29 @@
 
 - **Online szoba (2–6 fő):** a host a *Szoba létrehozása* gombbal 4 jegyű kódot kap, a többiek a *Csatlakozás* mezőbe írják be. A kapcsolat közvetlen, böngészők közti (WebRTC/PeerJS), mindenki egyszerre válaszol a saját eszközén. A host AI-játékosokat is beültethet.
 - **Szóló mód:** azonnali játék 1–5 AI-ellenfél ellen, internetkapcsolat nélkül is.
+- **⚔️ Hódítás (2 fő):** térképes párbaj — lásd lent.
+
+## ⚔️ Hódítás mód (2 játékos)
+
+A lobbyban átkapcsolható játékmód, pontosan 2 játékossal (ember vagy AI). A pálya **13 területből** és **2 várból** áll: a piros vár balra, a kék jobbra. A várak alapból 100 pontot érnek.
+
+**1. TERÜLETFOGLALÁS.** Sorsolás dönti el, ki választ először. Minden fordulóban előbb az egyik, majd a másik játékos jelöl ki egy szabad területet — csak olyat, amelyik a saját várához vagy egy már megszerzett területéhez kapcsolódik. (Ha nincs ilyen, bármelyik szabad terület választható.) Ugyanazt a mezőt nem lehet kijelölni; ha már csak egy terület maradt, nincs választás. Ezután jön a kérdés:
+
+- **4 válaszos kérdés (35 mp):** aki eltalálja, megkapja a saját kijelölt területét — akár mindketten.
+- **Tippelős kérdés (30 mp):** csak a nyertes foglal, holtversenynél a gyorsabb.
+
+A terület annyit ér, amennyit a kérdés: **75 / 90 / 100 / 110 / 125 pont** a nehézség szerint. A két kérdéstípus váltakozik. A fázis addig tart, míg mind a 13 terület gazdára nem talál. A választási sorrend fordulónként cserélődik.
+
+**2. HARC.** Mindkét fél **6 alkalommal** támad, felváltva. Támadni csak olyan ellenséges területet lehet, amelyre a támadó rálát (a várából vagy valamelyik területéről). *A bétában a várakat nem lehet támadni.*
+
+| Kimenetel | Következmény |
+|---|---|
+| Támadó tud, védő nem | A terület gazdát cserél, és **+25 ponttal** többet ér (max. 150) |
+| Mindkettő tudja | **Tippelős kérdés dönt** – utána a fenti/lenti szabály él |
+| Védő tud, támadó nem | A **védő vára +50 pontot** kap (a várnak nincs plafonja) |
+| Egyik sem tudja | Nem történik semmi, a támadás viszont elfogy |
+
+A meccs végén a pontszám = **a saját várérték + az összes birtokolt terület értéke**.
 
 ## Kérdéstípusok és pontozás
 
@@ -26,13 +49,14 @@ A kérdés értéke a nehézségétől függ: **1★ = 75 · 2★ = 90 · 3★ =
 
 ## Fejlesztés
 
-A játék egyetlen fájlba fordul (`index.html`); a forrás a `src/` mappában van. Pushnál a GitHub Actions workflow automatikusan buildel és a GitHub Pages-re teszi az eredményt.
+A játék egyetlen fájlba fordul (`index.html`); a forrás a `src/` mappában van. A GitHub Pages a `main` branch gyökeréből szolgál ki, **nincs CI** — a buildelt `index.html`-t kell commitolni.
 
 ```bash
 npm install            # peerjs + fejlesztői függőségek
 python3 src/build.py   # src/template.html + src/questions/part*.js -> index.html
-npm test               # Playwright e2e: szóló játszma + nehézségszűrő
-npm run test:net       # hálózati teszt (helyi PeerJS szerverrel)
+npm test               # Playwright e2e: szóló játszma + nehézségszűrő + hódítás mód
+npm run test:cq        # csak a hódítás mód (logika + teljes játszma AI ellen)
+npm run test:net       # hálózati tesztek (helyi PeerJS szerverrel), klasszikus + hódítás
 ```
 
 Hasznos URL-hookok teszteléshez: `index.html#fast` (rövid időzítők), `#srv=127.0.0.1:9000` (saját PeerJS szerver a felhő helyett).
