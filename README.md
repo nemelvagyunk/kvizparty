@@ -46,11 +46,22 @@ A meccs végén a pontszám = **a saját várérték + az összes birtokolt ter�
 | | „1 a 4-ből” | Tippelős |
 |---|---|---|
 | Feladat | 4 opcióból a helyes kiválasztása | szám/évszám tippelése |
-| Ki kap pontot? | minden helyes válaszoló | a legközelebbi tipp gazdája |
+| Ki kap pontot? | minden helyes válaszoló | a legközelebbi tipp (4 fő felett a második is) |
 | Döntetlen | – | a **gyorsabb** tipp nyer |
 | Bónusz | gyorsasági bónusz max. +20% | telitalálat +25% |
 
 A kérdés értéke a nehézségétől függ: **1★ = 75 · 2★ = 90 · 3★ = 100 · 4★ = 110 · 5★ = 125 pont.**
+
+### 🎯 A tippelős kérdés a mezőny méretével együtt nő
+
+Minél többen tippelnek, annál nehezebb a legközelebbinek lenni — ezért annál többet is ér:
+
+| Játékosok | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|
+| A nyertes tipp értéke | alapérték | **+25%** | **+50%** | **+75%** | **kétszeres** |
+| A második legjobb tipp | – | – | alapérték | alapérték | alapérték |
+
+Egy 3★-os (100 pontos) tippelős kérdés tehát 6 játékosnál 200 pontot ér a győztesnek és 100-at a másodiknak. A telitalálat +25%-a már a megnövelt értékre jön, a dupla pontos fináléban pedig minden érték kétszereződik. A kérdés fölött mindig ki van írva, épp mennyiért megy a játék.
 
 ### 🔥 Sorozat-bónusz (klasszikus mód)
 

@@ -173,8 +173,45 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
     }
     __kv.host.qFinal = false;
 
-    // 6) VÉGI STATISZTIKÁK – díjak
-    __kv.host.qFinal = false; __kv.host.stats = {};
+    // 6) TIPPELŐS ÉRTÉK A MEZŐNY MÉRETE SZERINT
+    out.tipScale = {}; out.tipSecond = {};
+    const mkP = n => { const a=[]; for(let i=0;i<n;i++) a.push({pid:'P'+i,name:'P'+i,avatar:'🦊',connected:true,score:0,streak:0,best:0}); return a; };
+    for (let n = 2; n <= 6; n++) {
+      __kv.host.players = mkP(n);
+      __kv.host.qFinal = false;
+      __kv.host.qTipMult = tipMultNow();
+      __kv.host.qSecond  = activePlayers() >= TIP_SECOND_FROM;
+      captured = []; __kv.host.phase = 'q'; __kv.host.qDur = 25000;
+      __kv.host.qData = { type: 'tip', d: 3, a: 100, unit: '', note: '' };   // 3★ = 100 pont
+      // P0 a legközelebbi (101), P1 a második (103), a többiek távolabb
+      const ans = {}; for (let i = 0; i < n; i++) ans['P' + i] = { value: 101 + i * 2, ms: 1000 + i * 100 };
+      __kv.host.answers = ans;
+      finishQuestion(); clearTimeout(__kv.host.autoNextT);
+      const rr = captured.find(m => m.t === 'reveal').results;
+      out.tipScale[n]  = rr.find(r => r.win).pts;
+      out.tipSecond[n] = (rr.find(r => r.second) || { pts: 0 }).pts;
+    }
+    // telitalálat a skálázott értékre jön (+25%), 6 játékosnál: 200 * 1,25 = 250
+    __kv.host.players = mkP(6);
+    __kv.host.qFinal = false; __kv.host.qTipMult = tipMultNow(); __kv.host.qSecond = true;
+    captured = []; __kv.host.phase = 'q'; __kv.host.qDur = 25000;
+    __kv.host.qData = { type: 'tip', d: 3, a: 100, unit: '', note: '' };
+    { const ans = { P0: { value: 100, ms: 900 } }; for (let i = 1; i < 6; i++) ans['P' + i] = { value: 100 + i * 5, ms: 1000 + i * 50 }; __kv.host.answers = ans; }
+    finishQuestion(); clearTimeout(__kv.host.autoNextT);
+    out.tipExact6 = captured.find(m => m.t === 'reveal').results.find(r => r.win).pts;
+    // dupla pontos finálé: minden érték kétszerese (4 játékos: 150 -> 300, második 100 -> 200)
+    __kv.host.players = mkP(4);
+    __kv.host.qFinal = true; __kv.host.qTipMult = tipMultNow(); __kv.host.qSecond = true;
+    captured = []; __kv.host.phase = 'q'; __kv.host.qDur = 25000;
+    __kv.host.qData = { type: 'tip', d: 3, a: 100, unit: '', note: '' };
+    { const ans = {}; for (let i = 0; i < 4; i++) ans['P' + i] = { value: 101 + i * 2, ms: 1000 + i * 100 }; __kv.host.answers = ans; }
+    finishQuestion(); clearTimeout(__kv.host.autoNextT);
+    { const rr = captured.find(m => m.t === 'reveal').results;
+      out.tipFinal4 = [rr.find(r => r.win).pts, rr.find(r => r.second).pts]; }
+    __kv.host.qFinal = false; __kv.host.qTipMult = 1; __kv.host.qSecond = false;
+
+    // 7) VÉGI STATISZTIKÁK – díjak
+    __kv.host.qFinal = false; __kv.host.stats = {}; __kv.host.qTipMult = 1; __kv.host.qSecond = false;
     __kv.host.players = [
       { pid: 'A', name: 'Anna', avatar: '🦊', connected: true, score: 0, streak: 0, best: 0 },
       { pid: 'B', name: 'Bea',  avatar: '🐼', connected: true, score: 0, streak: 0, best: 0 },
@@ -242,6 +279,11 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   ck('finálé + 5-ös sorozat (1,7×) = 340 pont', logic.finalStreakPts, 340);
   ck('a sorozat átível a tipp-blokkon: 10 MC → 6 tipp → dupla MC = 11. találat, 2,5×, 500 pont',
      logic.acrossTips, [11, 2.5, 500]);
+  console.log('TIPPELŐS ÉRTÉK A MEZŐNY MÉRETE SZERINT (3★ = 100 pont):');
+  ck('nyertes értéke 2–6 játékosnál', logic.tipScale, { 2: 100, 3: 125, 4: 150, 5: 175, 6: 200 });
+  ck('második legjobb tipp (csak 4 játékostól, normál kérdésérték)', logic.tipSecond, { 2: 0, 3: 0, 4: 100, 5: 100, 6: 100 });
+  ck('telitalálat a skálázott értékre jön (6 fő: 200 + 25% = 250)', logic.tipExact6, 250);
+  ck('dupla pontos fináléban minden érték kétszeres (4 fő: 300 / 200)', logic.tipFinal4, [300, 200]);
   console.log('VÉGI DÍJAK:');
   const aw = Object.fromEntries(logic.awards.map(a => [a.t, a.who + ' / ' + a.v]));
   logic.awards.forEach(a => console.log('    ' + a.t + ' → ' + a.who + ' (' + a.v + ')'));

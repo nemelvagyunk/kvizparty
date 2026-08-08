@@ -107,6 +107,9 @@ input:focus{border-color:var(--acc);}
 .tiprow input{flex:1; font-size:1.4rem; font-weight:800; text-align:center;}
 .tiprow .unit{color:var(--dim); font-weight:700; min-width:40px;}
 .tiprow .btn{width:auto; padding:13px 22px;}
+.tipprize{text-align:center; font-size:.88rem; color:var(--dim); font-weight:600; margin-bottom:2px;}
+.tipprize b{color:#fbbf24; font-weight:900;}
+.rrow.second{background:rgba(148,163,184,.16); border:1px solid rgba(203,213,225,.3);}
 .sentmsg{text-align:center; font-weight:800; color:#a7f3d0; font-size:1.1rem; margin-top:8px;}
 #g-status{display:flex; gap:8px; flex-wrap:wrap; margin-top:18px; justify-content:center;}
 .stav{display:flex; flex-direction:column; align-items:center; font-size:.7rem; color:var(--dim); gap:2px; opacity:.45; transition:opacity .2s;}
@@ -120,14 +123,23 @@ input:focus{border-color:var(--acc);}
 .rev-correct b{color:#fbbf24;}
 .rev-note{color:var(--dim); font-size:.85rem; margin-bottom:12px;}
 .rev-tie{color:#f472b6; font-weight:700; font-size:.9rem; margin:4px 0 8px;}
-.rrow{display:flex; align-items:center; gap:10px; padding:7px 10px; border-radius:12px; margin:4px 0; background:rgba(255,255,255,.05); font-size:.98rem;}
+.rrow{display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:12px; margin:4px 0; background:rgba(255,255,255,.05); font-size:.98rem;}
 .rrow.win{background:rgba(34,197,94,.16); border:1px solid rgba(34,197,94,.4);}
 .rrow.me{outline:1px dashed rgba(255,255,255,.35);}
 .rrow .av{font-size:1.25rem;}
-.rrow .nm{font-weight:700; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-.rrow .val{font-weight:800;}
-.rrow .tm{color:var(--dim); font-size:.8rem; min-width:44px; text-align:right;}
-.rrow .pts{font-weight:900; color:var(--good); min-width:44px; text-align:right;}
+.rrow .nm{font-weight:700; flex:1 1 auto; min-width:62px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.rrow .val{font-weight:800; white-space:nowrap; flex:0 0 auto;}
+.rrow .rk{flex:0 0 auto; font-size:1rem;}
+.rrow .tm{color:var(--dim); font-size:.76rem; min-width:38px; text-align:right; flex:0 0 auto;}
+.rrow .pts{font-weight:900; color:var(--good); min-width:44px; text-align:right; flex:0 0 auto;}
+@media (max-width:405px){
+  .rrow{font-size:.88rem; gap:6px; padding:6px 8px;}
+  .rrow .av{font-size:1.1rem;}
+  .rrow .nm{min-width:46px;}
+  .rrow .tm{min-width:30px; font-size:.68rem;}
+  .rrow .pts{min-width:38px;}
+  .rrow .rk{font-size:.9rem;}
+}
 .rrow .pts.zero{color:var(--dim); font-weight:600;}
 .rrow .strk{font-size:.78rem; font-weight:800; color:#fbbf24; white-space:nowrap;}
 .sc .fl{color:#fbbf24; font-weight:900; margin-left:2px;}
@@ -2122,6 +2134,13 @@ const MAXP = 6;
 const QVAL = [75, 90, 100, 110, 125];
 const MC_SPEED_BONUS = 0.20;   // "1 a 4-ből": max +20% gyorsasági bónusz
 const TIP_EXACT_BONUS = 0.25;  // tippelős: telitalálat +25%
+/* Tippelős kérdésérték a mezőny méretétől függően (klasszikus mód):
+   minél többen tippelnek, annál nehezebb a legközelebbinek lenni, ezért többet is ér.
+   4 játékostól a MÁSODIK legjobb tipp is pontot kap: pontosan a normál kérdésértéket. */
+const TIP_PLAYER_MULT = {2:1.00, 3:1.25, 4:1.50, 5:1.75, 6:2.00};
+const TIP_SECOND_FROM = 4;
+function activePlayers(){ return host.players.filter(p=>p.isAI||p.connected!==false).length; }
+function tipMultNow(){ return TIP_PLAYER_MULT[Math.max(2,Math.min(6,activePlayers()))]; }
 /* Sorozat-bónusz (CSAK a klasszikus módban, CSAK a „4 válaszos” kérdéseken).
    Az n-edik egymás utáni helyes válasz szorzója; a 9. után nem nő tovább.
    A tippelős kérdés semleges: nem folytatja és nem is töri meg a sorozatot,
@@ -2452,10 +2471,14 @@ function hostNext(){
   const dur=q.type==='mc'?MC_DUR:TIP_DUR;
   host.qDur=dur;
   host.qFinal = host.qi >= (host.finalFrom!=null?host.finalFrom:Infinity);
+  const baseV = QVAL[(q.d||3)-1]*(host.qFinal?2:1);
+  host.qTipMult = tipMultNow();                       // a kérdés indulásakor rögzítjük
+  host.qSecond  = activePlayers()>=TIP_SECOND_FROM;
   const msg={t:'question', qi:host.qi, total:host.deck.length, cat:{name:cat.name,icon:cat.icon},
              type:q.type, d:q.d, q:q.q, dur, players:playersMin(), last:host.qi===host.deck.length-1,
              final:host.qFinal, finalLen:finalLen(host.deck.length),
-             val:QVAL[(q.d||3)-1]*(host.qFinal?2:1)};
+             val: q.type==='tip' ? Math.round(baseV*host.qTipMult) : baseV,
+             val2: (q.type==='tip'&&host.qSecond) ? baseV : 0};
   if(q.type==='mc'){ const order=shuffle([0,1,2,3]); msg.options=order.map(i=>q.o[i]); host.qCorrectIndex=order.indexOf(0); }
   else msg.unit=q.unit||'';
   hostBroadcast(msg);
@@ -2556,12 +2579,15 @@ function finishQuestion(){
       if(a&&typeof a.value==='number'&&isFinite(a.value))
         cands.push({pid:p.pid,val:a.value,ms:a.ms,dist:Math.abs(a.value-q.a)});
     }
-    let win=null;
-    for(const c of cands){ if(!win||c.dist<win.dist||(c.dist===win.dist&&c.ms<win.ms)) win=c; }
+    const ranked=cands.slice().sort((a,b)=>(a.dist-b.dist)||(a.ms-b.ms));
+    const win=ranked[0]||null;
+    const second=(host.qSecond&&ranked.length>1)?ranked[1]:null;
     if(win) tie=cands.filter(c=>c.dist===win.dist).length>1;
+    const Vwin=Math.round(V*(host.qTipMult||1));       // a mezőny méretével skálázott érték
     for(const p of host.players){
       const c=cands.find(c=>c.pid===p.pid);
       const isW=!!(win&&win.pid===p.pid);
+      const isS=!!(second&&second.pid===p.pid);
       if(c){
         const st=statOf(p.pid);
         if(c.dist===0) st.exact++;                       // telitalálat akkor is, ha nem ő volt a gyorsabb
@@ -2574,8 +2600,9 @@ function finishQuestion(){
         }
       }
       let pts=0;
-      if(isW){ pts=V+(win.dist===0?Math.round(V*TIP_EXACT_BONUS):0); p.score+=pts; }
-      results.push({pid:p.pid, val:c?c.val:null, ms:c?c.ms:null, dist:c?c.dist:null, pts, win:isW,
+      if(isW){ pts=Vwin+(win.dist===0?Math.round(Vwin*TIP_EXACT_BONUS):0); p.score+=pts; }
+      else if(isS){ pts=V; p.score+=pts; }             // a második legjobb tipp a normál kérdésértéket kapja
+      results.push({pid:p.pid, val:c?c.val:null, ms:c?c.ms:null, dist:c?c.dist:null, pts, win:isW, second:isS,
                     base:pts, mult:1, streak:p.streak||0});
     }
   }
@@ -3081,7 +3108,11 @@ function renderQuestion(m){
       '</div><div class="sentmsg" id="sentmsg"></div>';
     document.querySelectorAll('.mcbtn').forEach(b=>b.onclick=()=>submitMC(+b.dataset.i));
   } else {
-    $('g-answers').innerHTML='<div class="tipbox"><div class="tiprow">'+
+    const prize = m.val
+      ? '<div class="tipprize">🎯 A legközelebbi tipp <b>'+m.val+' pont</b>'+
+        (m.val2?' · a második legjobb <b>'+m.val2+' pont</b>':'')+'</div>'
+      : '';
+    $('g-answers').innerHTML='<div class="tipbox">'+prize+'<div class="tiprow">'+
       '<input type="number" step="any" inputmode="decimal" id="tip-inp" placeholder="Tipped…">'+
       '<span class="unit">'+esc(m.unit||'')+'</span>'+
       '<button class="btn primary" id="tip-btn">🎯 Tippelek!</button></div>'+
@@ -3347,7 +3378,7 @@ function cqRenderReveal(m){
     let val;
     if(m.type==='mc') val=(r.val==null)?'–':(SHAPES[r.val]+(r.ok?' ✔':' ✘'));
     else val=(r.val==null)?'– nem tippelt'
-      :(fmtNum(r.val)+(r.dist>0?' <span style="color:var(--dim)">(±'+fmtNum(r.dist)+')</span>':(r.dist===0?' 🎯':'')));
+      :(fmtNum(r.val)+(r.dist>0?' <span style="color:var(--dim);font-size:.85em">(±'+fmtNum(r.dist)+')</span>':(r.dist===0?' 🎯':'')));
     const tm=(r.ms!=null)?((r.ms/1000).toFixed(1)+'s'):'';
     return '<div class="rrow'+(r.pid===me.pid?' me':'')+'"><span class="av">'+p.avatar+'</span>'+
       '<span class="nm">'+esc(p.name)+'<span class="cq-tag t'+r.team+'">'+(r.team===1?'piros':'kék')+'</span></span>'+
@@ -3434,12 +3465,13 @@ function renderReveal(m){
     const p=pinfo(r.pid);
     let val;
     if(m.type==='mc') val=(r.val==null)?'–':(SHAPES[r.val]+(r.ok?' ✔':' ✘'));
-    else val=(r.val==null)?'– nem tippelt':(fmtNum(r.val)+(r.dist!=null&&r.dist>0?' <span style="color:var(--dim)">(±'+fmtNum(r.dist)+')</span>':r.dist===0?' 🎯':''));
+    else val=(r.val==null)?'– nem tippelt':(fmtNum(r.val)+(r.dist!=null&&r.dist>0?' <span style="color:var(--dim);font-size:.85em">(±'+fmtNum(r.dist)+')</span>':r.dist===0?' 🎯':''));
     const tm=(r.ms!=null)?((r.ms/1000).toFixed(1)+'s'):'';
     const pts=r.pts>0?('+'+r.pts):'0';
     const strk=(r.mult>1)?'<span class="strk">🔥'+fmtMult(r.mult)+'</span>':'';
-    return '<div class="rrow'+(r.win?' win':'')+(r.pid===me.pid?' me':'')+'">'+
-      '<span class="av">'+p.avatar+'</span><span class="nm">'+esc(p.name)+(r.win?' 👑':'')+'</span>'+
+    const rk=r.win?'<span class="rk">👑</span>':(r.second?'<span class="rk">🥈</span>':'');
+    return '<div class="rrow'+(r.win?' win':(r.second?' second':''))+(r.pid===me.pid?' me':'')+'">'+
+      '<span class="av">'+p.avatar+'</span><span class="nm">'+esc(p.name)+'</span>'+rk+
       '<span class="val">'+val+'</span><span class="tm">'+tm+'</span>'+strk+
       '<span class="pts'+(r.pts>0?'':' zero')+'">'+pts+'</span></div>';
   }).join('');

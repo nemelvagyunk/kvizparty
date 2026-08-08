@@ -22,7 +22,17 @@
 
 - Két kérdéstípus: **„1 a 4-ből”** (mc) és **tippelős** (tip; számot tippel mindenki, a legközelebbi nyer, **egyenlőségnél a gyorsabb**).
 - Kérdésérték nehézség szerint (`QVAL`): **1★=75, 2★=90, 3★=100, 4★=110, 5★=125 pont.**
-- MC: minden helyes válaszoló megkapja az értéket + gyorsasági bónusz max. **+20%** (`MC_SPEED_BONUS`). Tip: csak a nyertes kap pontot, telitalálatra **+25%** (`TIP_EXACT_BONUS`).
+- MC: minden helyes válaszoló megkapja az értéket + gyorsasági bónusz max. **+20%** (`MC_SPEED_BONUS`).
+- **Tippelős érték a mezőny méretével skálázva (`TIP_PLAYER_MULT`) – csak klasszikus mód:**
+
+  | aktív játékos | 2 | 3 | 4 | 5 | 6 |
+  |---|---|---|---|---|---|
+  | nyertes szorzója | 1,00× | 1,25× | 1,50× | 1,75× | 2,00× |
+  | 2. legjobb tipp | – | – | 1,00× | 1,00× | 1,00× |
+
+  `TIP_SECOND_FROM`=4. A telitalálat **+25%** (`TIP_EXACT_BONUS`) a **skálázott** nyertes-értékre jön (6 fő, 3★: 200 + 25% = 250). A második helyezett fixen a normál kérdésértéket kapja, telitalálat-bónusz nélkül. A dupla pontos fináléban `V` már duplázott, tehát minden érték automatikusan kétszereződik (4 fő: 300 / 200).
+  - „Aktív játékos" = `activePlayers()` (AI + kapcsolódott emberek), 2–6 közé klampolva. A szorzót a `hostNext()` rögzíti (`host.qTipMult`, `host.qSecond`), hogy a kiírt és a kiosztott érték biztosan egyezzen akkor is, ha közben kilép valaki.
+  - A `question` üzenet `val` (nyertes) és `val2` (2. hely, 0 ha nincs) mezőt kap; a kliens a tipp-mező fölött írja ki. A `reveal` sorokban új `second` mező (🥈 + halvány kiemelés).
 - **Sorozat-bónusz (`STREAK_MULT`) – CSAK a klasszikus módban:** `[1.00, 1.10, 1.30, 1.50, 1.70, 1.90, 2.10, 2.30, 2.50]`, az n-edik egymás utáni helyes válasz szorzója; a 9. után **plafon 2,50×**. `streakMult(n)` klampol.
   - A sorozat **kizárólag a 4 válaszos kérdéseken épül és szakad meg**. A **tippelős semleges**: nem folytatja, nem töri meg, és a rajta szerzett pont **nem kap szorzót** (`mult:1`).
   - A szorzó a teljes MC-pontra megy (alapérték + gyorsasági bónusz), kerekítve: `Math.round(base*mult)`.
