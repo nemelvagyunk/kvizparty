@@ -199,7 +199,9 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
     // TIP: Bea nyer gyorsan (2,0s), Anna telitalálat de lassabb, Cili gyorsan mellé (0,9s)
     tipQ(100, { A: { value: 100, ms: 6000 }, B: { value: 100, ms: 2000 }, C: { value: 5, ms: 900 } });
     tipQ(50,  { A: { value: 55, ms: 4000 },  B: { value: 51, ms: 3000 }, C: { value: 900, ms: 1500 } });
-    out.awards = buildAwards().map(a => ({ t: a.title, who: a.names.join(','), v: a.value }));
+    // nagy számú kérdés: abszolút hibában ez lenne a legnagyobb, de relatívban NEM (2%)
+    tipQ(9600000, { A: { value: 9400000, ms: 5000 }, B: { value: 9600000, ms: 4000 }, C: { value: 9000000, ms: 3000 } });
+    out.awards = buildAwards().map(a => ({ t: a.title, who: a.names.join(','), v: a.value, sub: a.sub || null }));
     out.statA = __kv.host.stats['A'];
 
     window.hostBroadcast = origBc;
@@ -246,10 +248,13 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   ck('leggyorsabb helyes 1 a 4-ből', aw['Leggyorsabb helyes válasz · 1 a 4-ből'], 'Anna / 1,2 mp');
   ck('leggyorsabb rossz 1 a 4-ből', aw['Leggyorsabb rossz válasz · 1 a 4-ből'], 'Cili / 0,4 mp');
   ck('leggyorsabb nyerő tipp', aw['Leggyorsabb nyerő tipp'], 'Bea / 2,0 mp');
-  ck('leggyorsabb melléfogás tippen', aw['Leggyorsabb melléfogás · tippelős'], 'Cili / 0,9 mp');
+  ck('legnagyobb melléfogás relatív hibában (Cili: 50 helyett 900 = 17×)',
+     aw['Legnagyobb melléfogás · tippelős'], 'Cili / 17× mellé');
+  ck('a nagy számú kérdés 200 000-es abszolút hibája NEM viszi el a díjat',
+     logic.awards.find(a => a.t.indexOf('melléfogás') >= 0).sub, '900 – a jó válasz 50 volt');
   ck('leghosszabb sorozat', aw['Leghosszabb sorozat'], 'Anna / 2 egymás után');
-  ck('legtöbb telitalálat (Anna és Bea is eltalálta a 100-at)',
-     aw['Legtöbb telitalálat'], 'Anna,Bea / 1 db');
+  ck('legtöbb telitalálat (Bea kétszer is pontosan eltalálta)',
+     aw['Legtöbb telitalálat'], 'Bea / 2 db');
   if (sf) { console.error('❌ ' + sf + ' hibás sorozat-ellenőrzés'); process.exitCode = 1; }
 
   // --- teljes szóló játék végigjátszása ---

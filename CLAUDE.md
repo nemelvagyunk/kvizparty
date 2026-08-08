@@ -61,7 +61,7 @@
 
 ## Végi statisztikák – „A meccs díjai" (csak klasszikus mód)
 
-- Gyűjtő: `host.stats[pid] = {okMc, okTip, badMc, badTip, exact}` – a `finishQuestion()` tölti, `hostStart()`/`hostRematch()` üríti. A `p.best` (leghosszabb sorozat) a játékos-objektumon él.
+- Gyűjtő: `host.stats[pid] = {okMc, okTip, badMc, miss, exact}` – a `finishQuestion()` tölti, `hostStart()`/`hostRematch()` üríti. A `p.best` (leghosszabb sorozat) a játékos-objektumon él.
 - `buildAwards()` állítja össze a listát, a `hostEnd()` küldi az `end` üzenet `awards` mezőjében; a kliens a `renderEnd()`-ben rendereli a végeredmény-lista alá.
 - Hat díj, mind **csak akkor jelenik meg, ha van érvényes birtokosa** (holtversenynél több név is szerepelhet):
 
@@ -72,9 +72,12 @@
   | 🔥 | Leghosszabb sorozat | `max(p.best)`, csak ≥2 |
   | 💯 | Legtöbb telitalálat | `max(exact)`, csak ≥1 |
   | 🤦 | Leggyorsabb rossz válasz · 1 a 4-ből | `min(badMc)` |
-  | 🙈 | Leggyorsabb melléfogás · tippelős | `min(badTip)` – a nem nyertes tippek közül |
+  | 🙈 | Legnagyobb melléfogás · tippelős | `max(miss.rel)` – **relatív** hiba (`dist/|a|`), csak nem nyertes tippekre |
 
-- **Fontos részletek:** a telitalálat (`dist===0`) akkor is számít, ha a játékos a holtversenyt elvesztette; a válasz nélkül lejárt idő **nem** kerül be sem a jó, sem a rossz statisztikába (csak tényleges válasz).
+- **Fontos részletek:**
+  - A telitalálat (`dist===0`) akkor is számít, ha a játékos a holtversenyt elvesztette.
+  - A válasz nélkül lejárt idő **nem** kerül be sem a jó, sem a rossz statisztikába (csak tényleges válasz).
+  - A 🙈 díj **relatív** hibában mér (`dist / max(1,|a|)`) – abszolút hibával a nagy számú kérdések (lakosság, távolság) mindig elnyomnák az évszámokat. A kérdés nyertesét nem büntetjük. Ez az egyetlen díj, ami `sub` részletező sort is kap („1 504 nap – a jó válasz 27 nap volt"); a kártya ilyenkor `wsub` osztályt kap.
 
 ## Kérdésbázis (1000 kérdés)
 

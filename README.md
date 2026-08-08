@@ -81,9 +81,11 @@ A finálé alatt arany sáv jelzi a kérdés fölött, és a pontérték-jelző 
 
 A végeredmény alatt hat díj jelenik meg (mindegyik csak akkor, ha van kire kiosztani):
 
-⚡ leggyorsabb helyes válasz · 🎯 leggyorsabb nyerő tipp · 🔥 leghosszabb sorozat · 💯 legtöbb telitalálat · 🤦 leggyorsabb rossz válasz · 🙈 leggyorsabb melléfogás tippelősön
+⚡ leggyorsabb helyes válasz · 🎯 leggyorsabb nyerő tipp · 🔥 leghosszabb sorozat · 💯 legtöbb telitalálat · 🤦 leggyorsabb rossz válasz · 🙈 legnagyobb melléfogás tippelősön
 
 A gyorsasági díjak a „1 a 4-ből" és a tippelős kérdésekre külön mennek, és holtverseny esetén több név is szerepelhet.
+
+A 🙈 díj **arányos hibát** mér, nem abszolútat — így nem az nyeri, aki egy milliós nagyságrendű kérdésnél tévedett százezret, hanem aki tényleg nagyot: *„1 504 nap – a jó válasz 27 nap volt"*.
 
 ## Kérdésbázis
 
