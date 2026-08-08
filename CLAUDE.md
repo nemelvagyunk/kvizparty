@@ -14,9 +14,9 @@
 ## Jelenlegi állapot (röviden)
 
 **Éles, tesztelt és kész** (120+ ellenőrzés zöld + mindkét hálózati teszt):
-Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő Büntetéssel · sorozat-bónusz · dupla pontos finálé · fix pakli-terv (10/15/20/30) · kategória-sorsolás + 10 mp visszaszámlálás · tipp-érték skálázás a létszámmal · végi díjátadó · egyszerűsített kategória-szűrő külön tipp-zsákkal · **23 kategóriás kérdésbázis (2026-08-08 óta), mind a 9 tippelős tétel feltöltve (tételenként ≥40)**.
+Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő Büntetéssel · sorozat-bónusz · dupla pontos finálé · fix pakli-terv (10/15/20/30) · kategória-sorsolás + 10 mp visszaszámlálás · tipp-érték skálázás a létszámmal · végi díjátadó · egyszerűsített kategória-szűrő külön tipp-zsákkal · **teljes 23 kategóriás kérdésbázis (2026-08-08): minden kategória elérte a célszámát, mind a 9 tippelős tétel feltöltve**.
 
-**Nyitott, még nem kódolt:** ~398 új „1 a 4-ből" kérdés megírása a 23 kategóriás célszámokhoz – lásd a „🔜 FOLYAMATBAN" szekciót lent.
+**A kérdésbázis-terv LEZÁRVA** – nincs nyitott írási feladat. A felhasználó döntései az utolsó körből: Komolyzene fele magyar / fele nemzetközi (megvalósítva ~12/13 arányban) · a Gasztronómia nemzetközi része vegyes (konyhák, ételek és alapanyagok).
 
 ## Architektúra
 
@@ -107,9 +107,10 @@ Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő
   - A válasz nélkül lejárt idő **nem** kerül be sem a jó, sem a rossz statisztikába (csak tényleges válasz).
   - A 🙈 díj **relatív** hibában mér (`dist / max(1,|a|)`) – abszolút hibával a nagy számú kérdések (lakosság, távolság) mindig elnyomnák az évszámokat. A kérdés nyertesét nem büntetjük. Ez az egyetlen díj, ami `sub` részletező sort is kap („1 504 nap – a jó válasz 27 nap volt"); a kártya ilyenkor `wsub` osztályt kap.
 
-## Kérdésbázis (jelenleg 1074 kérdés = 561 mc + 513 tip, 23 kategória)
+## Kérdésbázis (1472 kérdés = 959 mc + 513 tip, 23 kategória – KÉSZ)
 
-- **A kódban a 23 kategóriás lista él** (cat 1–23, a 2026-08-08-i átállás óta). A part-fájlok: `part1_kat01-05.js` · `part2_kat06-10.js` · `part3_kat11-15.js` · `part4_kat16-19.js` · `part5_kat20-23.js`.
+- **A kódban a 23 kategóriás lista él** (cat 1–23, a 2026-08-08-i átállás óta; ugyanaznap készült el a 398 új mc is). A part-fájlok: `part1_kat01-05.js` · `part2_kat06-10.js` · `part3_kat11-15.js` · `part4_kat16-19.js` · `part5_kat20-23.js`.
+- **Minden kategória a célszámán áll:** 40 mc/kategória, kivéve Gasztronómia 70 (30 magyar + 40 nemzetközi), Filozófia 25, Komolyzene 25, M. film 59, Sport 60 (utóbbi kettő a cél fölött). Tipp: mind a 9 tétel ≥40.
 - A `CATEGORIES` tömb a `src/questions/part1_kat01-05.js` elején él, egy sor egy kategória:
   `{"id":16,"name":"…","icon":"🚀","tip":true,"tipg":"feltalalo","opt":true}`
   – `tip` = szabad-e ide tippelős kérdést írni · `tipg` = közös tippsorsolási tétel kulcsa (hiányzik → saját tétel) · `opt` = kikapcsolható-e a lobbyban.
@@ -121,15 +122,14 @@ Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő
   - tip: `{cat, type:'tip', d, q, a:<egész szám>, unit, note}` — évszámnál `unit:""`; a `note` az eredményhirdetésnél jelenik meg.
 - Új kérdésnél kötelező: időtálló, ellenőrzött tény (semmi „jelenlegi/aktuális”); egyértelműen EGY helyes válasz; hihető disztraktorok; nincs duplikáció (más kategóriákkal sem, és egy kérdés szövege – vagy note-ja – ne árulja el egy másik ÉLŐ kérdés válaszát); politikailag semleges, családbarát; a kvóták megtartása.
 
-## 🔜 FOLYAMATBAN: a 23 kategóriás célszámok feltöltése (átállás KÉSZ, ~398 mc írandó)
+## ✅ LEZÁRVA: a 23 kategóriás átállás és a kérdésírás (2026-08-08)
 
-**A 23 kategóriás átállás 2026-08-08-án megtörtént** (új `CATEGORIES`, átsorolt kérdések, újragenerált part-fájlok, zöld tesztek). **A 9 tippelős tétel is feltöltve** – tételenként legalább 40 kérdés (143 új tipp készült). A terv változatlanul a `design/kategoriak.md` + `design/tipp_kategoriak.md` fájlokban él.
+**Minden kész:** új `CATEGORIES` (23 tétel) · a régi 1000 kérdés átsorolva · 143 új tippelős + 398 új „1 a 4-ből" kérdés megírva · zöld tesztek (121 ellenőrzés + hálózati tesztek). A terv a `design/kategoriak.md` + `design/tipp_kategoriak.md` fájlokban dokumentált.
 
 - **Vezérelv: családi játék** – a szülők generációja is tudja játszani. Ezért esett ki a Videójátékok és a nemzetközi sorozatok; a magyar tévé a 17-es kategóriába olvadt.
-- **Ami maradt: ~398 új „1 a 4-ből" kérdés.** Célszám 40/kategória; kivételek: 🌶️ Gasztronómia **70** (30 magyar + 40 nemzetközi), 🧠 Filozófia **25**, 🎻 Komolyzene **25**.
-- **Legnagyobb mc-lyukak:** Néphagyomány +40 · Gasztronómia +40 · Növények +39 · Állatok +35 · Világirodalom +27 · Filozófia +25 · Képzőművészet +25 · Komolyzene +22 · Nemz. filmek +18 · FKB +15 · Űrkutatás +15 · M. könnyűzene +11 · +10-esek (M.tört, M.irod, Mo. földrajza, M.nyelv, Világtört, Világföldrajz, Nemz. popzene, Mémek) · Feltalálók +6. A pontos táblázat: `design/kategoriak.md`.
-- **Nyitott kérdések a felhasználó felé:** (1) a Komolyzene 25 kérdésén belüli magyar/nemzetközi arány; (2) a Gasztronómia 40 nemzetközi kérdése inkább konyhák/ételek vagy alapanyagok legyen-e.
-- **Új mc-kérdések írásakor:** blokkokban érdemes haladni (kategóriánként), minden blokk után `python3 src/build.py` + `npm test`, és kötelező az átfedés-ellenőrzés a meglévő kérdésekkel (más kategóriák mc-i és tippjei ellen is).
+- **Minőségi szabályok, amelyeket minden jövőbeli kérdésnél tartani kell:** időtálló tény · EGY helyes válasz · hihető disztraktorok · nincs duplikáció · **egy kérdés szövege vagy note-ja nem árulhatja el egy másik ÉLŐ kérdés válaszát** (mindkét irányban!) · politikailag semleges, családbarát.
+- **Automata ellenőrző van hozzá:** a munkamenet `work/verify.js` szkriptje (duplikátum + évszám-szivárgás + note-szivárgás + fordított mc-válasz-keresés). Új kérdésblokk után érdemes újra lefuttatni a mintájára készült ellenőrzést.
+- Ismert, elfogadott maradványok: néhány régről örökölt szóegyezés (pl. Balaton-tipp note-ja, Spielberg/Jurassic Park note, Wembley–Anglia sportpáros) – tudatosan bent hagyva, mert a kérdések ettől még önállóan megválaszolandók.
 
 ## ⚔️ Hódítás mód (2 játékos, `settings.mode='conquest'`)
 

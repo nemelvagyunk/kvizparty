@@ -5,39 +5,36 @@ A tippelős kérdéseknek saját listájuk van: lásd `tipp_kategoriak.md`.
 
 > **Vezérelv: családi játék.** A kérdések a szülők generációjának is játszhatók legyenek.
 
-**ÁLLAPOT (2026-08-08): a 23 kategóriás átállás a kódban MEGTÖRTÉNT** – az alábbi
-„Meglévő” oszlop a tényleges, átsorolás utáni darabszám. A tippelős tételek már
-feltöltve; ebből a táblából a „Írandó” oszlop a hátralévő mc-munka.
+**✅ KÉSZ (2026-08-08): az átállás ÉS a kérdésírás is megtörtént** – minden kategória
+elérte a célszámát. A tábla a végleges állapotot rögzíti.
 
-Célszám kategóriánként **40**, kivéve ahol a megjegyzés mást mond.
+| # | Kategória | Kész | Cél | Kihagyható | Megjegyzés |
+|---|---|---|---|---|---|
+| 1 | 🏰 Magyar történelem | 40 | 40 |  |  |
+| 2 | 📜 Magyar irodalom | 40 | 40 |  |  |
+| 3 | 🗺️ Magyarország földrajza | 40 | 40 |  |  |
+| 4 | 🗣️ Magyar nyelv és szólások | 40 | 40 |  |  |
+| 5 | 🎎 Magyar néphagyomány | 40 | 40 |  |  |
+| 6 | 🌶️ Gasztronómia | 70 | 70 |  | 30 magyar + 40 nemzetközi (vegyes: konyhák, ételek, alapanyagok) |
+| 7 | ⚔️ Világtörténelem | 40 | 40 |  |  |
+| 8 | 🌍 Világföldrajz | 40 | 40 |  |  |
+| 9 | 📖 Világirodalom | 40 | 40 |  |  |
+| 10 | 🖼️ Képzőművészet | 40 | 40 |  |  |
+| 11 | 🧠 Filozófia | 25 | 25 | ✅ | nehéz téma, szándékosan kisebb |
+| 12 | 🦁 Állatok | 40 | 40 |  |  |
+| 13 | 🌿 Növények és kertészet | 40 | 40 |  |  |
+| 14 | ⚗️ Fizika, kémia, biológia | 40 | 40 |  |  |
+| 15 | 💡 Feltalálók és találmányok | 40 | 40 |  |  |
+| 16 | 🚀 Űrkutatás és informatika | 40 | 40 | ✅ |  |
+| 17 | 🎬 Magyar film, tévé és sorozatok | 59 | 40 |  | cél fölött, nem bővítendő |
+| 18 | 🎸 Magyar könnyűzene | 40 | 40 |  |  |
+| 19 | 🎻 Komolyzene | 25 | 25 | ✅ | fele magyar, fele nemzetközi |
+| 20 | 🍿 Nemzetközi filmek | 40 | 40 |  |  |
+| 21 | 🎤 Nemzetközi popzene | 40 | 40 |  |  |
+| 22 | 😂 Mémek és internetkultúra | 40 | 40 | ✅ |  |
+| 23 | ⚽ Sport | 60 | 40 |  | cél fölött, nem bővítendő |
 
-| # | Kategória | Meglévő | Cél | Írandó | Kihagyható | Megjegyzés |
-|---|---|---|---|---|---|---|
-| 1 | 🏰 Magyar történelem | 30 | 40 | +10 |  |  |
-| 2 | 📜 Magyar irodalom | 30 | 40 | +10 |  |  |
-| 3 | 🗺️ Magyarország földrajza | 30 | 40 | +10 |  |  |
-| 4 | 🗣️ Magyar nyelv és szólások | 30 | 40 | +10 |  |  |
-| 5 | 🎎 Magyar néphagyomány | 0 | 40 | +40 |  |  |
-| 6 | 🌶️ Gasztronómia | 30 | 70 | +40 |  | 30 magyar + 40 nemzetközi |
-| 7 | ⚔️ Világtörténelem | 30 | 40 | +10 |  |  |
-| 8 | 🌍 Világföldrajz | 30 | 40 | +10 |  |  |
-| 9 | 📖 Világirodalom | 13 | 40 | +27 |  |  |
-| 10 | 🖼️ Képzőművészet | 15 | 40 | +25 |  |  |
-| 11 | 🧠 Filozófia | 0 | 25 | +25 | ✅ | nehéz téma, szándékosan kisebb |
-| 12 | 🦁 Állatok | 5 | 40 | +35 |  |  |
-| 13 | 🌿 Növények és kertészet | 1 | 40 | +39 |  |  |
-| 14 | ⚗️ Fizika, kémia, biológia | 25 | 40 | +15 |  |  |
-| 15 | 💡 Feltalálók és találmányok | 34 | 40 | +6 |  | átsoroláskor ide került a Tesla-, metró-, Ford- és Bell-kérdés |
-| 16 | 🚀 Űrkutatás és informatika | 25 | 40 | +15 | ✅ |  |
-| 17 | 🎬 Magyar film, tévé és sorozatok | 59 | 40 | — |  | 1 Linda-duplikátum törölve |
-| 18 | 🎸 Magyar könnyűzene | 29 | 40 | +11 |  |  |
-| 19 | 🎻 Komolyzene | 3 | 25 | +22 | ✅ | nehéz téma, szándékosan kisebb |
-| 20 | 🍿 Nemzetközi filmek | 22 | 40 | +18 |  | a 8 sorozat-kérdés törölve |
-| 21 | 🎤 Nemzetközi popzene | 30 | 40 | +10 |  |  |
-| 22 | 😂 Mémek és internetkultúra | 30 | 40 | +10 | ✅ |  |
-| 23 | ⚽ Sport | 60 | 40 | — |  |  |
-
-**Összesen:** 561 meglévő + 398 megírandó = 959 négy válaszos kérdés.
+**Összesen: 959 négy válaszos kérdés – a terv teljesítve (2026-08-08).**
 
 ## Kihagyható témák
 
