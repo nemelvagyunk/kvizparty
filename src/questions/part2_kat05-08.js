@@ -91,7 +91,7 @@
 {cat:6,type:'mc',d:2,q:"Melyik ország uralkodója volt VIII. Henrik, a hat feleségéről is híres király?",
  o:["Anglia","Franciaország","Spanyolország","Skócia"], c:0},
 {cat:6,type:'mc',d:2,q:"Hol szállt partra a szövetséges haderő 1944. június 6-án, a D-napon?",
- o:["Normandiában","Szícíliában","Provence-ban","Hollandiában"], c:0},
+ o:["Normandiában","Szicíliában","Provence-ban","Hollandiában"], c:0},
 {cat:6,type:'mc',d:2,q:"Melyik városban gyilkolták meg Ferenc Ferdinánd trónörököst 1914-ben?",
  o:["Szarajevóban","Belgrádban","Bécsben","Zágrábban"], c:0},
 {cat:6,type:'mc',d:2,q:"Melyik ország uralkodója volt XIV. Lajos, a „Napkirály”?",
