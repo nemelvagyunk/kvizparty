@@ -69,6 +69,16 @@ input:focus{border-color:var(--acc);}
 .seg{display:flex; gap:6px; flex-wrap:wrap;}
 .seg button{padding:7px 13px; border-radius:10px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.22); color:var(--txt); cursor:pointer; font-weight:700;}
 .seg button.sel{background:var(--acc); border-color:var(--acc);}
+.catbox{margin:2px 0 6px;}
+.catmore{width:100%; padding:8px 12px; border-radius:12px; border:1px dashed rgba(255,255,255,.22);
+  background:rgba(255,255,255,.04); color:var(--dim); font-weight:700; font-size:.85rem; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:8px;}
+.catmore .cnt{color:#fbbf24; font-weight:900;}
+.catlist{display:flex; flex-wrap:wrap; gap:6px; margin-top:9px;}
+.catchip{padding:5px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12);
+  background:rgba(0,0,0,.28); color:#6f6b92; cursor:pointer; font-size:.78rem; font-weight:700;
+  opacity:.55; transition:opacity .15s;}
+.catchip.sel{background:rgba(139,92,246,.28); border-color:var(--acc); color:var(--txt); opacity:1;}
 .gtoggle{padding:7px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.22); color:var(--dim); cursor:pointer; font-size:.85rem;}
 .gtoggle.sel{background:rgba(139,92,246,.3); color:var(--txt); border-color:var(--acc);}
 .diffchip{font-size:.8rem; letter-spacing:.05em;}
@@ -367,126 +377,26 @@ input:focus{border-color:var(--acc);}
 // ============================================================
 
 const CATEGORIES = [
- {
-  "id": 1,
-  "name": "Magyar történelem",
-  "icon": "🏰",
-  "group": "Magyar általános műveltség"
- },
- {
-  "id": 2,
-  "name": "Magyar irodalom",
-  "icon": "📜",
-  "group": "Magyar általános műveltség"
- },
- {
-  "id": 3,
-  "name": "Magyarország földrajza",
-  "icon": "🗺️",
-  "group": "Magyar általános műveltség"
- },
- {
-  "id": 4,
-  "name": "Magyar tudósok és találmányok",
-  "icon": "💡",
-  "group": "Magyar általános műveltség"
- },
- {
-  "id": 5,
-  "name": "Magyar nyelv és szólások",
-  "icon": "🗣️",
-  "group": "Magyar általános műveltség"
- },
- {
-  "id": 6,
-  "name": "Világtörténelem",
-  "icon": "⚔️",
-  "group": "Nemzetközi általános műveltség"
- },
- {
-  "id": 7,
-  "name": "Világföldrajz",
-  "icon": "🌍",
-  "group": "Nemzetközi általános műveltség"
- },
- {
-  "id": 8,
-  "name": "Természettudomány",
-  "icon": "🔬",
-  "group": "Nemzetközi általános műveltség"
- },
- {
-  "id": 9,
-  "name": "Világirodalom és képzőművészet",
-  "icon": "🎨",
-  "group": "Nemzetközi általános műveltség"
- },
- {
-  "id": 10,
-  "name": "Technika, űrkutatás, informatika",
-  "icon": "🚀",
-  "group": "Nemzetközi általános műveltség"
- },
- {
-  "id": 11,
-  "name": "Magyar filmek és sorozatok",
-  "icon": "🎬",
-  "group": "Magyar popkultúra"
- },
- {
-  "id": 12,
-  "name": "Magyar zene és könnyűzene",
-  "icon": "🎸",
-  "group": "Magyar popkultúra"
- },
- {
-  "id": 13,
-  "name": "Magyar tévé és média",
-  "icon": "📺",
-  "group": "Magyar popkultúra"
- },
- {
-  "id": 14,
-  "name": "Magyar sport és sportolók",
-  "icon": "🏅",
-  "group": "Magyar popkultúra"
- },
- {
-  "id": 15,
-  "name": "Magyar gasztronómia és hungarikumok",
-  "icon": "🌶️",
-  "group": "Magyar popkultúra"
- },
- {
-  "id": 16,
-  "name": "Nemzetközi filmek és sorozatok",
-  "icon": "🍿",
-  "group": "Nemzetközi popkultúra"
- },
- {
-  "id": 17,
-  "name": "Nemzetközi zene és popsztárok",
-  "icon": "🎤",
-  "group": "Nemzetközi popkultúra"
- },
- {
-  "id": 18,
-  "name": "Mémek és internetkultúra",
-  "icon": "😂",
-  "group": "Nemzetközi popkultúra"
- },
- {
-  "id": 19,
-  "name": "Videójátékok és gaming",
-  "icon": "🎮",
-  "group": "Nemzetközi popkultúra"
- },
- {
-  "id": 20,
-  "name": "Nemzetközi sport",
-  "icon": "⚽",
-  "group": "Nemzetközi popkultúra"
- }
+ {"id":1, "name":"Magyar történelem", "icon":"🏰", "group":"Magyar általános műveltség", "pop":false, "fam":true},
+ {"id":2, "name":"Magyar irodalom", "icon":"📜", "group":"Magyar általános műveltség", "pop":false, "fam":true},
+ {"id":3, "name":"Magyarország földrajza", "icon":"🗺️", "group":"Magyar általános műveltség", "pop":false, "fam":true},
+ {"id":4, "name":"Magyar tudósok és találmányok", "icon":"💡", "group":"Magyar általános műveltség", "pop":false, "fam":true},
+ {"id":5, "name":"Magyar nyelv és szólások", "icon":"🗣️", "group":"Magyar általános műveltség", "pop":false, "fam":true},
+ {"id":6, "name":"Világtörténelem", "icon":"⚔️", "group":"Nemzetközi általános műveltség", "pop":false, "fam":true},
+ {"id":7, "name":"Világföldrajz", "icon":"🌍", "group":"Nemzetközi általános műveltség", "pop":false, "fam":true},
+ {"id":8, "name":"Természettudomány", "icon":"🔬", "group":"Nemzetközi általános műveltség", "pop":false, "fam":true},
+ {"id":9, "name":"Világirodalom és képzőművészet", "icon":"🎨", "group":"Nemzetközi általános műveltség", "pop":false, "fam":true},
+ {"id":10, "name":"Technika, űrkutatás, informatika", "icon":"🚀", "group":"Nemzetközi általános műveltség", "pop":false, "fam":true},
+ {"id":11, "name":"Magyar filmek és sorozatok", "icon":"🎬", "group":"Magyar popkultúra", "pop":true, "fam":true},
+ {"id":12, "name":"Magyar zene és könnyűzene", "icon":"🎸", "group":"Magyar popkultúra", "pop":true, "fam":true},
+ {"id":13, "name":"Magyar tévé és média", "icon":"📺", "group":"Magyar popkultúra", "pop":true, "fam":true},
+ {"id":14, "name":"Magyar sport és sportolók", "icon":"🏅", "group":"Magyar popkultúra", "pop":true, "fam":true},
+ {"id":15, "name":"Magyar gasztronómia és hungarikumok", "icon":"🌶️", "group":"Magyar popkultúra", "pop":false, "fam":true},
+ {"id":16, "name":"Nemzetközi filmek és sorozatok", "icon":"🍿", "group":"Nemzetközi popkultúra", "pop":true, "fam":true},
+ {"id":17, "name":"Nemzetközi zene és popsztárok", "icon":"🎤", "group":"Nemzetközi popkultúra", "pop":true, "fam":true},
+ {"id":18, "name":"Mémek és internetkultúra", "icon":"😂", "group":"Nemzetközi popkultúra", "pop":true, "fam":false},
+ {"id":19, "name":"Videójátékok és gaming", "icon":"🎮", "group":"Nemzetközi popkultúra", "pop":true, "fam":false},
+ {"id":20, "name":"Nemzetközi sport", "icon":"⚽", "group":"Nemzetközi popkultúra", "pop":true, "fam":true}
 ];
 
 const QUESTIONS = [
@@ -2148,6 +2058,15 @@ const TIP_DUR  = FAST?3500:25000;
 const REVEAL_AUTO = FAST?1800:7000;
 /* Kategória-sorsolás minden kérdés előtt: pörgetés, majd visszaszámlálás.
    Ettől minden kategória egyenlő eséllyel jön, akárhány kérdés van benne. */
+/* Kategória-előbeállítások a lobbyhoz. A kategóriákon két jelző van (adatfájl):
+   pop = popkultúra · fam = a szülők generációjának is játszható. */
+const CAT_PRESETS = [
+  {key:'all',  label:'🌐 Minden',      pick:c=>true},
+  {key:'fam',  label:'👨‍👩‍👧 Családi',   pick:c=>c.fam!==false},
+  {key:'cult', label:'🎓 Műveltség',   pick:c=>!c.pop},
+  {key:'pop',  label:'🎉 Popkultúra',  pick:c=>!!c.pop},
+];
+function catOn(q){ const a=host.settings.cats; return a ? a[q.cat-1]!==false : true; }
 const CAT_SPIN_MS  = FAST?400:1800;
 const CAT_COUNT_MS = FAST?700:10000;
 const MAXP = 6;
@@ -2318,7 +2237,7 @@ function sendToHost(msg){ try{ net.conn.send(msg); }catch(e){} }
 
 /* ---------------- host: szoba ---------------- */
 function makeHost(solo){
-  return { solo, players:[], settings:{count:15, mode:'classic', mapKey:'big', groups:[true,true,true,true], diffs:[true,true,true,true,true]},
+  return { solo, players:[], settings:{count:15, mode:'classic', mapKey:'big', cats:CATEGORIES.map(()=>true), diffs:[true,true,true,true,true]},
     cq:null, cqPool:{mc:[],tip:[]}, stats:{},
     phase:'lobby', deck:[], qi:-1, answers:{}, qData:null, qCorrectIndex:0, qDur:0,
     qDeadlineT:null, autoNextT:null, aiTimers:[], usedIds:new Set() };
@@ -2326,7 +2245,7 @@ function makeHost(solo){
 function playersMin(){ return host.players.map(p=>({pid:p.pid,name:p.name,avatar:p.avatar,isAI:!!p.isAI,isHost:!!p.isHost,connected:p.connected!==false,score:p.score||0,streak:p.streak||0,best:p.best||0})); }
 function hostLobbyMsg(){
   return {t:'lobby', code:net.code, solo:host.solo, players:playersMin(),
-    settings:{...host.settings, groups:host.settings.groups.slice(), diffs:host.settings.diffs.slice()}, phase:host.phase};
+    settings:{...host.settings, cats:host.settings.cats.slice(), diffs:host.settings.diffs.slice()}, phase:host.phase};
 }
 function hostAddAI(tier){
   if(host.players.length>=MAXP){ toast('A szoba megtelt (max 6 játékos)'); return; }
@@ -2467,7 +2386,7 @@ function catBag(pool){
 }
 function buildDeck(){
   const df=host.settings.diffs;
-  const pool=QUESTIONS.filter(q=>df[q.d-1]);
+  const pool=QUESTIONS.filter(q=>df[q.d-1] && catOn(q));
   let fresh=pool.filter(q=>!host.usedIds.has(q.id));
   if(fresh.length<host.settings.count){ host.usedIds.clear(); fresh=pool; }
   const plan=qPlan(host.settings.count), draw=catBag(fresh);
@@ -2479,7 +2398,7 @@ function buildDeck(){
 }
 function hostStart(){
   if(host.players.length<2){ toast('Legalább 2 játékos kell – adj hozzá AI-t vagy várd meg a többieket!'); return; }
-  if(!host.settings.groups.some(Boolean)){ toast('Válassz legalább egy kategóriacsoportot!'); return; }
+  if(!host.settings.cats.some(Boolean)){ toast('Válassz legalább egy kategóriát!'); return; }
   if(!host.settings.diffs.some(Boolean)){ toast('Válassz legalább egy nehézségi szintet!'); return; }
   if(host.settings.mode==='conquest'){
     if(host.players.length!==2){ toast('A Hódítás mód pontosan 2 játékossal megy (ember vagy AI).'); return; }
@@ -2722,7 +2641,7 @@ function cqLater(fn,ms){ clearTimeout(host.cq.nextT); host.cq.nextT=setTimeout(f
 
 function cqBuildPools(){
   const df=host.settings.diffs;
-  const pool=QUESTIONS.filter(q=>df[q.d-1]);
+  const pool=QUESTIONS.filter(q=>df[q.d-1] && catOn(q));
   host.cqPool={mc:pool.filter(q=>q.type==='mc'), tip:pool.filter(q=>q.type==='tip'),
                draw:catBag(pool)};          // itt is kategóriánként egyenletesen
   return host.cqPool;
@@ -3050,6 +2969,13 @@ function handleMsg(m){
 function pinfo(pid){ return lastPlayers.find(p=>p.pid===pid)||{name:'?',avatar:'❓'}; }
 
 /* ---------------- render: lobby ---------------- */
+let catOpen=false;                       // nyitva van-e a részletes kategórialista
+function catPresetNow(cats){             // melyik előbeállítással egyezik a jelenlegi állapot
+  for(const pr of CAT_PRESETS){
+    if(CATEGORIES.every((c,i)=>!!cats[i]===!!pr.pick(c))) return pr.key;
+  }
+  return null;
+}
 const GROUP_LABELS=["🇭🇺 Általános műveltség","🌍 Általános műveltség","🇭🇺 Popkultúra","🌍 Popkultúra"];
 const DIFF_NAMES=["nagyon könnyű","könnyű","közepes","nehéz","extra nehéz"];
 function renderLobby(m){
@@ -3085,9 +3011,16 @@ function renderLobby(m){
         qPlan(m.settings.count).mc+' × 1 a 4-ből → '+qPlan(m.settings.count).tip+' × tippelős → '+
         '🎬 <b>'+qPlan(m.settings.count).fmc+' dupla 1 a 4-ből + '+qPlan(m.settings.count).ftip+' dupla tippelős</b>'+
       '</div>')+
-      '<div class="setrow"><span class="lab">Kategóriák</span><span class="seg" id="seg-groups">'+
-        GROUP_LABELS.map((g,i)=>'<button class="gtoggle '+(m.settings.groups[i]?'sel':'')+'" data-g="'+i+'">'+g+'</button>').join('')+
+      '<div class="setrow"><span class="lab">Kategóriák</span><span class="seg" id="seg-preset">'+
+        CAT_PRESETS.map(pr=>'<button data-pr="'+pr.key+'" class="'+(catPresetNow(m.settings.cats)===pr.key?'sel':'')+'">'+pr.label+'</button>').join('')+
       '</span></div>'+
+      '<div class="catbox'+(catOpen?' open':'')+'">'+
+        '<button class="catmore" id="cat-more">'+(catOpen?'▲ Kategóriák elrejtése':'▼ Kategóriák egyenként')+
+          ' <span class="cnt">'+m.settings.cats.filter(Boolean).length+' / '+m.settings.cats.length+'</span></button>'+
+        (catOpen ? '<div class="catlist" id="cat-list">'+
+          CATEGORIES.map((c,i)=>'<button class="catchip'+(m.settings.cats[i]?' sel':'')+'" data-ci="'+i+'">'+
+            c.icon+' '+esc(c.name)+'</button>').join('')+'</div>' : '')+
+      '</div>'+
       '<div class="setrow"><span class="lab">Nehézség</span><span class="seg" id="seg-diffs">'+
         DIFF_NAMES.map((n,i)=>'<button class="gtoggle dtoggle diff'+(i+1)+' '+(m.settings.diffs[i]?'sel':'')+'" data-d="'+i+'" title="'+n+' – '+QVAL[i]+' pont">'+(i+1)+'★</button>').join('')+
       '</span></div>'+
@@ -3109,11 +3042,17 @@ function renderLobby(m){
     document.querySelectorAll('#seg-map button').forEach(b=>b.onclick=()=>{
       host.settings.mapKey=b.dataset.k; hostBroadcast(hostLobbyMsg()); });
     document.querySelectorAll('#seg-count button').forEach(b=>b.onclick=()=>{ host.settings.count=+b.dataset.c; hostBroadcast(hostLobbyMsg()); });
-    document.querySelectorAll('#seg-groups .gtoggle').forEach(b=>b.onclick=()=>{
-      const i=+b.dataset.g;
-      const g=host.settings.groups;
-      if(g[i]&&g.filter(Boolean).length===1){ toast('Legalább egy csoport maradjon bekapcsolva!'); return; }
-      g[i]=!g[i]; hostBroadcast(hostLobbyMsg());
+    document.querySelectorAll('#seg-preset button').forEach(b=>b.onclick=()=>{
+      const pr=CAT_PRESETS.find(x=>x.key===b.dataset.pr);
+      host.settings.cats=CATEGORIES.map(c=>!!pr.pick(c));
+      hostBroadcast(hostLobbyMsg());
+    });
+    const cm=$('cat-more');
+    if(cm) cm.onclick=()=>{ catOpen=!catOpen; hostBroadcast(hostLobbyMsg()); };
+    document.querySelectorAll('#cat-list .catchip').forEach(b=>b.onclick=()=>{
+      const i=+b.dataset.ci, a=host.settings.cats;
+      if(a[i]&&a.filter(Boolean).length===1){ toast('Legalább egy kategória maradjon bekapcsolva!'); return; }
+      a[i]=!a[i]; hostBroadcast(hostLobbyMsg());
     });
     document.querySelectorAll('#seg-diffs .dtoggle').forEach(b=>b.onclick=()=>{
       const i=+b.dataset.d;
@@ -3126,7 +3065,9 @@ function renderLobby(m){
       ? 'Adj hozzá további AI-ellenfeleket, állítsd be a játékot, és indíts!'
       : 'Küldd el a fájlt vagy a linket a barátaidnak – ők a főmenüben a <b>Csatlakozás</b> gombbal, a fenti kóddal lépnek be. (2–6 játékos, AI is jöhet.)';
   } else {
-    const groups=m.settings.groups.map((v,i)=>v?GROUP_LABELS[i]:null).filter(Boolean).join(' · ');
+    const on=m.settings.cats.filter(Boolean).length, all=m.settings.cats.length;
+    const pk=catPresetNow(m.settings.cats), prl=pk?(CAT_PRESETS.find(x=>x.key===pk).label):null;
+    const groups=(on===all?'mind a '+all+' kategória':(prl?prl+' ('+on+' kategória)':on+' kategória a '+all+'-ből'));
     const diffs=(m.settings.diffs||[]).map((v,i)=>v?(i+1)+'★':null).filter(Boolean).join(' ');
     const head=m.settings.mode==='conquest'
       ? '⚔️ <b>Hódítás</b> – '+CQ_MAPS[m.settings.mapKey||'big'].desc

@@ -57,7 +57,11 @@
 - Időzítők: MC 20 mp, tip 25 mp; `#fast` hash-sel rövidítve (teszthez).
 - **Kategória-sorsolás minden kérdés előtt (klasszikus mód).** `hostNext()` már nem küld kérdést: `phase='catdraw'`, kimegy a `{t:'catdraw', …}` üzenet (kategória, típus, pontérték, finálé-jelzés), majd `CAT_SPIN_MS` (1,8 mp pörgetés) + `CAT_COUNT_MS` (10 mp visszaszámlálás) után a `hostAsk()` küldi a `question`-t. A host a „▶ Mehet, ne várjunk" gombbal bármikor előrehozhatja (`hostAsk()` közvetlenül). Kliens: `renderCatDraw()`.
 - **`catBag(pool)` – kategória-zsák.** A pakli nem a nyers kérdéspoolból épül, hanem megkevert kategórialistából: minden kategória sorra kerül, mielőtt bármelyik ismétlődne. Így a 100 kérdéses kategória **ugyanakkora eséllyel** jön, mint az 50 kérdéses – a kategóriaméret nem befolyásolja a gyakoriságot. A hódítás mód `cqDraw()`-ja is ezt használja (ott nincs sorsolás-képernyő).
-- Lobby-beállítások: **játékmód (Klasszikus / Hódítás)**, **hódításnál térkép (Nagy 13 / Kicsi 10)**, kérdésszám (`Q_COUNTS` = **10/15/20/30** – hódításban rejtve), 4 kategóriacsoport-kapcsoló, nehézségszűrő (1★–5★), AI hozzáadása (max 6 játékos összesen).
+- Lobby-beállítások: **játékmód (Klasszikus / Hódítás)**, **hódításnál térkép (Nagy 13 / Kicsi 10)**, kérdésszám (`Q_COUNTS` = **10/15/20/30** – hódításban rejtve), **kategória-szűrő**, nehézségszűrő (1★–5★), AI hozzáadása (max 6 játékos összesen).
+- **Kategória-szűrő.** `host.settings.cats` = kategóriánkénti boolean tömb (`CATEGORIES.length` hosszú). A `catOn(q)` szűri a paklikat (`buildDeck` és `cqBuildPools` is). Az új meccs (rematch) **megőrzi** a beállítást, oldal-újratöltés nullázza (localStorage tiltott).
+  - **Előbeállítások (`CAT_PRESETS`)**: 🌐 Minden · 👨‍👩‍👧 Családi · 🎓 Műveltség · 🎉 Popkultúra. Két jelző vezérli őket, és ezek a **kérdésadat-fájlban** vannak a `CATEGORIES` elemein: `pop` (popkultúra-e) és `fam` (a szülők generációjának is játszható-e). Családi = `fam!==false`, Műveltség = `!pop`, Popkultúra = `pop`. **Új kategória felvételekor mindkét jelzőt ki kell tölteni**, különben rossz presetbe esik.
+  - A lobbyban a presetek alatt egy nyitható „Kategóriák egyenként" lista (`catOpen`, `#cat-list`), ahol minden kategória külön kapcsolható. Legalább egynek bekapcsolva kell maradnia.
+  - **Vezérelv: családi játék.** Ezért van `fam:false` a Mémeken és a Videójátékokon.
 - **AI-szintek (`AI_TIERS`)** – a lobbyban három gomb (`#seg-ai`), a szint a játékoson `p.ai` (0/1/2):
 
   | | MC-találat d1..d5 | 3★-on | tippszórás (`spr`) |

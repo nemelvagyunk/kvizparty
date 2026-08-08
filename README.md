@@ -47,6 +47,12 @@ A klasszikus módban minden kérdés előtt kisorsoljuk a kategóriát: a kijelz
 
 A sorsolás nem véletlenszerű húzás a kérdéshalmazból: **minden kategória sorra kerül, mielőtt bármelyik megismétlődne.** Így egy 100 kérdéses kategória sem jön gyakrabban, mint egy 50 kérdéses.
 
+### Kategória-szűrő
+
+A lobbyban négy előbeállítás közül lehet választani: **🌐 Minden · 👨‍👩‍👧 Családi · 🎓 Műveltség · 🎉 Popkultúra**. A *Családi* kikapcsolja azokat a témákat, amikben az idősebb generáció nem tud játszani (mémek, videójátékok), a *Műveltség* a popkultúrát hagyja ki, a *Popkultúra* pedig fordítva.
+
+Az előbeállítás alatt egy nyitható listában **minden kategória külön is kapcsolható**, ha csak egyetlen témát akarsz kihagyni. A beállítás megmarad az új meccsre is.
+
 ## Kérdéstípusok és pontozás
 
 | | „1 a 4-ből” | Tippelős |

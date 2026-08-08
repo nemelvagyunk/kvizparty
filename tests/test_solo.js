@@ -322,7 +322,6 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   ck('leghosszabb sorozat', aw['Leghosszabb sorozat'], 'Anna / 2 egymás után');
   ck('legtöbb telitalálat (Bea kétszer is pontosan eltalálta)',
      aw['Legtöbb telitalálat'], 'Bea / 2 db');
-  if (sf) { console.error('❌ ' + sf + ' hibás sorozat-ellenőrzés'); process.exitCode = 1; }
 
   // --- teljes szóló játék végigjátszása ---
   await page.reload();
@@ -381,6 +380,45 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   await page.click('#btn-rematch');
   await page.waitForSelector('#s-lobby.on', { timeout: 5000 });
   console.log('REMATCH: OK (vissza a lobbyba)');
+
+  // --- kategória-szűrő ---
+  console.log('KATEGÓRIA-SZŰRŐ:');
+  await page.click('#seg-preset button[data-pr="cult"]');
+  const cult = await page.evaluate(() => {
+    const c = __kv.host.settings.cats;
+    return { ok: CATEGORIES.every((cat, i) => !!c[i] === !cat.pop), on: c.filter(Boolean).length };
+  });
+  ck('a Műveltség előbeállítás pont a nem-popkultúra kategóriákat hagyja bent', cult.ok, true);
+  await page.click('#seg-preset button[data-pr="fam"]');
+  const fam = await page.evaluate(() => {
+    const c = __kv.host.settings.cats;
+    return { ok: CATEGORIES.every((cat, i) => !!c[i] === (cat.fam !== false)),
+             off: CATEGORIES.filter((cat, i) => !c[i]).map(cat => cat.name) };
+  });
+  ck('a Családi előbeállítás a szülőknek nehéz kategóriákat kapcsolja ki', fam.ok, true);
+  console.log('    kikapcsolva: ' + fam.off.join(', '));
+  // egyedi kapcsoló
+  await page.click('#cat-more');
+  await page.waitForSelector('#cat-list');
+  await page.click('#cat-list .catchip[data-ci="0"]');
+  const one = await page.evaluate(() => ({ first: __kv.host.settings.cats[0], on: __kv.host.settings.cats.filter(Boolean).length }));
+  ck('egyedi kategória külön is kikapcsolható', one.first, false);
+  // a pakli tényleg csak az engedélyezett kategóriákból épül
+  await page.click('#btn-start');
+  await page.waitForSelector('#cq-wrap, #s-game.on', { timeout: 8000 });
+  const deck = await page.evaluate(() => {
+    const c = __kv.host.settings.cats;
+    return { bad: __kv.host.deck.filter(q => !c[q.cat - 1]).length, len: __kv.host.deck.length };
+  });
+  ck('a pakliba nem kerül kikapcsolt kategóriából kérdés', deck.bad, 0);
+  // beállítás túléli az új meccset
+  await page.evaluate(() => { __kv.host.qi = __kv.host.deck.length; hostNext(); });
+  await page.waitForSelector('#s-end.on', { timeout: 8000 });
+  await page.click('#btn-rematch');
+  await page.waitForSelector('#s-lobby.on', { timeout: 8000 });
+  const kept = await page.evaluate(() => __kv.host.settings.cats.filter(Boolean).length);
+  ck('a szűrés megmarad az új meccsre', kept, one.on);
+  if (sf) { console.error('❌ ' + sf + ' hibás ellenőrzés'); process.exitCode = 1; }
 
   console.log(errors.length ? 'HIBÁK:\n' + errors.join('\n') : 'KONZOL: tiszta ✔');
   await browser.close();

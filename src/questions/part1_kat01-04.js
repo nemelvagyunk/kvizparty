@@ -8,126 +8,26 @@
 // ============================================================
 
 const CATEGORIES = [
- {
-  "id": 1,
-  "name": "Magyar történelem",
-  "icon": "🏰",
-  "group": "Magyar általános műveltség"
- },
- {
-  "id": 2,
-  "name": "Magyar irodalom",
-  "icon": "📜",
-  "group": "Magyar általános műveltség"
- },
- {
-  "id": 3,
-  "name": "Magyarország földrajza",
-  "icon": "🗺️",
-  "group": "Magyar általános műveltség"
- },
- {
-  "id": 4,
-  "name": "Magyar tudósok és találmányok",
-  "icon": "💡",
-  "group": "Magyar általános műveltség"
- },
- {
-  "id": 5,
-  "name": "Magyar nyelv és szólások",
-  "icon": "🗣️",
-  "group": "Magyar általános műveltség"
- },
- {
-  "id": 6,
-  "name": "Világtörténelem",
-  "icon": "⚔️",
-  "group": "Nemzetközi általános műveltség"
- },
- {
-  "id": 7,
-  "name": "Világföldrajz",
-  "icon": "🌍",
-  "group": "Nemzetközi általános műveltség"
- },
- {
-  "id": 8,
-  "name": "Természettudomány",
-  "icon": "🔬",
-  "group": "Nemzetközi általános műveltség"
- },
- {
-  "id": 9,
-  "name": "Világirodalom és képzőművészet",
-  "icon": "🎨",
-  "group": "Nemzetközi általános műveltség"
- },
- {
-  "id": 10,
-  "name": "Technika, űrkutatás, informatika",
-  "icon": "🚀",
-  "group": "Nemzetközi általános műveltség"
- },
- {
-  "id": 11,
-  "name": "Magyar filmek és sorozatok",
-  "icon": "🎬",
-  "group": "Magyar popkultúra"
- },
- {
-  "id": 12,
-  "name": "Magyar zene és könnyűzene",
-  "icon": "🎸",
-  "group": "Magyar popkultúra"
- },
- {
-  "id": 13,
-  "name": "Magyar tévé és média",
-  "icon": "📺",
-  "group": "Magyar popkultúra"
- },
- {
-  "id": 14,
-  "name": "Magyar sport és sportolók",
-  "icon": "🏅",
-  "group": "Magyar popkultúra"
- },
- {
-  "id": 15,
-  "name": "Magyar gasztronómia és hungarikumok",
-  "icon": "🌶️",
-  "group": "Magyar popkultúra"
- },
- {
-  "id": 16,
-  "name": "Nemzetközi filmek és sorozatok",
-  "icon": "🍿",
-  "group": "Nemzetközi popkultúra"
- },
- {
-  "id": 17,
-  "name": "Nemzetközi zene és popsztárok",
-  "icon": "🎤",
-  "group": "Nemzetközi popkultúra"
- },
- {
-  "id": 18,
-  "name": "Mémek és internetkultúra",
-  "icon": "😂",
-  "group": "Nemzetközi popkultúra"
- },
- {
-  "id": 19,
-  "name": "Videójátékok és gaming",
-  "icon": "🎮",
-  "group": "Nemzetközi popkultúra"
- },
- {
-  "id": 20,
-  "name": "Nemzetközi sport",
-  "icon": "⚽",
-  "group": "Nemzetközi popkultúra"
- }
+ {"id":1, "name":"Magyar történelem", "icon":"🏰", "group":"Magyar általános műveltség", "pop":false, "fam":true},
+ {"id":2, "name":"Magyar irodalom", "icon":"📜", "group":"Magyar általános műveltség", "pop":false, "fam":true},
+ {"id":3, "name":"Magyarország földrajza", "icon":"🗺️", "group":"Magyar általános műveltség", "pop":false, "fam":true},
+ {"id":4, "name":"Magyar tudósok és találmányok", "icon":"💡", "group":"Magyar általános műveltség", "pop":false, "fam":true},
+ {"id":5, "name":"Magyar nyelv és szólások", "icon":"🗣️", "group":"Magyar általános műveltség", "pop":false, "fam":true},
+ {"id":6, "name":"Világtörténelem", "icon":"⚔️", "group":"Nemzetközi általános műveltség", "pop":false, "fam":true},
+ {"id":7, "name":"Világföldrajz", "icon":"🌍", "group":"Nemzetközi általános műveltség", "pop":false, "fam":true},
+ {"id":8, "name":"Természettudomány", "icon":"🔬", "group":"Nemzetközi általános műveltség", "pop":false, "fam":true},
+ {"id":9, "name":"Világirodalom és képzőművészet", "icon":"🎨", "group":"Nemzetközi általános műveltség", "pop":false, "fam":true},
+ {"id":10, "name":"Technika, űrkutatás, informatika", "icon":"🚀", "group":"Nemzetközi általános műveltség", "pop":false, "fam":true},
+ {"id":11, "name":"Magyar filmek és sorozatok", "icon":"🎬", "group":"Magyar popkultúra", "pop":true, "fam":true},
+ {"id":12, "name":"Magyar zene és könnyűzene", "icon":"🎸", "group":"Magyar popkultúra", "pop":true, "fam":true},
+ {"id":13, "name":"Magyar tévé és média", "icon":"📺", "group":"Magyar popkultúra", "pop":true, "fam":true},
+ {"id":14, "name":"Magyar sport és sportolók", "icon":"🏅", "group":"Magyar popkultúra", "pop":true, "fam":true},
+ {"id":15, "name":"Magyar gasztronómia és hungarikumok", "icon":"🌶️", "group":"Magyar popkultúra", "pop":false, "fam":true},
+ {"id":16, "name":"Nemzetközi filmek és sorozatok", "icon":"🍿", "group":"Nemzetközi popkultúra", "pop":true, "fam":true},
+ {"id":17, "name":"Nemzetközi zene és popsztárok", "icon":"🎤", "group":"Nemzetközi popkultúra", "pop":true, "fam":true},
+ {"id":18, "name":"Mémek és internetkultúra", "icon":"😂", "group":"Nemzetközi popkultúra", "pop":true, "fam":false},
+ {"id":19, "name":"Videójátékok és gaming", "icon":"🎮", "group":"Nemzetközi popkultúra", "pop":true, "fam":false},
+ {"id":20, "name":"Nemzetközi sport", "icon":"⚽", "group":"Nemzetközi popkultúra", "pop":true, "fam":true}
 ];
 
 const QUESTIONS = [
