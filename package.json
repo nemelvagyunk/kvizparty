@@ -1,0 +1,16 @@
+{
+  "name": "kvizparty",
+  "version": "1.0.0",
+  "description": "2–6 fős magyar multiplayer kvízjáték – 1000 kérdés, 20 kategória, 5 nehézségi szint, online szoba és AI-ellenfél",
+  "private": true,
+  "scripts": {
+    "build": "python3 src/build.py",
+    "test": "node tests/test_solo.js && node tests/test_diff.js",
+    "test:net": "node tests/test_net.js"
+  },
+  "devDependencies": {
+    "peer": "^1.0.2",
+    "peerjs": "^1.5.4",
+    "playwright": "^1.49.0"
+  }
+}
