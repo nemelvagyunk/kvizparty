@@ -1,0 +1,102 @@
+/* KvízParty – hálózati e2e teszt: host + vendég két külön böngésző-kontextben,
+   helyi PeerJS szerveren keresztül (#srv=127.0.0.1:9000) */
+const { chromium } = require('playwright');
+const path = require('path');
+
+const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast&srv=127.0.0.1:9000';
+
+async function answerLoop(page, who, tipValue, cheat) {
+  let answered = 0;
+  for (let i = 0; i < 400; i++) {
+    if (await page.$('#s-end.on')) return answered;
+    const mc = await page.$('.mcbtn:not(.dis)');
+    if (mc) {
+      if (cheat) {
+        // host: mindig a helyes gombra kattint (teszt-hook alapján)
+        const ci = await page.evaluate(() => window.__kv.host ? window.__kv.host.qCorrectIndex : 0);
+        await page.click('.mcbtn:nth-child(' + (ci + 1) + ')').catch(() => {});
+      } else await mc.click().catch(() => {});
+      answered++;
+    }
+    else {
+      const tip = await page.$('#tip-inp:not([disabled])');
+      if (tip) {
+        await page.fill('#tip-inp', String(tipValue)).catch(() => {});
+        await page.click('#tip-btn').catch(() => {});
+        answered++;
+      }
+    }
+    await page.waitForTimeout(300);
+  }
+  throw new Error(who + ': nem ért véget a játék');
+}
+
+(async () => {
+  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' }).catch(() => chromium.launch());
+  const ctxA = await browser.newContext({ viewport: { width: 480, height: 900 } });
+  const ctxB = await browser.newContext({ viewport: { width: 480, height: 900 } });
+  const A = await ctxA.newPage(); // host
+  const B = await ctxB.newPage(); // vendég
+  const errors = [];
+  for (const [p, tag] of [[A, 'HOST'], [B, 'GUEST']]) {
+    p.on('pageerror', e => errors.push(tag + ' PAGEERROR: ' + e.message));
+    p.on('console', m => { if (m.type() === 'error') errors.push(tag + ' CONSOLE: ' + m.text()); });
+  }
+
+  await A.goto(URL); await B.goto(URL);
+
+  // Host szobát nyit
+  await A.fill('#inp-name', 'Attila');
+  await A.click('#btn-create');
+  await A.waitForSelector('#s-lobby.on', { timeout: 15000 });
+  const code = await A.$eval('#lobby-code .code', el => el.textContent.trim());
+  console.log('SZOBAKÓD:', code);
+
+  // Vendég csatlakozik
+  await B.fill('#inp-name', 'Viola');
+  await B.click('#avatars button:nth-child(5)');
+  await B.fill('#inp-code', code);
+  await B.click('#btn-join');
+  await B.waitForSelector('#s-lobby.on', { timeout: 15000 });
+  await A.waitForFunction(() => document.querySelectorAll('#lobby-players .pchip').length === 2, undefined, { timeout: 10000 });
+  console.log('LOBBY: mindkét oldalon 2 játékos ✔');
+
+  // Host: +1 AI, 10 kérdés, indítás
+  await A.click('#btn-ai');
+  await B.waitForFunction(() => document.querySelectorAll('#lobby-players .pchip').length === 3, undefined, { timeout: 8000 });
+  await A.click('#seg-count button[data-c="10"]');
+  await A.screenshot({ path: 'shots/net_lobby_host.png' });
+  await B.screenshot({ path: 'shots/net_lobby_guest.png' });
+  await A.click('#btn-start');
+  await A.waitForSelector('#s-game.on', { timeout: 8000 });
+  await B.waitForSelector('#s-game.on', { timeout: 8000 });
+  console.log('JÁTÉK: mindkét oldalon elindult ✔');
+
+  // Párhuzamos válaszadás
+  const [ansA, ansB] = await Promise.all([
+    answerLoop(A, 'HOST', 1500, true),
+    answerLoop(B, 'GUEST', 1600),
+  ]);
+  await A.waitForSelector('#s-end.on', { timeout: 20000 });
+  await B.waitForSelector('#s-end.on', { timeout: 20000 });
+  const endA = await A.$eval('#end-list', el => el.innerText.replace(/\n/g, ' | '));
+  const endB = await B.$eval('#end-list', el => el.innerText.replace(/\n/g, ' | '));
+  console.log('HOST vége:', endA);
+  console.log('GUEST vége:', endB);
+  console.log('Egyezik a végeredmény:', endA.replace(/\s/g, '') === endB.replace(/\s/g, '') ? 'IGEN ✔' : 'NEM ✘');
+  await B.screenshot({ path: 'shots/net_end_guest.png' });
+
+  // Rematch: host visszaviszi a lobbyba mindkettőt
+  await A.click('#btn-rematch');
+  await A.waitForSelector('#s-lobby.on', { timeout: 8000 });
+  await B.waitForSelector('#s-lobby.on', { timeout: 8000 });
+  console.log('REMATCH: mindkét oldal lobbyban ✔');
+
+  // Vendég kilép -> host lobbyjából eltűnik
+  await B.close();
+  await A.waitForFunction(() => document.querySelectorAll('#lobby-players .pchip').length === 2, undefined, { timeout: 20000 });
+  console.log('KILÉPÉS: host látja a távozást ✔');
+
+  console.log(errors.length ? 'HIBÁK:\n' + errors.join('\n') : 'KONZOL: tiszta ✔');
+  await browser.close();
+})().catch(e => { console.error('TESZT HIBA:', e.message); process.exit(1); });
