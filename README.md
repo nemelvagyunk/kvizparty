@@ -49,9 +49,11 @@ A sorsolás nem véletlenszerű húzás a kérdéshalmazból: **minden kategóri
 
 ### Kategória-szűrő
 
-A lobbyban négy előbeállítás közül lehet választani: **🌐 Minden · 👨‍👩‍👧 Családi · 🎓 Műveltség · 🎉 Popkultúra**. A *Családi* kikapcsolja azokat a témákat, amikben az idősebb generáció nem tud játszani (mémek, videójátékok), a *Műveltség* a popkultúrát hagyja ki, a *Popkultúra* pedig fordítva.
+A lobbyban négy témát lehet kikapcsolni, ha a társasághoz nem illik:
 
-Az előbeállítás alatt egy nyitható listában **minden kategória külön is kapcsolható**, ha csak egyetlen témát akarsz kihagyni. A beállítás megmarad az új meccsre is.
+🧠 **Filozófia** · 🚀 **Űrkutatás és informatika** · 🎻 **Komolyzene** · 😂 **Mémek és internetkultúra**
+
+A többi kategória mindig játékban van. A szűrő **csak a „1 a 4-ből" kérdésekre hat** — a tippelős kérdéseknek saját, rövidebb kategórialistájuk van (történelem, földrajz, természettudomány, állatok, növények, feltalálók, filmek, sport), és azokból mindig jön kérdés.
 
 ## Kérdéstípusok és pontozás
 

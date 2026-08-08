@@ -175,22 +175,27 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
 
     // 5b) KATEGÓRIA-SORSOLÁS: minden kategória egyenlő eséllyel, a méretétől függetlenül
     __kv.host.settings.count = 30; __kv.host.usedIds = new Set();
-    const seen = {}; const nCat = CATEGORIES.length;
+    const seenMc = {}, seenTip = {}; const nCat = CATEGORIES.length;
     for (let r = 0; r < 200; r++) { __kv.host.usedIds = new Set(); buildDeck();
-      for (const q of __kv.host.deck) seen[q.cat] = (seen[q.cat] || 0) + 1; }
-    const counts = []; for (let c = 1; c <= nCat; c++) counts.push(seen[c] || 0);
-    const avg = counts.reduce((a, b) => a + b, 0) / nCat;
-    out.catFair = {
-      cats: nCat,
-      min: Math.min.apply(null, counts), max: Math.max.apply(null, counts),
-      avg: Math.round(avg),
-      // a legnagyobb és a legkisebb kategória is az átlag ±20%-án belül legyen
-      spread: Math.round(100 * (Math.max.apply(null, counts) - Math.min.apply(null, counts)) / avg),
-    };
-    // egy paklin belül ne ismétlődjön kategória, amíg mind sorra nem került
+      for (const q of __kv.host.deck) {
+        if (q.type === 'mc') seenMc[q.cat] = (seenMc[q.cat] || 0) + 1;
+        else seenTip[tipKey(q.cat)] = (seenTip[tipKey(q.cat)] || 0) + 1;
+      } }
+    const mcC = []; for (let c = 1; c <= nCat; c++) mcC.push(seenMc[c] || 0);
+    const mcAvg = mcC.reduce((a, b) => a + b, 0) / nCat;
+    out.catFair = { cats: nCat, min: Math.min.apply(null, mcC), max: Math.max.apply(null, mcC),
+      avg: Math.round(mcAvg),
+      spread: Math.round(100 * (Math.max.apply(null, mcC) - Math.min.apply(null, mcC)) / mcAvg) };
+    // a tippelős saját, rövidebb listája – ott is egyenletesen
+    const tipK = Object.keys(seenTip), tipC = tipK.map(k => seenTip[k]);
+    const tipAvg = tipC.reduce((a, b) => a + b, 0) / tipC.length;
+    out.tipFair = { items: tipK.length, keys: tipK.slice().sort(),
+      spread: Math.round(100 * (Math.max.apply(null, tipC) - Math.min.apply(null, tipC)) / tipAvg) };
+    // a NÉGY VÁLASZOS blokkon belül ne ismétlődjön kategória, amíg mind sorra nem került
     __kv.host.usedIds = new Set(); buildDeck();
-    const seq = __kv.host.deck.map(q => q.cat);
-    out.noRepeat = new Set(seq.slice(0, Math.min(nCat, seq.length))).size === Math.min(nCat, seq.length);
+    const mcSeq = __kv.host.deck.filter(q => q.type === 'mc').map(q => q.cat);
+    const k = Math.min(nCat, mcSeq.length);
+    out.noRepeat = new Set(mcSeq.slice(0, k)).size === k;
     __kv.host.settings.count = 15;
 
     // 6) TIPPELŐS ÉRTÉK A MEZŐNY MÉRETE SZERINT
@@ -302,8 +307,10 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   console.log('KATEGÓRIA-SORSOLÁS:');
   console.log('    ' + logic.catFair.cats + ' kategória · 200 pakli × 30 kérdés · kategóriánként átlag '
     + logic.catFair.avg + ' (min ' + logic.catFair.min + ' / max ' + logic.catFair.max + ')');
-  ck('minden kategória egyenlő eséllyel jön (szórás < 20%)', logic.catFair.spread < 20, true);
-  ck('egy paklin belül nem ismétlődik kategória, amíg mind sorra nem került', logic.noRepeat, true);
+  ck('minden kategória egyenlő eséllyel jön a 4 válaszosnál (szórás < 20%)', logic.catFair.spread < 20, true);
+  ck('a 4 válaszos blokkban nem ismétlődik kategória, amíg mind sorra nem került', logic.noRepeat, true);
+  console.log('    tippelős tételek (' + logic.tipFair.items + '): ' + logic.tipFair.keys.join(' · '));
+  ck('a tippelős saját, rövidebb listája is egyenletes (szórás < 20%)', logic.tipFair.spread < 20, true);
   console.log('TIPPELŐS ÉRTÉK A MEZŐNY MÉRETE SZERINT (3★ = 100 pont):');
   ck('nyertes értéke 2–6 játékosnál', logic.tipScale, { 2: 100, 3: 125, 4: 150, 5: 175, 6: 200 });
   ck('második legjobb tipp (csak 4 játékostól, normál kérdésérték)', logic.tipSecond, { 2: 0, 3: 0, 4: 100, 5: 100, 6: 100 });
@@ -381,43 +388,31 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   await page.waitForSelector('#s-lobby.on', { timeout: 5000 });
   console.log('REMATCH: OK (vissza a lobbyba)');
 
-  // --- kategória-szűrő ---
+  // --- kategória-szűrő: csak a kihagyható témák kapcsolhatók ---
   console.log('KATEGÓRIA-SZŰRŐ:');
-  await page.click('#seg-preset button[data-pr="cult"]');
-  const cult = await page.evaluate(() => {
-    const c = __kv.host.settings.cats;
-    return { ok: CATEGORIES.every((cat, i) => !!c[i] === !cat.pop), on: c.filter(Boolean).length };
-  });
-  ck('a Műveltség előbeállítás pont a nem-popkultúra kategóriákat hagyja bent', cult.ok, true);
-  await page.click('#seg-preset button[data-pr="fam"]');
-  const fam = await page.evaluate(() => {
-    const c = __kv.host.settings.cats;
-    return { ok: CATEGORIES.every((cat, i) => !!c[i] === (cat.fam !== false)),
-             off: CATEGORIES.filter((cat, i) => !c[i]).map(cat => cat.name) };
-  });
-  ck('a Családi előbeállítás a szülőknek nehéz kategóriákat kapcsolja ki', fam.ok, true);
-  console.log('    kikapcsolva: ' + fam.off.join(', '));
-  // egyedi kapcsoló
-  await page.click('#cat-more');
-  await page.waitForSelector('#cat-list');
-  await page.click('#cat-list .catchip[data-ci="0"]');
-  const one = await page.evaluate(() => ({ first: __kv.host.settings.cats[0], on: __kv.host.settings.cats.filter(Boolean).length }));
-  ck('egyedi kategória külön is kikapcsolható', one.first, false);
-  // a pakli tényleg csak az engedélyezett kategóriákból épül
+  const opts = await page.evaluate(() => CATEGORIES.map((c,i)=>({i,name:c.name,opt:!!c.opt})).filter(x=>x.opt));
+  console.log('    kihagyható: ' + opts.map(o => o.name).join(' · '));
+  ck('csak a kijelölt témák kapcsolhatók ki', opts.length > 0, true);
+  const chips = await page.$$eval('#seg-opt button', els => els.length);
+  ck('a lobbyban pont ennyi kapcsoló jelenik meg', chips, opts.length);
+  await page.click('#seg-opt button[data-oi="' + opts[0].i + '"]');
+  const off = await page.evaluate(() => __kv.host.settings.cats.map((v,i)=>v?null:i).filter(v=>v!==null));
+  ck('a kikapcsolt téma bejegyződik', off, [opts[0].i]);
   await page.click('#btn-start');
-  await page.waitForSelector('#cq-wrap, #s-game.on', { timeout: 8000 });
+  await page.waitForSelector('#s-game.on', { timeout: 8000 });
   const deck = await page.evaluate(() => {
-    const c = __kv.host.settings.cats;
-    return { bad: __kv.host.deck.filter(q => !c[q.cat - 1]).length, len: __kv.host.deck.length };
+    const c = __kv.host.settings.cats, d = __kv.host.deck;
+    return { badMc: d.filter(q => q.type === 'mc' && !c[q.cat - 1]).length,
+             tipAll: d.filter(q => q.type === 'tip').length };
   });
-  ck('a pakliba nem kerül kikapcsolt kategóriából kérdés', deck.bad, 0);
-  // beállítás túléli az új meccset
+  ck('a 4 válaszos kérdések közé nem kerül kikapcsolt téma', deck.badMc, 0);
+  ck('a tippelős a szűrőtől függetlenül jön', deck.tipAll > 0, true);
   await page.evaluate(() => { __kv.host.qi = __kv.host.deck.length; hostNext(); });
   await page.waitForSelector('#s-end.on', { timeout: 8000 });
   await page.click('#btn-rematch');
   await page.waitForSelector('#s-lobby.on', { timeout: 8000 });
-  const kept = await page.evaluate(() => __kv.host.settings.cats.filter(Boolean).length);
-  ck('a szűrés megmarad az új meccsre', kept, one.on);
+  const kept = await page.evaluate(() => __kv.host.settings.cats.filter(v=>v===false).length);
+  ck('a szűrés megmarad az új meccsre', kept, 1);
   if (sf) { console.error('❌ ' + sf + ' hibás ellenőrzés'); process.exitCode = 1; }
 
   console.log(errors.length ? 'HIBÁK:\n' + errors.join('\n') : 'KONZOL: tiszta ✔');

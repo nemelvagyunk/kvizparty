@@ -8,26 +8,26 @@
 // ============================================================
 
 const CATEGORIES = [
- {"id":1, "name":"Magyar történelem", "icon":"🏰", "group":"Magyar általános műveltség", "pop":false, "fam":true},
- {"id":2, "name":"Magyar irodalom", "icon":"📜", "group":"Magyar általános műveltség", "pop":false, "fam":true},
- {"id":3, "name":"Magyarország földrajza", "icon":"🗺️", "group":"Magyar általános műveltség", "pop":false, "fam":true},
- {"id":4, "name":"Magyar tudósok és találmányok", "icon":"💡", "group":"Magyar általános műveltség", "pop":false, "fam":true},
- {"id":5, "name":"Magyar nyelv és szólások", "icon":"🗣️", "group":"Magyar általános műveltség", "pop":false, "fam":true},
- {"id":6, "name":"Világtörténelem", "icon":"⚔️", "group":"Nemzetközi általános műveltség", "pop":false, "fam":true},
- {"id":7, "name":"Világföldrajz", "icon":"🌍", "group":"Nemzetközi általános műveltség", "pop":false, "fam":true},
- {"id":8, "name":"Természettudomány", "icon":"🔬", "group":"Nemzetközi általános műveltség", "pop":false, "fam":true},
- {"id":9, "name":"Világirodalom és képzőművészet", "icon":"🎨", "group":"Nemzetközi általános műveltség", "pop":false, "fam":true},
- {"id":10, "name":"Technika, űrkutatás, informatika", "icon":"🚀", "group":"Nemzetközi általános műveltség", "pop":false, "fam":true},
- {"id":11, "name":"Magyar filmek és sorozatok", "icon":"🎬", "group":"Magyar popkultúra", "pop":true, "fam":true},
- {"id":12, "name":"Magyar zene és könnyűzene", "icon":"🎸", "group":"Magyar popkultúra", "pop":true, "fam":true},
- {"id":13, "name":"Magyar tévé és média", "icon":"📺", "group":"Magyar popkultúra", "pop":true, "fam":true},
- {"id":14, "name":"Magyar sport és sportolók", "icon":"🏅", "group":"Magyar popkultúra", "pop":true, "fam":true},
- {"id":15, "name":"Magyar gasztronómia és hungarikumok", "icon":"🌶️", "group":"Magyar popkultúra", "pop":false, "fam":true},
- {"id":16, "name":"Nemzetközi filmek és sorozatok", "icon":"🍿", "group":"Nemzetközi popkultúra", "pop":true, "fam":true},
- {"id":17, "name":"Nemzetközi zene és popsztárok", "icon":"🎤", "group":"Nemzetközi popkultúra", "pop":true, "fam":true},
- {"id":18, "name":"Mémek és internetkultúra", "icon":"😂", "group":"Nemzetközi popkultúra", "pop":true, "fam":false},
- {"id":19, "name":"Videójátékok és gaming", "icon":"🎮", "group":"Nemzetközi popkultúra", "pop":true, "fam":false},
- {"id":20, "name":"Nemzetközi sport", "icon":"⚽", "group":"Nemzetközi popkultúra", "pop":true, "fam":true}
+ {"id":1, "name":"Magyar történelem", "icon":"🏰", "tip":true},
+ {"id":2, "name":"Magyar irodalom", "icon":"📜", "tip":false},
+ {"id":3, "name":"Magyarország földrajza", "icon":"🗺️", "tip":true, "tipg":"foldrajz"},
+ {"id":4, "name":"Magyar tudósok és találmányok", "icon":"💡", "tip":true, "tipg":"feltalalo"},
+ {"id":5, "name":"Magyar nyelv és szólások", "icon":"🗣️", "tip":false},
+ {"id":6, "name":"Világtörténelem", "icon":"⚔️", "tip":true},
+ {"id":7, "name":"Világföldrajz", "icon":"🌍", "tip":true, "tipg":"foldrajz"},
+ {"id":8, "name":"Természettudomány", "icon":"🔬", "tip":true},
+ {"id":9, "name":"Világirodalom és képzőművészet", "icon":"🎨", "tip":false},
+ {"id":10, "name":"Technika, űrkutatás, informatika", "icon":"🚀", "tip":true, "tipg":"feltalalo", "opt":true},
+ {"id":11, "name":"Magyar filmek és sorozatok", "icon":"🎬", "tip":true, "tipg":"film"},
+ {"id":12, "name":"Magyar zene és könnyűzene", "icon":"🎸", "tip":false},
+ {"id":13, "name":"Magyar tévé és média", "icon":"📺", "tip":true, "tipg":"film"},
+ {"id":14, "name":"Magyar sport és sportolók", "icon":"🏅", "tip":true, "tipg":"sport"},
+ {"id":15, "name":"Magyar gasztronómia és hungarikumok", "icon":"🌶️", "tip":false},
+ {"id":16, "name":"Nemzetközi filmek és sorozatok", "icon":"🍿", "tip":true, "tipg":"film"},
+ {"id":17, "name":"Nemzetközi zene és popsztárok", "icon":"🎤", "tip":false},
+ {"id":18, "name":"Mémek és internetkultúra", "icon":"😂", "tip":false, "opt":true},
+ {"id":19, "name":"Videójátékok és gaming", "icon":"🎮", "tip":false},
+ {"id":20, "name":"Nemzetközi sport", "icon":"⚽", "tip":true, "tipg":"sport"}
 ];
 
 const QUESTIONS = [
