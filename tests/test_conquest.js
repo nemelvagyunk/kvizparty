@@ -137,7 +137,7 @@ function check(name, got, want) {
 
       /* Tükörszimmetria: a két vár felezőtengelyére tükrözve a gráfnak önmagába kell
          mennie – különben az egyik csapat eleve jobb pozícióból indulna. */
-      const C = M.txt[1][0] + M.txt[2][0];
+      const C = M.cc[1][0] + M.cc[2][0];
       const mir = M.pos.map(p => {
         let b = 0, bd = Infinity;
         for (let j = 0; j < M.n; j++) {
@@ -156,7 +156,8 @@ function check(name, got, want) {
       out.maps[key] = {
         n: M.n, pos: M.pos.length, sym, range, conn: seen.size,
         edges: M.adj.reduce((s, a) => s + a.length, 0) / 2,
-        castOk: cast.every(i => i >= 0 && i < M.n) && new Set(cast).size === cast.length,
+        castOk: cast.every(i => i >= 0 && i < M.n) && new Set(cast).size === cast.length
+                && !!M.cc && !!M.cc[1] && !!M.cc[2],
         atk: M.attacks,
         mirror: mEdges && JSON.stringify(c1) === JSON.stringify(c2)
                 && deg.every((d, i) => d === deg[mir[i]]),

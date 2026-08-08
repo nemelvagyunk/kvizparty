@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KvízParty – Hódítás mód: design-témák</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:22px 16px 60px;background:#0d0a1c;color:#eee9ff;
+     font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+.wrap{max-width:900px;margin:0 auto}
+h1{font-size:1.5rem;margin:0 0 4px;background:linear-gradient(90deg,#a78bfa,#f472b6,#fbbf24);
+   -webkit-background-clip:text;background-clip:text;color:transparent;}
+.sub{color:#a9a6c9;font-size:.9rem;margin-bottom:18px;line-height:1.5}
+.toggle{display:inline-flex;gap:6px;background:rgba(255,255,255,.06);padding:5px;border-radius:12px;margin-bottom:22px}
+.toggle button{padding:8px 16px;border:none;border-radius:9px;background:transparent;color:#a9a6c9;
+               font-weight:800;font-size:.9rem;cursor:pointer}
+.toggle button.on{background:#7c3aed;color:#fff}
+.card{border-radius:20px;overflow:hidden;margin-bottom:30px;border:1px solid rgba(255,255,255,.1)}
+.card h2{margin:0;padding:16px 20px 4px;font-size:1.15rem}
+.card .blurb{padding:0 20px 14px;font-size:.86rem;line-height:1.55;opacity:.85}
+.stage{padding:16px 18px 20px}
+svg{width:100%;height:auto;display:block}
+.chips{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.note{padding:12px 20px 16px;font-size:.8rem;line-height:1.6;border-top:1px solid rgba(255,255,255,.08);
+      color:#a9a6c9;background:rgba(0,0,0,.22)}
+.note b{color:#e6e2ff}
+
+/* ---------- 1. HADJÁRAT (pergamen) ---------- */
+.t1 .stage{background:#e8d8b0}
+.t1 h2,.t1 .blurb{background:#2a2113;color:#f0e4c8}
+.t1 .blurb{opacity:.8}
+.t1 .chip{display:inline-flex;align-items:center;gap:7px;font-family:Georgia,"Times New Roman",serif;
+  font-weight:700;font-size:.9rem;letter-spacing:.06em;color:#3a2c19;background:#dcc79a;
+  border:2px solid #6b5334;border-radius:4px;padding:6px 12px;box-shadow:2px 2px 0 rgba(90,70,40,.35)}
+.t1 .chip .v{font-weight:800;color:#7a2418}
+.t1 .chip.blue .v{color:#22406f}
+.t1 .phase{font-family:Georgia,serif;letter-spacing:.22em;font-size:.72rem;color:#6b5334;text-transform:uppercase}
+.t1 text{font-family:Georgia,"Times New Roman",serif}
+
+/* ---------- 2. FRONTVONAL (neon HUD) ---------- */
+.t2 .stage{background:#05070f}
+.t2 h2,.t2 .blurb{background:#0a0f1e;color:#cfe6ff}
+.t2 .chip{display:inline-flex;align-items:center;gap:8px;font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-weight:700;font-size:.82rem;letter-spacing:.05em;padding:6px 12px;border-radius:3px;
+  background:rgba(255,255,255,.03);border:1px solid;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}
+.t2 .chip.red{border-color:#ff2e63;color:#ffb3c8;box-shadow:0 0 12px rgba(255,46,99,.28) inset}
+.t2 .chip.blue{border-color:#00e5ff;color:#a8f0ff;box-shadow:0 0 12px rgba(0,229,255,.25) inset}
+.t2 .chip .v{color:#fff}
+.t2 .phase{font-family:ui-monospace,monospace;font-size:.72rem;letter-spacing:.2em;color:#4a5b7d}
+.t2 .pips{display:inline-flex;gap:3px;margin-left:2px}
+.t2 .pip{width:9px;height:9px;transform:rotate(45deg);border:1px solid}
+.t2 .chip.red .pip{border-color:#ff2e63}
+.t2 .chip.red .pip.on{background:#ff2e63;box-shadow:0 0 7px #ff2e63}
+.t2 .chip.blue .pip{border-color:#00e5ff}
+.t2 .chip.blue .pip.on{background:#00e5ff;box-shadow:0 0 7px #00e5ff}
+.t2 .pip.off{border-color:#3a4560;background:transparent;box-shadow:none}
+.t2 text{font-family:ui-monospace,Menlo,Consolas,monospace}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.35}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Hódítás mód – két design-téma</h1>
+  <div class="sub">Ugyanaz a nagy térkép, ugyanaz a játékállás mindkettőn. Válts a két fázis között, hogy lásd a
+    kijelölést és a támadást is.</div>
+  <div class="toggle">
+    <button id="b-grab" class="on">🚩 Területfoglalás</button>
+    <button id="b-war">⚔️ Harc</button>
+  </div>
+
+  <div class="card t1">
+    <h2>1. 🗞️ Hadjárat — régi térkép pergamenen</h2>
+    <div class="blurb">Kiterített hadi térkép: remegő tintavonalak, pecsétviasz-korongok, háromtornyú várak,
+      talpas számok, szélrózsa. A hangulat magyarázza a szabályt — területet hódítasz.</div>
+    <div class="stage">
+      <div class="chips" id="c1"></div>
+      <div id="m1"></div>
+    </div>
+    <div class="note" id="n1"></div>
+  </div>
+
+  <div class="card t2">
+    <h2>2. 🛰️ Frontvonal — neon hálózat, HUD</h2>
+    <div class="blurb">Hadműveleti kijelző: hatszögek izzó kerettel, monospace számok, célkereszt.
+      A saját területeidet összekötő élek a színedben világítanak — ránézésre látod, hol szakad meg a lánc.</div>
+    <div class="stage">
+      <div class="chips" id="c2"></div>
+      <div id="m2"></div>
+    </div>
+    <div class="note" id="n2"></div>
+  </div>
+</div>
+
+<script>
+/* ===== a játékból átvett nagy térkép ===== */
+const POS=[[288,98],[376,84],[450,86],[198,168],[290,204],[376,210],[462,202],
+           [550,170],[554,250],[198,274],[286,340],[378,342],[460,332]];
+const ADJ=[[1,3,4,5],[0,2,4,5,6],[1,5,6,7],[0,4,9],[0,1,3,5,9,10,11],
+           [0,1,2,4,6,10,11,12],[1,2,5,7,8,11,12],[2,6,8],[6,7,12],[3,4,10],
+           [4,5,9,11],[4,5,6,10,12],[5,6,8,11]];
+const CADJ={1:[3,9],2:[7,8]};
+const CC={1:[112,224],2:[656,246]};          // várak középpontja
+const VB='16 34 748 372';
+const R=26;
+
+/* ===== két játékállás ===== */
+const STATES={
+  grab:{ phase:'grab', turn:1,
+    owner:[1,0,2,1,1,0,2,2,2,1,0,0,0],
+    val:  [100,0,110,90,125,0,125,100,90,100,0,0,0],
+    castle:{1:100,2:100}, lives:{1:3,2:3},
+    picks:{1:null,2:12}, sel:[1,5,10,11], target:null },
+  war:{ phase:'war', turn:null, atk:1,
+    owner:[1,2,2,1,1,2,2,2,2,1,1,1,2],
+    val:  [100,100,110,90,125,150,125,100,90,100,75,110,110],
+    castle:{1:150,2:200}, lives:{1:3,2:2},
+    picks:{1:null,2:null}, sel:[], target:5 }
+};
+let cur='grab';
+
+const edges=(()=>{const s=new Set(),o=[];
+  for(let i=0;i<13;i++) for(const j of ADJ[i]){const k=Math.min(i,j)+'-'+Math.max(i,j);
+    if(!s.has(k)){s.add(k);o.push([i,j]);}} return o;})();
+const owns=(st,i)=>st.owner[i];
+
+/* ============ 1. HADJÁRAT ============ */
+/* háromtornyú vár: bal és jobb oldaltorony + magasabb középső, pártázattal és kapuval */
+function castle1(cx,cy,team){
+  const W=118,H=96, x=cx-W/2, y=cy-H/2+6, s=W/100;   // helyi 100×80 rendszer -> skálázva
+  const X=v=>x+v*s, Y=v=>y+v*s;
+  const fill = team===1?'#8f2b1e':'#22406f';
+  const dark = team===1?'#5e1a11':'#152a4a';
+  const line = '#33251a';
+  let p='';
+  const rect=(a,b,w,h,f)=>`<rect x="${X(a)}" y="${Y(b)}" width="${w*s}" height="${h*s}" fill="${f}" stroke="${line}" stroke-width="2.2" stroke-linejoin="round"/>`;
+  const merl=(a,b,f)=>`<rect x="${X(a)}" y="${Y(b)}" width="${6*s}" height="${9*s}" fill="${f}" stroke="${line}" stroke-width="2.2" stroke-linejoin="round"/>`;
+  // fal a tornyok között
+  p+=rect(16,46,68,34,fill);
+  // bal torony
+  p+=rect(2,32,24,48,fill);
+  p+=merl(2,24,fill)+merl(11,24,fill)+merl(20,24,fill);
+  // jobb torony
+  p+=rect(74,32,24,48,fill);
+  p+=merl(74,24,fill)+merl(83,24,fill)+merl(92,24,fill);
+  // középső, magasabb torony
+  p+=rect(36,14,28,66,fill);
+  p+=merl(36,6,fill)+merl(47,6,fill)+merl(58,6,fill);
+  // kapu
+  p+=`<path d="M ${X(42)} ${Y(80)} L ${X(42)} ${Y(64)} Q ${X(50)} ${Y(54)} ${X(58)} ${Y(64)} L ${X(58)} ${Y(80)} Z" fill="${dark}" stroke="${line}" stroke-width="2.2"/>`;
+  // zászló a középső tornyon
+  p+=`<line x1="${X(50)}" y1="${Y(6)}" x2="${X(50)}" y2="${Y(-16)}" stroke="${line}" stroke-width="2.4"/>`;
+  p+=`<path d="M ${X(50)} ${Y(-16)} L ${X(72)} ${Y(-10)} L ${X(50)} ${Y(-3)} Z" fill="${fill}" stroke="${line}" stroke-width="2"/>`;
+  return p;
+}
+function render1(){
+  const st=STATES[cur];
+  let s=`<svg viewBox="${VB}" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="rough1"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="3.2" xChannelSelector="R" yChannelSelector="G"/></filter>
+    <filter id="paper1" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" seed="3" result="n"/>
+      <feColorMatrix in="n" type="saturate" values="0"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.13"/></feComponentTransfer>
+      <feComposite operator="in" in2="SourceGraphic"/></filter>
+    <radialGradient id="vig1" cx="50%" cy="48%" r="72%">
+      <stop offset="55%" stop-color="#efe1bd"/><stop offset="100%" stop-color="#cdb383"/></radialGradient>
+  </defs>
+  <rect x="16" y="34" width="748" height="372" fill="url(#vig1)"/>
+  <rect x="16" y="34" width="748" height="372" fill="#7a5c30" filter="url(#paper1)" opacity=".9"/>`;
+
+  s+='<g filter="url(#rough1)">';
+  for(const t of [1,2]) for(const i of CADJ[t])
+    s+=`<line x1="${CC[t][0]}" y1="${CC[t][1]}" x2="${POS[i][0]}" y2="${POS[i][1]}" stroke="#4a3826" stroke-width="3.4" stroke-linecap="round"/>`;
+  for(const [i,j] of edges)
+    s+=`<line x1="${POS[i][0]}" y1="${POS[i][1]}" x2="${POS[j][0]}" y2="${POS[j][1]}" stroke="#4a3826" stroke-width="3.4" stroke-linecap="round"/>`;
+  s+='</g>';
+
+  for(const t of [1,2]){
+    s+=castle1(CC[t][0],CC[t][1],t);
+    const bx=CC[t][0], by=CC[t][1]+68;                       // pergamen-szalag a vár alatt
+    s+=`<path d="M ${bx-44} ${by-15} L ${bx+44} ${by-15} L ${bx+36} ${by} L ${bx+44} ${by+15}
+         L ${bx-44} ${by+15} L ${bx-36} ${by} Z" fill="#f0e2c0" stroke="#33251a" stroke-width="2.4" stroke-linejoin="round"/>`;
+    s+=`<text x="${bx}" y="${by+1}" text-anchor="middle" dominant-baseline="middle" font-size="19"
+         font-weight="700" fill="${t===1?'#7a2418':'#22406f'}">${st.castle[t]}</text>`;
+  }
+
+  for(let i=0;i<13;i++){
+    const [x,y]=POS[i], o=owns(st,i);
+    const f = o===1?'#8f2b1e' : o===2?'#22406f' : '#f1e3c2';
+    s+=`<g filter="url(#rough1)"><circle cx="${x}" cy="${y}" r="${R}" fill="${f}" stroke="#33251a" stroke-width="3"/>`;
+    if(o) s+=`<circle cx="${x}" cy="${y}" r="${R-6}" fill="none" stroke="rgba(255,240,210,.28)" stroke-width="2"/>`;
+    s+='</g>';
+    s+= o ? `<text x="${x}" y="${y+1}" text-anchor="middle" dominant-baseline="middle" font-size="19"
+              font-weight="700" fill="#f6ead0">${st.val[i]}</text>`
+          : `<text x="${x}" y="${y+1}" text-anchor="middle" dominant-baseline="middle" font-size="16"
+              font-weight="700" fill="#9a7f52">${i+1}</text>`;
+    if(st.picks[2]===i) s+=`<circle cx="${x}" cy="${y}" r="${R+7}" fill="none" stroke="#22406f" stroke-width="3.5" stroke-dasharray="7 6"/>`;
+    if(st.picks[1]===i) s+=`<circle cx="${x}" cy="${y}" r="${R+7}" fill="none" stroke="#8f2b1e" stroke-width="3.5" stroke-dasharray="7 6"/>`;
+    if(st.target===i) s+=`<circle cx="${x}" cy="${y}" r="${R+8}" fill="none" stroke="#a3301f" stroke-width="4" stroke-dasharray="10 7"><animateTransform attributeName="transform" type="rotate" from="0 ${x} ${y}" to="360 ${x} ${y}" dur="9s" repeatCount="indefinite"/></circle>`;
+    if(st.sel.indexOf(i)>=0){                       // tűzött zászlócska
+      s+=`<g><line x1="${x+R-4}" y1="${y-R+4}" x2="${x+R+6}" y2="${y-R-20}" stroke="#33251a" stroke-width="3" stroke-linecap="round"/>
+          <path d="M ${x+R+6} ${y-R-20} L ${x+R+30} ${y-R-14} L ${x+R+8} ${y-R-7} Z" fill="#c8901f" stroke="#33251a" stroke-width="2"/>
+          <animate attributeName="opacity" values="1;.45;1" dur="1.5s" repeatCount="indefinite"/></g>`;
+    }
+  }
+  // szélrózsa
+  const cx=92,cy=372;
+  s+=`<g opacity=".65" stroke="#4a3826" fill="#4a3826">
+      <circle cx="${cx}" cy="${cy}" r="21" fill="none" stroke-width="2"/>
+      <path d="M ${cx} ${cy-25} L ${cx+6} ${cy} L ${cx} ${cy+25} L ${cx-6} ${cy} Z"/>
+      <path d="M ${cx-25} ${cy} L ${cx} ${cy-5} L ${cx+25} ${cy} L ${cx} ${cy+5} Z" opacity=".55"/>
+      <text x="${cx}" y="${cy-31}" text-anchor="middle" font-size="13" font-weight="700" stroke="none">É</text></g>`;
+  s+=`<text x="40" y="62" font-size="15" font-weight="700" fill="#6b5334" letter-spacing="5">H A D J Á R A T</text>`;
+  return s+'</svg>';
+}
+
+/* ============ 2. FRONTVONAL ============ */
+const NEON={1:'#ff2e63',2:'#00e5ff'};
+function hex(cx,cy,r){
+  let p=[];
+  for(let k=0;k<6;k++){const a=Math.PI/180*(60*k-90); p.push((cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1));}
+  return p.join(' ');
+}
+/* 3 ÉLET: nagy gyémánt-számláló a vár alatt (a meglévő ◆ betűjel helyett rajzolt rombuszok,
+   hogy a méret és az izzás pontosan vezérelhető legyen) */
+function lifePips(cx,cy,team,lives){
+  const s0=13, gap=33, x0=cx-gap;         // három rombusz, középre igazítva
+  let s='';
+  for(let k=0;k<3;k++){
+    const x=x0+k*gap, alive=k<lives;
+    const pts=`${x},${cy-s0} ${x+s0},${cy} ${x},${cy+s0} ${x-s0},${cy}`;
+    s+= alive
+      ? `<polygon points="${pts}" fill="${NEON[team]}" stroke="${NEON[team]}" stroke-width="2"
+          stroke-linejoin="round" filter="url(#glow2)"/>`
+      : `<polygon points="${pts}" fill="none" stroke="#34405e" stroke-width="2.5"
+          stroke-linejoin="round" stroke-dasharray="4 4"/>`;
+  }
+  return s;
+}
+
+function render2(){
+  const st=STATES[cur];
+  let s=`<svg viewBox="${VB}" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow2" x="-70%" y="-70%" width="240%" height="240%">
+      <feGaussianBlur stdDeviation="3.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <pattern id="grid2" width="34" height="34" patternUnits="userSpaceOnUse">
+      <path d="M34 0 L0 0 0 34" fill="none" stroke="#131d33" stroke-width="1"/></pattern>
+  </defs>
+  <rect x="16" y="34" width="748" height="372" fill="#05070f"/>
+  <rect x="16" y="34" width="748" height="372" fill="url(#grid2)"/>`;
+
+  // élek: a saját láncok a csapat színében izzanak
+  const link=(x1,y1,x2,y2,team)=> team
+    ? `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${NEON[team]}" stroke-width="2.6" opacity=".85" filter="url(#glow2)"/>`
+    : `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#22304d" stroke-width="2"/>`;
+  for(const t of [1,2]) for(const i of CADJ[t])
+    s+=link(CC[t][0],CC[t][1],POS[i][0],POS[i][1], owns(st,i)===t?t:0);
+  for(const [i,j] of edges){
+    const a=owns(st,i), b=owns(st,j);
+    s+=link(POS[i][0],POS[i][1],POS[j][0],POS[j][1], (a&&a===b)?a:0);
+  }
+
+  // várak: nagy hatszög + életgyűrű
+  for(const t of [1,2]){
+    const [x,y]=CC[t];
+    s+=`<polygon points="${hex(x,y,36)}" fill="#080d1a" stroke="${NEON[t]}" stroke-width="3" filter="url(#glow2)"/>`;
+    s+=`<polygon points="${hex(x,y,27)}" fill="none" stroke="${NEON[t]}" stroke-width="1" opacity=".45"/>`;
+    s+=`<text x="${x}" y="${y+1}" text-anchor="middle" dominant-baseline="middle" font-size="20"
+         font-weight="700" fill="#fff">${st.castle[t]}</text>`;
+    s+=lifePips(x, y+62, t, st.lives[t]);
+  }
+
+  for(let i=0;i<13;i++){
+    const [x,y]=POS[i], o=owns(st,i);
+    const col = o?NEON[o]:'#4a5b7d';
+    s+=`<polygon points="${hex(x,y,R)}" fill="${o?'#0a1120':'#0b0f1c'}" stroke="${col}" stroke-width="${o?2.8:1.6}"
+         ${o?'filter="url(#glow2)"':''}/>`;
+    s+=`<text x="${x}" y="${y+1}" text-anchor="middle" dominant-baseline="middle" font-size="${o?17:14}"
+         font-weight="700" fill="${o?'#fff':'#4a5b7d'}">${o?st.val[i]:(i+1)}</text>`;
+    if(st.picks[2]===i) s+=`<polygon points="${hex(x,y,R+8)}" fill="none" stroke="${NEON[2]}" stroke-width="2" stroke-dasharray="6 6"/>`;
+    if(st.picks[1]===i) s+=`<polygon points="${hex(x,y,R+8)}" fill="none" stroke="${NEON[1]}" stroke-width="2" stroke-dasharray="6 6"/>`;
+    if(st.target===i){                     // célkereszt: forgó gyűrű + saroksarkantyúk
+      s+=`<circle cx="${x}" cy="${y}" r="${R+13}" fill="none" stroke="#ffcc33" stroke-width="2" stroke-dasharray="12 9" filter="url(#glow2)">
+          <animateTransform attributeName="transform" type="rotate" from="0 ${x} ${y}" to="360 ${x} ${y}" dur="5s" repeatCount="indefinite"/></circle>`;
+      const d=R+19;
+      for(const [sx,sy] of [[-1,-1],[1,-1],[-1,1],[1,1]])
+        s+=`<path d="M ${x+sx*d} ${y+sy*d-sy*9} L ${x+sx*d} ${y+sy*d} L ${x+sx*d-sx*9} ${y+sy*d}"
+             fill="none" stroke="#ffcc33" stroke-width="2.4" filter="url(#glow2)"/>`;
+    }
+    if(st.sel.indexOf(i)>=0){
+      s+=`<polygon points="${hex(x,y,R+7)}" fill="none" stroke="#ffcc33" stroke-width="2.4" filter="url(#glow2)">
+          <animate attributeName="opacity" values="1;.25;1" dur="1.3s" repeatCount="indefinite"/></polygon>`;
+    }
+  }
+  s+=`<text x="40" y="60" font-size="12" fill="#3d5478" letter-spacing="4">FRONTVONAL // ${cur==='war'?'HARC':'FOGLALAS'}</text>`;
+  return s+'</svg>';
+}
+
+/* ===== fejlécek ===== */
+function chips1(){
+  const st=STATES[cur];
+  const c=(t,nm)=>`<span class="chip${t===2?' blue':''}">${nm} · <span class="v">${st.castle[t]+st.val.reduce((s,v,i)=>s+(st.owner[i]===t?v:0),0)}</span></span>`;
+  const ph = cur==='grab' ? 'Területfoglalás · '+st.owner.filter(o=>!o).length+' szabad' : 'Harc · 6–6 támadás';
+  return c(1,'Attila')+`<span class="phase">${ph}</span>`+c(2,'Viola');
+}
+function chips2(){
+  const st=STATES[cur];
+  const pips=t=>'<span class="pips">'+[0,1,2].map(k=>`<span class="pip ${k<st.lives[t]?'on':'off'}"></span>`).join('')+'</span>';
+  const c=(t,nm)=>`<span class="chip ${t===1?'red':'blue'}">${nm} ${pips(t)} <span class="v">${st.castle[t]+st.val.reduce((s,v,i)=>s+(st.owner[i]===t?v:0),0)}</span></span>`;
+  const ph = cur==='grab' ? 'PHASE 1 // CLAIM' : 'PHASE 2 // ASSAULT';
+  return c(1,'ATTILA')+`<span class="phase">${ph}</span>`+c(2,'VIOLA');
+}
+const N1=`<b>Amit érdemes megnézni:</b> a háromtornyú vár zászlóval, a tintavonalak remegése (SVG-szűrő,
+  nem kézzel rajzolt görbe), a pecsétviasz-korongok belső fénygyűrűje, és a választható mezőkre tűzött
+  sárga zászlócska. Harc fázisban a támadott terület körül lassan forgó vörös szaggatott kör fut.
+  <br><b>Következmény:</b> ehhez a hódítás mód körül az egész képernyő meleg tónusra váltana – a lila
+  appkeret ezzel a pergamennel ütközik.`;
+const N2=`<b>A 3 élet:</b> nagy gyémánt-számláló közvetlenül a vár alatt – a meglévő élet tömören
+  izzik a csapat színében, az elvesztett üres, szaggatott kontúr marad (a kék félnek itt már csak 2
+  élete van). A fejléc-chipben ugyanez kicsiben, hogy görgetés nélkül is lásd. <b>Az élek</b> csak akkor
+  világítanak, ha mindkét végük a tiéd – így a térkép magától megmutatja, hol szakad meg a birodalmad.
+  <br><b>Következmény:</b> a legkevesebb munka, mert a mostani sötét appba illeszkedik.`;
+
+function draw(){
+  document.getElementById('m1').innerHTML=render1();
+  document.getElementById('m2').innerHTML=render2();
+  document.getElementById('c1').innerHTML=chips1();
+  document.getElementById('c2').innerHTML=chips2();
+  document.getElementById('n1').innerHTML=N1;
+  document.getElementById('n2').innerHTML=N2;
+  document.getElementById('b-grab').classList.toggle('on',cur==='grab');
+  document.getElementById('b-war').classList.toggle('on',cur==='war');
+}
+document.getElementById('b-grab').onclick=()=>{cur='grab';draw();};
+document.getElementById('b-war').onclick=()=>{cur='war';draw();};
+draw();
+</script>
+</body>
+</html>

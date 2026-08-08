@@ -40,7 +40,7 @@
 
 Térképes párbaj két választható pályán. Csapatkód: **1 = piros** (a host / szólóban az ember), **2 = kék**.
 
-- **Térképek:** `CQ_MAPS` – **két pálya**, mindkettő a felhasználó rajzából, képelemzéssel kiolvasva. Egy térkép mezői: `n` (területszám), `r` (körsugár), `attacks` (támadás/csapat), `vb` (SVG viewBox), `pos`, `adj` (0-indexelt, szimmetrikus, összefüggő), `cadj` (a várak kijáratai), `tri`/`txt`/`anc` (vár-háromszög, felirat, élkezdet), `label`/`desc` (lobby).
+- **Térképek:** `CQ_MAPS` – **két pálya**, mindkettő a felhasználó rajzából, képelemzéssel kiolvasva. Egy térkép mezői: `n` (területszám), `r` (körsugár), `attacks` (támadás/csapat), `vb` (SVG viewBox), `pos`, `adj` (0-indexelt, szimmetrikus, összefüggő), `cadj` (a várak kijáratai), `cc` (a várak középpontja), `label`/`desc` (lobby).
   - `big`: 13 terület, 30 él, 6–6 támadás; piros vár → idx 3,9 · kék vár → idx 7,8. Az idx 5 (a „6-os") a legcentrálisabb, 8 szomszéddal.
   - `small`: 10 terület, 21 él, 4–4 támadás; piros vár → idx 2,6 · kék vár → idx 3,7. Két hub: idx 4 és 5, 7-7 szomszéddal.
   - **Mindkét térkép tükörszimmetrikus** a várak felezőtengelyére (nagy: 1↔3, 4↔8, 5↔7, 9↔10, 11↔13; kicsi: 1↔2, 3↔4, 5↔6, 7↔8, 9↔10 – 1-indexelt). Ez szándékos: egyik csapat sem indul jobb pozícióból. `test_conquest.js` minden futáskor ellenőrzi (`mirror: true`); **új térkép felvételekor is tartani kell.**
@@ -52,6 +52,11 @@ Térképes párbaj két választható pályán. Csapatkód: **1 = piros** (a hos
 - **Biztonsági szelep:** `CQ_DRY_LIMIT` egymást követő eredménytelen foglalás-forduló után a kijelölt területek gazdára találnak (különben AFK-nál végtelen ciklus lenne).
 - **Protokoll:** új `{t:'cq', st}` host-broadcast (teljes térképállapot minden változáskor) és `{t:'cqpick', idx}` vendég→host üzenet. A `question`/`reveal`/`end` üzenetek `cq:true` mezőt kapnak, és a kliens ilyenkor a `cqRender*` függvényekre ágazik. A `finishQuestion()` a `host.cq.on` flag alapján delegál a `cqFinishQuestion()`-nek, így a `collectAnswer`/`scheduleAI`/`maybeAllAnswered` változatlanul működik.
 - **Kliensállapot:** `cqState` (nem window-szintű, teszthez `window.__kv.cq`), térkép inline SVG-ként a `#cq-wrap`-ben, ami a `#s-game` képernyő tetején él.
+- **Vizuális téma: „Frontvonal" (neon HUD).** Sötét rácsos háttér, **hatszög** területek és várak izzó kerettel, monospace számok. Színek CSS-változóban: `--n1` piros `#ff2e63`, `--n2` cián `#00e5ff`, `--nAcc` arany `#ffcc33`. Rajzolás: `cqHexPts()` (hatszög-pontok), `cqPips()` (élet-rombuszok), `cqSvg()`. A `#cqGlow` SVG-szűrő **csoportonként** van alkalmazva (nem elemenként) – ez lényegesen olcsóbb, ne bontsd szét.
+  - **Élek:** csak akkor izzanak a csapat színében, ha **mindkét végük ugyanazé** – így látszik, hol szakad meg a lánc. A semleges élek külön, szűrő nélküli csoportban vannak.
+  - **A vár háromszög helyett hatszög** – ezért a térképekben `tri`/`txt`/`anc` helyett **`cc`** (vár középpontja) van; az élek a középpontból indulnak, a vár rájuk rajzolódik.
+  - **3 élet:** `cqPips()` három rombuszt rajzol a vár alá. **A funkció NINCS bekötve** – a `cqSnap()` nem küld `lives` mezőt, a kliens `st.lives||{1:3,2:3}`-ra esik vissza, tehát mindkét fél végig 3 életen áll. Ha lesz élet-logika: `lives` a host `cq` állapotába + a `cqSnap()`-be, a rajzolás már kezeli a kialvó (szaggatott) szegmenst.
+  - A `.cqsvg text{text-anchor:middle}` **felülírja** az inline `text-anchor` attribútumot (CSS erősebb a prezentációs attribútumnál) – ezért van külön `.cqsvg .cap{text-anchor:start}`.
 
 ## Tesztek (Playwright, `tests/`)
 

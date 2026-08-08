@@ -21,6 +21,8 @@ A lobbyban átkapcsolható játékmód, pontosan 2 játékossal (ember vagy AI).
 
 Mindkét pálya **tükörszimmetrikus** a két vár felezőtengelyére, tehát egyik csapat sem indul jobb pozícióból – csak a kezdés sorsolása dönt.
 
+A térkép „Frontvonal" hadműveleti kijelző stílusban jelenik meg: hatszög területek izzó kerettel, és a **saját területeidet összekötő élek a színedben világítanak** – egy pillantásból látod, meddig ér a birodalmad és hol szakad meg a lánc.
+
 **1. TERÜLETFOGLALÁS.** Sorsolás dönti el, ki választ először. Minden fordulóban előbb az egyik, majd a másik játékos jelöl ki egy szabad területet — csak olyat, amelyik a saját várához vagy egy már megszerzett területéhez kapcsolódik. (Ha nincs ilyen, bármelyik szabad terület választható.) Ugyanazt a mezőt nem lehet kijelölni; ha már csak egy terület maradt, nincs választás. Ezután jön a kérdés:
 
 - **4 válaszos kérdés (35 mp):** aki eltalálja, megkapja a saját kijelölt területét — akár mindketten.
