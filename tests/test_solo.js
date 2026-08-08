@@ -173,6 +173,26 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
     }
     __kv.host.qFinal = false;
 
+    // 5b) KATEGÓRIA-SORSOLÁS: minden kategória egyenlő eséllyel, a méretétől függetlenül
+    __kv.host.settings.count = 30; __kv.host.usedIds = new Set();
+    const seen = {}; const nCat = CATEGORIES.length;
+    for (let r = 0; r < 200; r++) { __kv.host.usedIds = new Set(); buildDeck();
+      for (const q of __kv.host.deck) seen[q.cat] = (seen[q.cat] || 0) + 1; }
+    const counts = []; for (let c = 1; c <= nCat; c++) counts.push(seen[c] || 0);
+    const avg = counts.reduce((a, b) => a + b, 0) / nCat;
+    out.catFair = {
+      cats: nCat,
+      min: Math.min.apply(null, counts), max: Math.max.apply(null, counts),
+      avg: Math.round(avg),
+      // a legnagyobb és a legkisebb kategória is az átlag ±20%-án belül legyen
+      spread: Math.round(100 * (Math.max.apply(null, counts) - Math.min.apply(null, counts)) / avg),
+    };
+    // egy paklin belül ne ismétlődjön kategória, amíg mind sorra nem került
+    __kv.host.usedIds = new Set(); buildDeck();
+    const seq = __kv.host.deck.map(q => q.cat);
+    out.noRepeat = new Set(seq.slice(0, Math.min(nCat, seq.length))).size === Math.min(nCat, seq.length);
+    __kv.host.settings.count = 15;
+
     // 6) TIPPELŐS ÉRTÉK A MEZŐNY MÉRETE SZERINT
     out.tipScale = {}; out.tipSecond = {};
     const mkP = n => { const a=[]; for(let i=0;i<n;i++) a.push({pid:'P'+i,name:'P'+i,avatar:'🦊',connected:true,score:0,streak:0,best:0}); return a; };
@@ -279,6 +299,11 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   ck('finálé + 5-ös sorozat (1,7×) = 340 pont', logic.finalStreakPts, 340);
   ck('a sorozat átível a tipp-blokkon: 10 MC → 6 tipp → dupla MC = 11. találat, 2,5×, 500 pont',
      logic.acrossTips, [11, 2.5, 500]);
+  console.log('KATEGÓRIA-SORSOLÁS:');
+  console.log('    ' + logic.catFair.cats + ' kategória · 200 pakli × 30 kérdés · kategóriánként átlag '
+    + logic.catFair.avg + ' (min ' + logic.catFair.min + ' / max ' + logic.catFair.max + ')');
+  ck('minden kategória egyenlő eséllyel jön (szórás < 20%)', logic.catFair.spread < 20, true);
+  ck('egy paklin belül nem ismétlődik kategória, amíg mind sorra nem került', logic.noRepeat, true);
   console.log('TIPPELŐS ÉRTÉK A MEZŐNY MÉRETE SZERINT (3★ = 100 pont):');
   ck('nyertes értéke 2–6 játékosnál', logic.tipScale, { 2: 100, 3: 125, 4: 150, 5: 175, 6: 200 });
   ck('második legjobb tipp (csak 4 játékostól, normál kérdésérték)', logic.tipSecond, { 2: 0, 3: 0, 4: 100, 5: 100, 6: 100 });

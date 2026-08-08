@@ -55,6 +55,8 @@
   - **A sorozat-szorzó a duplázott értékre megy** (pl. 3★ + finálé + 1,7× = 340 pont).
   - Kliens: `#g-final` sáv a kérdés fölött, és a `#g-diff` chip a valós (duplázott) pontértéket mutatja. Hódításban a `cqRenderPickUI()` üríti a sávot.
 - Időzítők: MC 20 mp, tip 25 mp; `#fast` hash-sel rövidítve (teszthez).
+- **Kategória-sorsolás minden kérdés előtt (klasszikus mód).** `hostNext()` már nem küld kérdést: `phase='catdraw'`, kimegy a `{t:'catdraw', …}` üzenet (kategória, típus, pontérték, finálé-jelzés), majd `CAT_SPIN_MS` (1,8 mp pörgetés) + `CAT_COUNT_MS` (10 mp visszaszámlálás) után a `hostAsk()` küldi a `question`-t. A host a „▶ Mehet, ne várjunk" gombbal bármikor előrehozhatja (`hostAsk()` közvetlenül). Kliens: `renderCatDraw()`.
+- **`catBag(pool)` – kategória-zsák.** A pakli nem a nyers kérdéspoolból épül, hanem megkevert kategórialistából: minden kategória sorra kerül, mielőtt bármelyik ismétlődne. Így a 100 kérdéses kategória **ugyanakkora eséllyel** jön, mint az 50 kérdéses – a kategóriaméret nem befolyásolja a gyakoriságot. A hódítás mód `cqDraw()`-ja is ezt használja (ott nincs sorsolás-képernyő).
 - Lobby-beállítások: **játékmód (Klasszikus / Hódítás)**, **hódításnál térkép (Nagy 13 / Kicsi 10)**, kérdésszám (`Q_COUNTS` = **10/15/20/30** – hódításban rejtve), 4 kategóriacsoport-kapcsoló, nehézségszűrő (1★–5★), AI hozzáadása (max 6 játékos összesen).
 - **AI-szintek (`AI_TIERS`)** – a lobbyban három gomb (`#seg-ai`), a szint a játékoson `p.ai` (0/1/2):
 

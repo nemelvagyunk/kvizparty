@@ -41,6 +41,12 @@ A terület annyit ér, amennyit a kérdés: **75 / 90 / 100 / 110 / 125 pont** a
 
 A meccs végén a pontszám = **a saját várérték + az összes birtokolt terület értéke**.
 
+## 🎲 Kategória-sorsolás
+
+A klasszikus módban minden kérdés előtt kisorsoljuk a kategóriát: a kijelzőn végigpörögnek a kategóriák, megáll a soron következőn, majd 10 másodperces visszaszámlálás indul, hogy mindenki fel tudjon készülni. Közben látod, hogy „1 a 4-ből" vagy tippelős kérdés jön-e, és mennyit ér. A host a **Mehet, ne várjunk** gombbal átugorhatja a visszaszámlálást.
+
+A sorsolás nem véletlenszerű húzás a kérdéshalmazból: **minden kategória sorra kerül, mielőtt bármelyik megismétlődne.** Így egy 100 kérdéses kategória sem jön gyakrabban, mint egy 50 kérdéses.
+
 ## Kérdéstípusok és pontozás
 
 | | „1 a 4-ből” | Tippelős |

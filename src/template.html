@@ -89,6 +89,23 @@ input:focus{border-color:var(--acc);}
   border:1px solid rgba(251,191,36,.55); color:#fde68a;}
 #g-final.on{display:block; animation:finalGlow 2.4s ease-in-out infinite;}
 @keyframes finalGlow{0%,100%{box-shadow:0 0 0 rgba(251,191,36,0)}50%{box-shadow:0 0 18px rgba(251,191,36,.4)}}
+.draw{display:flex; flex-direction:column; align-items:center; gap:14px; padding:6px 0 4px;}
+.draw-lbl{color:var(--dim); font-size:.9rem; font-weight:700; letter-spacing:.06em;}
+.draw-cat{display:flex; flex-direction:column; align-items:center; gap:8px; width:100%;
+  padding:20px 16px; border-radius:20px; background:rgba(0,0,0,.3);
+  border:2px solid rgba(255,255,255,.12); transition:border-color .2s, box-shadow .3s;}
+.draw-cat .ic{font-size:3rem; line-height:1;}
+.draw-cat .nm{font-size:1.3rem; font-weight:900; text-align:center; line-height:1.25;}
+.draw-cat.spin .ic{animation:drawflip .12s linear infinite;}
+.draw-cat.hit{border-color:#fbbf24; box-shadow:0 0 34px rgba(251,191,36,.45); animation:drawpop .45s ease;}
+@keyframes drawflip{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes drawpop{0%{transform:scale(.9)}55%{transform:scale(1.05)}100%{transform:scale(1)}}
+.draw-type{font-weight:800; font-size:.95rem; color:var(--dim); text-align:center; line-height:1.5;}
+.draw-type b{color:#fbbf24;}
+.draw-cd{font-size:3.4rem; font-weight:900; line-height:1;
+  background:linear-gradient(90deg,#a78bfa,#f472b6,#fbbf24);
+  -webkit-background-clip:text; background-clip:text; color:transparent;}
+.draw-cd.go{font-size:2rem; letter-spacing:.15em;}
 #g-question{font-size:1.35rem; font-weight:800; line-height:1.35; margin:6px 0 18px; min-height:60px;}
 .mcgrid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
 @media (max-width:480px){ .mcgrid{grid-template-columns:1fr;} }
@@ -343,6 +360,10 @@ const FAST = location.hash.indexOf('fast')>=0;   // teszt mód: #fast
 const MC_DUR   = FAST?3000:20000;
 const TIP_DUR  = FAST?3500:25000;
 const REVEAL_AUTO = FAST?1800:7000;
+/* Kategória-sorsolás minden kérdés előtt: pörgetés, majd visszaszámlálás.
+   Ettől minden kategória egyenlő eséllyel jön, akárhány kérdés van benne. */
+const CAT_SPIN_MS  = FAST?400:1800;
+const CAT_COUNT_MS = FAST?700:10000;
 const MAXP = 6;
 /* Kérdésérték nehézség szerint: 1★=75, 2★=90, 3★=100, 4★=110, 5★=125 pont */
 const QVAL = [75, 90, 100, 110, 125];
@@ -497,7 +518,7 @@ function resetAll(){
 function stopTimers(){ cancelAnimationFrame(view.raf); clearInterval(view.cdT); view.cdT=null; }
 function clearHostTimers(){
   if(!host) return;
-  clearTimeout(host.qDeadlineT); clearTimeout(host.autoNextT);
+  clearTimeout(host.qDeadlineT); clearTimeout(host.autoNextT); clearTimeout(host.catT);
   (host.aiTimers||[]).forEach(clearTimeout); host.aiTimers=[];
   if(host.cq){ clearTimeout(host.cq.pickT); clearTimeout(host.cq.aiT); clearTimeout(host.cq.nextT); }
 }
@@ -640,18 +661,33 @@ function requireName(){
 }
 
 /* ---------------- host: játékmenet ---------------- */
+/* Kategória-zsák: végigmegyünk egy megkevert kategórialistán, és csak akkor keverünk
+   újat, ha elfogyott. Így egy meccsen belül minden kategória sorra kerül, mielőtt
+   bármelyik megismétlődne – függetlenül attól, hány kérdés van benne. */
+function catBag(pool){
+  const byCat={};
+  for(const q of pool){ (byCat[q.cat]=byCat[q.cat]||{mc:[],tip:[]})[q.type].push(q); }
+  for(const c in byCat){ byCat[c].mc=shuffle(byCat[c].mc); byCat[c].tip=shuffle(byCat[c].tip); }
+  let bag=[];
+  return function draw(type){
+    let i=bag.findIndex(c=>byCat[c] && byCat[c][type].length);
+    if(i<0){
+      bag=shuffle(Object.keys(byCat).filter(c=>byCat[c][type].length || byCat[c][type==='mc'?'tip':'mc'].length));
+      i=bag.findIndex(c=>byCat[c][type].length);
+    }
+    if(i<0) return null;
+    return byCat[bag.splice(i,1)[0]][type].pop();
+  };
+}
 function buildDeck(){
-  const g=host.settings.groups, df=host.settings.diffs;
-  const pool=QUESTIONS.filter(q=>g[Math.floor((q.cat-1)/5)] && df[q.d-1]);
+  const df=host.settings.diffs;
+  const pool=QUESTIONS.filter(q=>df[q.d-1]);
   let fresh=pool.filter(q=>!host.usedIds.has(q.id));
   if(fresh.length<host.settings.count){ host.usedIds.clear(); fresh=pool; }
-  const plan=qPlan(host.settings.count);
-  const mcs=shuffle(fresh.filter(q=>q.type==='mc'));
-  const tips=shuffle(fresh.filter(q=>q.type==='tip'));
-  const take=(arr,n)=>arr.splice(0, Math.min(n, arr.length));
-  /* szűkös szűrőnél inkább rövidebb a pakli, de a szerkezet és a sorrend marad */
-  const sMc=take(mcs,plan.mc), fMc=take(mcs,plan.fmc);
-  const sTip=take(tips,plan.tip), fTip=take(tips,plan.ftip);
+  const plan=qPlan(host.settings.count), draw=catBag(fresh);
+  const take=(type,n)=>{ const a=[]; for(let i=0;i<n;i++){ const q=draw(type); if(!q) break; a.push(q); } return a; };
+  const sMc=take('mc',plan.mc), sTip=take('tip',plan.tip);
+  const fMc=take('mc',plan.fmc), fTip=take('tip',plan.ftip);
   host.deck = sMc.concat(sTip, fMc, fTip);
   host.finalFrom = sMc.length + sTip.length;    // innentől dupla pont
 }
@@ -676,18 +712,30 @@ function hostStart(){
   hostNext();
 }
 function hostNext(){
-  clearTimeout(host.autoNextT);
+  clearTimeout(host.autoNextT); clearTimeout(host.catT);
   host.qi++;
   if(host.qi>=host.deck.length){ hostEnd(); return; }
+  const q=host.deck[host.qi], cat=CATEGORIES[q.cat-1];
+  host.phase='catdraw';
+  host.qFinal = host.qi >= (host.finalFrom!=null?host.finalFrom:Infinity);
+  const bV=QVAL[(q.d||3)-1]*(host.qFinal?2:1);
+  host.qTipMult=tipMultNow(); host.qSecond=activePlayers()>=TIP_SECOND_FROM;
+  hostBroadcast({t:'catdraw', qi:host.qi, total:host.deck.length,
+    cat:{name:cat.name,icon:cat.icon}, type:q.type, d:q.d,
+    spin:CAT_SPIN_MS, count:CAT_COUNT_MS, final:host.qFinal, finalLen:finalLen(host.deck.length),
+    val: q.type==='tip' ? Math.round(bV*host.qTipMult) : bV,
+    val2:(q.type==='tip'&&host.qSecond) ? bV : 0, players:playersMin()});
+  host.catT=setTimeout(hostAsk, CAT_SPIN_MS+CAT_COUNT_MS);
+}
+function hostAsk(){
+  if(!host||host.phase!=='catdraw') return;
+  clearTimeout(host.catT);
   const q=host.deck[host.qi];
   host.usedIds.add(q.id); host.qData=q; host.answers={}; host.phase='q';
   const cat=CATEGORIES[q.cat-1];
   const dur=q.type==='mc'?MC_DUR:TIP_DUR;
   host.qDur=dur;
-  host.qFinal = host.qi >= (host.finalFrom!=null?host.finalFrom:Infinity);
-  const baseV = QVAL[(q.d||3)-1]*(host.qFinal?2:1);
-  host.qTipMult = tipMultNow();                       // a kérdés indulásakor rögzítjük
-  host.qSecond  = activePlayers()>=TIP_SECOND_FROM;
+  const baseV = QVAL[(q.d||3)-1]*(host.qFinal?2:1);   // a sorsoláskor rögzített értékek
   const msg={t:'question', qi:host.qi, total:host.deck.length, cat:{name:cat.name,icon:cat.icon},
              type:q.type, d:q.d, q:q.q, dur, players:playersMin(), last:host.qi===host.deck.length-1,
              final:host.qFinal, finalLen:finalLen(host.deck.length),
@@ -887,14 +935,15 @@ function cqBroadcast(){ hostBroadcast({t:'cq', st:cqSnap()}); }
 function cqLater(fn,ms){ clearTimeout(host.cq.nextT); host.cq.nextT=setTimeout(fn,ms); }
 
 function cqBuildPools(){
-  const g=host.settings.groups, df=host.settings.diffs;
-  const pool=QUESTIONS.filter(q=>g[Math.floor((q.cat-1)/5)] && df[q.d-1]);
-  host.cqPool={mc:shuffle(pool.filter(q=>q.type==='mc')), tip:shuffle(pool.filter(q=>q.type==='tip'))};
+  const df=host.settings.diffs;
+  const pool=QUESTIONS.filter(q=>df[q.d-1]);
+  host.cqPool={mc:pool.filter(q=>q.type==='mc'), tip:pool.filter(q=>q.type==='tip'),
+               draw:catBag(pool)};          // itt is kategóriánként egyenletesen
   return host.cqPool;
 }
 function cqDraw(type){
-  if(!host.cqPool[type].length) cqBuildPools();
-  return host.cqPool[type].pop();
+  if(!host.cqPool.draw) cqBuildPools();
+  return host.cqPool.draw(type) || (cqBuildPools(), host.cqPool.draw(type));
 }
 
 function cqStart(){
@@ -1205,6 +1254,7 @@ function handleMsg(m){
     case 'lobby': lastPlayers=m.players; cqState=null; $('cq-wrap').classList.remove('on');
                   renderLobby(m); showScreen('lobby'); break;
     case 'cq': cqOnState(m.st); break;
+    case 'catdraw': lastPlayers=m.players; renderCatDraw(m); break;
     case 'question': lastPlayers=m.players; renderQuestion(m); showScreen('game'); break;
     case 'progress': renderProgress(m.answered||[]); break;
     case 'reveal': lastPlayers=m.players; if(m.cq) cqRenderReveal(m); else renderReveal(m); break;
@@ -1299,6 +1349,62 @@ function renderLobby(m){
     $('lobby-actions').innerHTML='<div class="hint"><span class="spinner"></span>Várakozás, hogy a host elindítsa a játékot…</div>';
     $('lobby-hint').textContent='';
   }
+}
+
+/* ---------------- render: kategória-sorsolás ---------------- */
+function renderCatDraw(m){
+  stopTimers();
+  showScreen('game');
+  $('cq-wrap').classList.remove('on');
+  $('g-count').textContent=(m.qi+1)+' / '+m.total;
+  $('g-cat').textContent='🎲 Sorsolás';
+  const gd=$('g-diff');
+  gd.className='chip diffchip diff'+(m.d||3);
+  gd.textContent='★'.repeat(m.d||3)+' · '+m.val+' p';
+  $('g-timer-num').textContent=''; $('g-timerfill').style.width='100%';
+  const gf=$('g-final');
+  gf.className=m.final?'on':'';
+  gf.textContent=m.final?('🎬 DUPLA PONTOS FINÁLÉ · az utolsó '+(m.finalLen||'')+' kérdés kétszer annyit ér'):'';
+  $('g-question').textContent=''; $('g-status').innerHTML=''; $('g-reveal').innerHTML='';
+  const tLabel = m.type==='mc'
+    ? '🔵 <b>1 a 4-ből</b> · '+m.val+' pont'
+    : '🎯 <b>Tippelős</b> · '+m.val+' pont'+(m.val2?' · a másodiknak '+m.val2:'');
+  $('g-answers').innerHTML='<div class="draw">'+
+    '<div class="draw-lbl">A KÖVETKEZŐ KATEGÓRIA…</div>'+
+    '<div class="draw-cat spin" id="draw-cat"><span class="ic">🎲</span><span class="nm">…</span></div>'+
+    '<div class="draw-type">'+tLabel+'</div>'+
+    '<div class="draw-cd" id="draw-cd"></div>'+
+    (me.isHost?'<button class="btn small ghost" id="draw-skip">▶ Mehet, ne várjunk</button>':'')+
+    '</div>';
+  if(me.isHost) $('draw-skip').onclick=()=>{ if(host&&host.phase==='catdraw') hostAsk(); };
+
+  const box=$('draw-cat'), ic=box.querySelector('.ic'), nm=box.querySelector('.nm');
+  const t0=performance.now(), spin=m.spin||1800, count=m.count||10000;
+  let last=0, step=55;
+  const tick=()=>{
+    const el=performance.now()-t0;
+    if(el<spin){
+      if(el-last>=step){                       // pörgetés, egyre lassulva
+        last=el; step=55+Math.pow(el/spin,3)*260;
+        const c=CATEGORIES[Math.floor(Math.random()*CATEGORIES.length)];
+        ic.textContent=c.icon; nm.textContent=c.name;
+      }
+    } else if(!box.classList.contains('hit')){
+      box.classList.remove('spin'); box.classList.add('hit');
+      ic.textContent=m.cat.icon; nm.textContent=m.cat.name;
+    }
+    const rem=spin+count-el;
+    const cd=$('draw-cd');
+    if(cd){
+      if(el<spin) cd.textContent='';
+      else if(rem>0){ cd.className='draw-cd'; cd.textContent=Math.ceil(rem/1000); }
+      else { cd.className='draw-cd go'; cd.textContent='MEHET!'; }
+    }
+    $('g-timerfill').style.width=Math.max(0,(rem/(spin+count))*100)+'%';
+    if(rem<=-400) return;
+    view.raf=requestAnimationFrame(tick);
+  };
+  tick();
 }
 
 /* ---------------- render: kérdés ---------------- */
