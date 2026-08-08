@@ -69,7 +69,7 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   await page.click('#avatars button:nth-child(3)');
   await page.click('#btn-solo');
   await page.waitForSelector('#s-lobby.on');
-  await page.click('#btn-ai'); // +1 AI -> 3 játékos
+  await page.click('#seg-ai button[data-ai="0"]'); // +1 AI (Robo Róbert) -> 3 játékos
   await page.click('#seg-count button[data-c="10"]');
   await page.screenshot({ path: 'shots/02_lobby.png' });
   await page.click('#btn-start');

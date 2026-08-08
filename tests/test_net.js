@@ -62,7 +62,7 @@ async function answerLoop(page, who, tipValue, cheat) {
   console.log('LOBBY: mindkét oldalon 2 játékos ✔');
 
   // Host: +1 AI, 10 kérdés, indítás
-  await A.click('#btn-ai');
+  await A.click('#seg-ai button[data-ai="0"]');
   await B.waitForFunction(() => document.querySelectorAll('#lobby-players .pchip').length === 3, undefined, { timeout: 8000 });
   await A.click('#seg-count button[data-c="10"]');
   await A.screenshot({ path: 'shots/net_lobby_host.png' });

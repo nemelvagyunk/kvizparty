@@ -25,7 +25,18 @@
 - MC: minden helyes válaszoló megkapja az értéket + gyorsasági bónusz max. **+20%** (`MC_SPEED_BONUS`). Tip: csak a nyertes kap pontot, telitalálatra **+25%** (`TIP_EXACT_BONUS`).
 - Időzítők: MC 20 mp, tip 25 mp; `#fast` hash-sel rövidítve (teszthez).
 - Lobby-beállítások: **játékmód (Klasszikus / Hódítás)**, **hódításnál térkép (Nagy 13 / Kicsi 10)**, kérdésszám (10/15/20/30/50 – hódításban rejtve), 4 kategóriacsoport-kapcsoló, nehézségszűrő (1★–5★), AI hozzáadása (max 6 játékos összesen).
-- **AI (közepes, nehézséghez skálázva):** MC-találat esélye `AI_MC_P=[0.85,0.72,0.60,0.45,0.32]` (d1..d5), tippszórás szorzó `AI_SPREAD=[0.55,0.75,1.00,1.40,1.90]`.
+- **AI-szintek (`AI_TIERS`)** – a lobbyban három gomb (`#seg-ai`), a szint a játékoson `p.ai` (0/1/2):
+
+  | | MC-találat d1..d5 | 3★-on | tippszórás (`spr`) |
+  |---|---|---|---|
+  | 🤖 Robo Róbert | 0.85 0.72 0.60 0.45 0.32 | 60% | 1.00 |
+  | ⚙️ Masina Misi | 0.72 0.58 0.45 0.34 0.27 | 45% | 1.60 |
+  | 🤪 Félnótás Fábián | 0.55 0.42 0.30 0.27 0.25 | 30% | 2.40 |
+
+  A vak tipp esélye 25%, ezért egyik görbe sem megy ez alá. A tippszórás = `AI_SPREAD[d-1] * tier.spr`.
+  Azonos szintből a második AI sorszámot kap („Masina Misi 2").
+- **AI-időzítés – „Robot Idő Büntetés":** `AI_THINK` (1–2 mp) múlva **ténylegesen** válaszol, hogy sose kelljen rá várni; a `collectAnswer`-nek viszont `think + AI_LAG` (5–25 mp) időt ad át, a kérdés hosszára vágva. **Következmény:** az AI gyakorlatilag soha nem kap gyorsasági bónuszt és minden holtversenyt elveszít az emberrel szemben – ez szándékos.
+- `scheduleAI(p,q,dur)` és `aiTip(q,tier)` a szintet a `p.ai` alapján kapja (`aiTier(p)`).
 
 ## Kérdésbázis (1000 kérdés)
 
@@ -60,7 +71,7 @@ Térképes párbaj két választható pályán. Csapatkód: **1 = piros** (a hos
 
 ## Tesztek (Playwright, `tests/`)
 
-- `npm test` → `test_solo.js` (pontozási logika a `window.__kv` teszt-hookon át + teljes szóló játszma), `test_diff.js` (nehézségszűrő + jelzés), `test_conquest.js` (hódítás: logikai ellenőrzések + teljes szóló játszma AI ellen **mindkét térképen**).
+- `npm test` → `test_solo.js` (pontozási logika a `window.__kv` teszt-hookon át + teljes szóló játszma), `test_diff.js` (nehézségszűrő + jelzés), `test_ai.js` (AI-szintek: 800 mintás találati arány szintenként, tipppontosság, Robot Idő Büntetés – **éles időzítőkkel fut, nincs `#fast`**), `test_conquest.js` (hódítás: logikai ellenőrzések + teljes szóló játszma AI ellen **mindkét térképen**).
 - `npm run test:cq` → csak a hódítás mód.
 - `npm run test:net` → `test_net.js` (klasszikus) és `test_conquest_net.js` (hódítás host+vendég a kis térképen, a két kliens állapotának egyezését is ellenőrzi), **helyi PeerJS szerverrel**: `node_modules/.bin/peerjs --port 9000 --host 127.0.0.1`, URL-hash: `#fast&srv=127.0.0.1:9000`.
 - Chromium a sandboxban: `executablePath: '/opt/pw-browsers/chromium'` (fallback: sima launch).

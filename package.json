@@ -5,9 +5,10 @@
   "private": true,
   "scripts": {
     "build": "python3 src/build.py",
-    "test": "node tests/test_solo.js && node tests/test_diff.js && node tests/test_conquest.js",
+    "test": "node tests/test_solo.js && node tests/test_diff.js && node tests/test_ai.js && node tests/test_conquest.js",
     "test:net": "node tests/test_net.js && node tests/test_conquest_net.js",
-    "test:cq": "node tests/test_conquest.js"
+    "test:cq": "node tests/test_conquest.js",
+    "test:ai": "node tests/test_ai.js"
   },
   "devDependencies": {
     "peer": "^1.0.2",

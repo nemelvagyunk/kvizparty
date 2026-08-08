@@ -2093,7 +2093,22 @@ const MAXP = 6;
 const QVAL = [75, 90, 100, 110, 125];
 const MC_SPEED_BONUS = 0.20;   // "1 a 4-ből": max +20% gyorsasági bónusz
 const TIP_EXACT_BONUS = 0.25;  // tippelős: telitalálat +25%
-const AI_NAMES = ["Robo Róbert","Kvíz Kata","Agy Andor","Tipp Tóni","Okos Otti"];
+/* ---- AI-szintek ----------------------------------------------------------
+   p[]  : találati esély a „4 válaszos” kérdésre nehézségenként (d1..d5)
+   spr  : a tippelős szórás szorzója (minél nagyobb, annál pontatlanabb a tipp)
+   A vak tippelés esélye 25%, ezért Fábián a nehéz kérdéseken már alig jobb annál. */
+const AI_TIERS = [
+  { key:'robi',   short:'Robi',   name:'Robo Róbert',      avatar:'🤖',
+    p:[0.85,0.72,0.60,0.45,0.32], spr:1.00 },
+  { key:'misi',   short:'Misi',   name:'Masina Misi',      avatar:'⚙️',
+    p:[0.72,0.58,0.45,0.34,0.27], spr:1.60 },
+  { key:'fabian', short:'Fábián', name:'Félnótás Fábián',  avatar:'🤪',
+    p:[0.55,0.42,0.30,0.27,0.25], spr:2.40 },
+];
+/* Az AI azonnal válaszol (nem kell rá várni), de kap egy „Robot Idő Büntetést”:
+   a pontozásnál/holtversenynél ennyi időt számolunk fel neki. */
+const AI_THINK = FAST?[300,700]:[1000,2000];      // tényleges válaszidő (ms)
+const AI_LAG   = FAST?[600,2200]:[5000,25000];    // Robot Idő Büntetés (ms)
 const AVATARS = ["🦊","🐼","🦁","🐸","🐙","🦄","🐯","🐨","🐷","🐰","🦉","🐳"];
 const SHAPES = ["▲","◆","●","■"];
 
@@ -2223,12 +2238,14 @@ function hostLobbyMsg(){
   return {t:'lobby', code:net.code, solo:host.solo, players:playersMin(),
     settings:{...host.settings, groups:host.settings.groups.slice(), diffs:host.settings.diffs.slice()}, phase:host.phase};
 }
-function hostAddAI(){
+function hostAddAI(tier){
   if(host.players.length>=MAXP){ toast('A szoba megtelt (max 6 játékos)'); return; }
+  const ti=Math.max(0,Math.min(AI_TIERS.length-1, Number(tier)||0)), t=AI_TIERS[ti];
+  let name=t.name, n=1;
+  while(host.players.some(p=>p.name===name)) name=t.name+' '+(++n);
   const used=host.players.filter(p=>p.isAI).length;
-  const name=AI_NAMES[used%AI_NAMES.length];
-  const av=["🤖","👾","🛸","🦾","💻"][used%5];
-  host.players.push({pid:'AI'+(used+1)+'-'+Math.floor(Math.random()*999), name, avatar:av, isAI:true, connected:true, score:0});
+  host.players.push({pid:'AI'+(used+1)+'-'+Math.floor(Math.random()*9999), name, avatar:t.avatar,
+                     isAI:true, ai:ti, connected:true, score:0});
   hostBroadcast(hostLobbyMsg());
 }
 function hostRemovePlayer(pid){
@@ -2771,25 +2788,30 @@ function cqAiPick(team,list){
   return best;
 }
 
-/* ---------------- AI (közepes szint, nehézséghez igazodva) ----------------
-   Az AI "tudása" a kérdés nehézségétől függ: könnyű kérdésnél jó eséllyel talál,
-   extra nehéznél már alig jobb a vak tippnél. */
-const AI_MC_P   = [0.85, 0.72, 0.60, 0.45, 0.32];   // találati esély d1..d5
-const AI_SPREAD = [0.55, 0.75, 1.00, 1.40, 1.90];   // tipp-szórás szorzó d1..d5
+/* ---------------- AI ----------------
+   Az AI "tudása" a szintjétől ÉS a kérdés nehézségétől függ (AI_TIERS).
+   Időzítés: 1–2 mp múlva ténylegesen válaszol (így sosem kell rá várni),
+   de a pontozásnál kap egy 5–25 mp-es Robot Idő Büntetést – vagyis a
+   gyorsasági bónuszt és a holtversenyt gyakorlatilag mindig az ember viszi. */
+const AI_SPREAD = [0.55, 0.75, 1.00, 1.40, 1.90];   // tipp-szórás alapszorzó d1..d5
+function aiTier(p){ return AI_TIERS[Math.max(0,Math.min(AI_TIERS.length-1, p.ai||0))]; }
+function rnd(r){ return r[0]+Math.random()*(r[1]-r[0]); }
 function scheduleAI(p,q,dur){
-  const t=Math.round(dur*(0.25+Math.random()*0.6));
+  const tier=aiTier(p);
+  const think=Math.round(rnd(AI_THINK));               // ennyi idő múlva válaszol
+  const shown=Math.min(dur, think+Math.round(rnd(AI_LAG)));  // ennyit "számolunk fel" neki
   host.aiTimers.push(setTimeout(()=>{
     let value;
     if(q.type==='mc'){
-      if(Math.random()<AI_MC_P[(q.d||3)-1]) value=host.qCorrectIndex;
+      if(Math.random()<tier.p[(q.d||3)-1]) value=host.qCorrectIndex;
       else { const w=[0,1,2,3].filter(i=>i!==host.qCorrectIndex); value=w[Math.floor(Math.random()*w.length)]; }
-    } else value=aiTip(q);
-    collectAnswer(p.pid,value,t);
-  },t));
+    } else value=aiTip(q,tier);
+    collectAnswer(p.pid,value,shown);
+  },think));
 }
-function aiTip(q){
+function aiTip(q,tier){
   const a=q.a; let g;
-  const m=AI_SPREAD[(q.d||3)-1];
+  const m=AI_SPREAD[(q.d||3)-1]*((tier&&tier.spr)||1);
   const yearLike=a>=800&&a<=2100&&(!q.unit);
   if(yearLike){
     const sigma=(6+Math.random()*22)*m;
@@ -2861,12 +2883,16 @@ function renderLobby(m){
       '</span></div>'+
       '<div class="setrow"><span class="lab">Nehézség</span><span class="seg" id="seg-diffs">'+
         DIFF_NAMES.map((n,i)=>'<button class="gtoggle dtoggle diff'+(i+1)+' '+(m.settings.diffs[i]?'sel':'')+'" data-d="'+i+'" title="'+n+' – '+QVAL[i]+' pont">'+(i+1)+'★</button>').join('')+
+      '</span></div>'+
+      '<div class="setrow"><span class="lab">AI hozzáadása</span><span class="seg" id="seg-ai">'+
+        AI_TIERS.map((t,i)=>'<button data-ai="'+i+'" title="'+esc(t.name)+' – közepes kérdésen '+
+          Math.round(t.p[2]*100)+'% eséllyel tudja a választ">'+t.avatar+' '+t.short+'</button>').join('')+
       '</span></div></div>';
     $('lobby-actions').innerHTML =
-      '<button class="btn" id="btn-ai">🤖 AI-játékos hozzáadása</button>'+
+
       '<button class="btn primary" id="btn-start">▶ Játék indítása</button>';
-    $('btn-ai').onclick=hostAddAI;
     $('btn-start').onclick=hostStart;
+    document.querySelectorAll('#seg-ai button').forEach(b=>b.onclick=()=>hostAddAI(+b.dataset.ai));
     document.querySelectorAll('#seg-mode button').forEach(b=>b.onclick=()=>{
       host.settings.mode=b.dataset.m;
       if(b.dataset.m==='conquest'&&host.players.length!==2)

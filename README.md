@@ -54,7 +54,21 @@ A kérdés értéke a nehézségétől függ: **1★ = 75 · 2★ = 90 · 3★ =
 
 ## Kérdésbázis
 
-**1000 kérdés, 20 kategória** (kategóriánként 50), négy pillérre építve: magyar és nemzetközi általános műveltség, magyar és nemzetközi popkultúra. Nehézségi eloszlás: 1★×100, 2★×200, 3★×400, 4★×200, 5★×100. A lobbyban kategóriacsoportra és nehézségre is szűrhetsz; a közepesen okos AI találati esélye és tipppontossága a kérdés nehézségéhez igazodik.
+**1000 kérdés, 20 kategória** (kategóriánként 50), négy pillérre építve: magyar és nemzetközi általános műveltség, magyar és nemzetközi popkultúra. Nehézségi eloszlás: 1★×100, 2★×200, 3★×400, 4★×200, 5★×100. A lobbyban kategóriacsoportra és nehézségre is szűrhetsz.
+
+## AI-ellenfelek
+
+Három szint közül választhatsz, akárhány kombinációban (max. 6 játékos):
+
+| Ellenfél | Közepes (3★) kérdésre eltalálja | Jellege |
+|---|---|---|
+| 🤖 **Robo Róbert** | 60% | Kiegyensúlyozott, a könnyű kérdéseket szinte mindig tudja |
+| ⚙️ **Masina Misi** | 45% | Érezhetően gyengébb, a nehezeken már bizonytalan |
+| 🤪 **Félnótás Fábián** | 30% | Még a könnyűeken is bukdácsol, nehéz kérdésen már csak tippel |
+
+Mindhárom találati esélye a kérdés nehézségével csökken, és a butább AI a tippelős kérdéseknél is pontatlanabb.
+
+**Robot Idő Büntetés:** az AI 1–2 másodpercen belül válaszol, hogy a játék pörögjön és sose kelljen rá várni — cserébe a pontozásnál 5–25 másodperces büntetést kap. Így a gyorsasági bónuszt és a holtversenyeket gyakorlatilag mindig az ember viszi.
 
 ## Fejlesztés
 
@@ -63,8 +77,9 @@ A játék egyetlen fájlba fordul (`index.html`); a forrás a `src/` mappában v
 ```bash
 npm install            # peerjs + fejlesztői függőségek
 python3 src/build.py   # src/template.html + src/questions/part*.js -> index.html
-npm test               # Playwright e2e: szóló játszma + nehézségszűrő + hódítás mód
+npm test               # Playwright e2e: szóló játszma + nehézségszűrő + AI-szintek + hódítás mód
 npm run test:cq        # csak a hódítás mód (logika + teljes játszma AI ellen)
+npm run test:ai        # csak az AI-szintek (találati arány, tipppontosság, időbüntetés)
 npm run test:net       # hálózati tesztek (helyi PeerJS szerverrel), klasszikus + hódítás
 ```
 
