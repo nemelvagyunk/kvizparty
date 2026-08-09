@@ -267,13 +267,6 @@ input[type=number]{-moz-appearance:textfield;}
 .conn-note{color:var(--dim); text-align:center; font-size:.8rem; margin-top:22px; line-height:1.5;}
 /* verziójelző: együtt kell játszani tudni – ha két eszközön más szám van, frissíteni kell */
 .ver{display:inline-block; margin-top:6px; opacity:.55; font-size:.72rem; letter-spacing:.04em;}
-/* kapcsolat-állapot sáv (újracsatlakozás / néma szoba) */
-#netbar{position:fixed; left:0; right:0; top:0; z-index:95; display:none;
-  padding:9px 12px; text-align:center; font-size:.85rem; font-weight:700; line-height:1.35;
-  color:#2d2308; background:linear-gradient(90deg,#fbbf24,#f59e0b); box-shadow:0 2px 14px rgba(0,0,0,.4);}
-#netbar.on{display:block; animation:nbIn .25s ease-out;}
-body.nbon{padding-top:42px;}   /* a sáv ne takarja el a fejlécet (pontok, óra) */
-@keyframes nbIn{from{transform:translateY(-100%)} to{transform:translateY(0)}}
 /* ---- HÓDÍTÁS mód – „Frontvonal” téma (neon HUD) ---- */
 :root{ --n1:#ff2e63; --n2:#00e5ff; --nAcc:#ffcc33; --nDim:#4a5b7d; --nGrid:#131d33; }
 #cq-wrap{display:none; margin-bottom:12px;}
@@ -358,7 +351,6 @@ body.nbon{padding-top:42px;}   /* a sáv ne takarja el a fejlécet (pontok, óra
 <button id="snd-btn" title="Hangok ki/be">🔊</button>
 
 <!-- ================= FŐMENÜ ================= -->
-<div id="netbar"></div>
 <div class="screen on" id="s-menu">
   <div class="logo">🎉 KvízParty</div>
   <div class="tagline">2–6 fős kvízparti · 23 kategória · 1333 kérdés · 5 nehézségi szint · AI-ellenféllel is</div>
@@ -396,7 +388,6 @@ body.nbon{padding-top:42px;}   /* a sáv ne takarja el a fejlécet (pontok, óra
           <p>A kódot nem kötelező begépelni: a szoba képernyőjén ott a <b>🔗 Meghívó</b> gomb, amivel egy linket küldhetsz a családi chatbe. Aki megnyitja, annak a kód már ki lesz töltve – csak a nevét kell beírnia.</p>
           <p>A szobát nyitó játékos (a host) állítja be a játékmódot, a kérdésszámot és a tempót, és ő adhat a meccshez AI-játékosokat is – emberrel és robottal együtt legfeljebb 6 fő lehet.</p>
           <p class="dim">Ha nagyon ritkán nem jön létre a kapcsolat (szigorú céges/iskolai hálózaton fordulhat elő), mobilnetről vagy telefonos hotspotról szinte mindig működik.</p>
-          <p>Ha meccs közben megszakad a kapcsolatod (lezárult a telefon képernyője, váltott a wifi), <b>nem esel ki</b>: a képernyő tetején sárga sáv jelzi, hogy próbálunk visszakapcsolódni, és kb. fél percig magától újrapróbálkozik. Visszatérve ugyanott folytatod – a pontjaid, a sorozatod és a jokereid megmaradnak. A kimaradt kérdések viszont elúsznak. <b>Az oldal újratöltése után már nem lehet visszalépni</b> a folyó meccsbe.</p>
           <p class="dim">Ha valaki „eltérő játékverzió" üzenetet kap, az az eszköz a játék régebbi, elmentett változatát futtatja: elég frissíteni az oldalt (Ctrl+F5, mobilon húzd le a lapot). A főoldal alján mindenki látja a saját <b>játékverzióját</b> – együtt játszani csak azonos számmal lehet.</p>
         </div>
       </details>
@@ -716,12 +707,6 @@ function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();r
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function fmtNum(n){ if(!isFinite(n))return '–'; return Number(n).toLocaleString('hu-HU'); }
 let toastT=null;
-/* Vékony állapotsáv a képernyő tetején (kapcsolat megszakadt / szoba néma). */
-function netBar(txt){
-  const b=$('netbar'); if(!b) return;
-  if(!txt){ b.classList.remove('on'); b.textContent=''; document.body.classList.remove('nbon'); return; }
-  b.textContent=txt; b.classList.add('on'); document.body.classList.add('nbon');
-}
 function toast(msg,ms){ const t=$('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'), ms||3200); }
 function showScreen(name){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); $('s-'+name).classList.add('on'); }
 
@@ -785,7 +770,7 @@ function play(name){
 }
 
 /* ---------------- globális állapot ---------------- */
-let me = {pid:null, name:'', avatar:AVATARS[0], isHost:false, rejoin:null};   // rejoin = {code,pid,tok} visszacsatlakozáshoz
+let me = {pid:null, name:'', avatar:AVATARS[0], isHost:false};
 let myJok = {fifty:true, double:true, tip:true};   // a saját joker-készletem (a host validál)
 let jokIntro = true;   // a joker-sáv egyszeri figyelemfelhívó pulzálása meccsenként
 let net = {mode:null, peer:null, conn:null, conns:{}, code:null};  // mode: host | guest | solo
@@ -803,22 +788,12 @@ window.__kv = { get host(){return host}, set host(v){host=v}, get me(){return me
    hibákhoz vezetne. A GitHub Pages cache-el, ezért két játékos könnyen fut más buildet.
    BUMPOLD, ha bármelyik hálózati üzenet szerkezete vagy egy mező jelentése változik!
    Verziótörténet: 1 = verziószám előtti buildek · 2 = 2026-08-09, a verziókezelés bevezetése ·
-   3 = 2026-08-09, a `cqpick` üzenet kötelező `tok` (kör-token) mezője ·
-   4 = 2026-08-09, újracsatlakozás (`hello.rejoin`, `welcome.tok`) + életjel (`ping`/`pong`). */
-const PROTO = 4;
+   3 = 2026-08-09, a `cqpick` üzenet kötelező `tok` (kör-token) mezője. */
+const PROTO = 3;
 /* Teszt/hibakereső hook: #pv=<szám> – a kliens ennyinek vallja magát, ÉS ezt várja el a
    másik oldaltól. Így egy régi (vagy újabb) build viselkedése szimulálható. Élesben
    sosem szerepel a hash-ben, és nem ad semmilyen előnyt: eltérésnél épp hogy kizár. */
 const MY_PROTO = (function(){ const m=location.hash.match(/pv=(\d+)/); return m?+m[1]:PROTO; })();
-/* Életjel és újracsatlakozás. A telefon képernyő-zárása, wifi→mobilnet váltás vagy egy
-   pillanatnyi kiesés eddig VÉGLEG kiejtette a játékost a meccsből (a vendég `close`-ra
-   azonnal a főmenübe esett, a host pedig a `hello`-t elutasította, ha már ment a játék). */
-const PING_MS    = 4000;    // a host ennyinként küld életjelet
-const PING_QUIET = 13000;   // ennyi néma másodperc után figyelmeztetjük a vendéget
-const PING_DEAD  = 16000;   // a host ennyi után jelöli kilépettnek a néma vendéget
-const REJOIN_TRIES = 12;    // ennyiszer próbálkozunk visszakapcsolódni…
-const REJOIN_WAIT  = 3000;  // …ennyi szünettel (≈ 36 mp türelem)
-const CQ_WAIT_BACK = 60000; // hódításban ennyit várunk a visszatérőre, mielőtt lezárjuk
 const CODE_ABC="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 function genCode(){let s="";for(let i=0;i<4;i++)s+=CODE_ABC[Math.floor(Math.random()*CODE_ABC.length)];return s;}
 function peerId(code){return 'kvparty-hu-'+code;}
@@ -882,15 +857,12 @@ function destroyNet(){
      A `peer.destroy()` szinkron kiváltja a conn 'close' eseményét, és ha a `net.mode`
      még 'guest' lenne, a generikus „A kapcsolat megszakadt" felülírná a valódi okot
      (verzió-eltérés, kitiltás, tele szoba). */
-  clearInterval(net.pingT); clearInterval(net.watchT); clearTimeout(net.rejoinT);
   const p=net.peer;
   net={mode:null,peer:null,conn:null,conns:{},code:null};
-  netBar(null);
   try{ if(p) p.destroy(); }catch(e){}
 }
 function resetAll(){
   stopTimers(); clearHostTimers();
-  me.rejoin=null;
   destroyNet(); host=null; lastPlayers=[];
   cqState=null; $('cq-wrap').classList.remove('on');
   me.pid=null; me.isHost=false;
@@ -911,7 +883,7 @@ function clearHostTimers(){
   if(!host) return;
   clearTimeout(host.qDeadlineT); clearTimeout(host.autoNextT); clearTimeout(host.catT);
   (host.aiTimers||[]).forEach(clearTimeout); host.aiTimers=[];
-  if(host.cq){ clearTimeout(host.cq.pickT); clearTimeout(host.cq.aiT); clearTimeout(host.cq.nextT); clearTimeout(host.cq.waitT); }
+  if(host.cq){ clearTimeout(host.cq.pickT); clearTimeout(host.cq.aiT); clearTimeout(host.cq.nextT); }
 }
 
 /* A válaszidőt a KLIENS jelenti (nála indul a saját órája), és ez dönti el a gyorsasági
@@ -932,27 +904,10 @@ function trustMs(raw){
   return Math.round(Math.max(Math.min(c,el), el-ANSWER_LAT_GRACE));
 }
 
-/* Az „éppen ez látszik" üzenettípusok – ezek egyikét kapja vissza a visszacsatlakozó */
-const SCREEN_MSG = {lobby:1, catdraw:1, question:1, reveal:1, end:1};
 /* Üzenet minden kliensnek (host) + saját képernyő frissítése */
 function hostBroadcast(msg){
-  if(host && msg && msg.t){ if(msg.t==='cq') host.lastCq=msg; else if(SCREEN_MSG[msg.t]) host.lastScreen=msg; }
   for(const pid in net.conns){ try{ net.conns[pid].send(msg); }catch(e){} }
   handleMsg(msg);
-}
-/* Életjel: NEM a hostBroadcast-on megy, mert se képernyőt nem vált, se cache-elni nem kell. */
-function hostPing(){
-  if(!host) return;
-  for(const pid in net.conns){ try{ net.conns[pid].send({t:'ping'}); }catch(e){} }
-  const now=Date.now();
-  host.players.forEach(p=>{
-    if(p.isAI||p.isHost||p.connected===false||!p.lastSeen) return;
-    if(now-p.lastSeen>PING_DEAD){
-      p.connected=false;
-      toast(p.name+' kapcsolata megszakadt – várunk rá.',5000);
-      if(host.phase==='lobby') hostBroadcast(hostLobbyMsg()); else maybeAllAnswered();
-    }
-  });
 }
 /* Privát üzenet EGY játékosnak (pl. joker-visszaigazolás) – a host saját magának is */
 function sendTo(pid,msg){
@@ -966,8 +921,7 @@ function makeHost(solo){
   return { solo, players:[], settings:{count:15, mode:'classic', mapKey:'big', tempo:'calm'},
     cq:null, cqPool:{mc:[],tip:[]}, stats:{}, jokers:{}, qJok:{}, sMcLen:0,
     phase:'lobby', deck:[], qi:-1, answers:{}, qData:null, qCorrectIndex:0, qDur:0,
-    qDeadlineT:null, autoNextT:null, aiTimers:[], qAskedAt:0, catAt:0,
-    lastScreen:null, lastCq:null, usedIds:SESSION_USED };
+    qDeadlineT:null, autoNextT:null, aiTimers:[], qAskedAt:0, usedIds:SESSION_USED };
 }
 function playersMin(){ return host.players.map(p=>({pid:p.pid,name:p.name,avatar:p.avatar,isAI:!!p.isAI,isHost:!!p.isHost,connected:p.connected!==false,score:p.score||0,streak:p.streak||0,best:p.best||0})); }
 function hostLobbyMsg(){
@@ -1004,8 +958,7 @@ function createRoom(){
   const tryOpen=()=>{
     const p=new Peer(peerId(net.code), peerOpts());
     net.peer=p;
-    p.on('open',()=>{ toast('Szoba kész! Oszd meg a kódot 👉 '+net.code); hostBroadcast(hostLobbyMsg()); showScreen('lobby');
-      clearInterval(net.pingT); net.pingT=setInterval(hostPing, PING_MS); });
+    p.on('open',()=>{ toast('Szoba kész! Oszd meg a kódot 👉 '+net.code); hostBroadcast(hostLobbyMsg()); showScreen('lobby'); });
     p.on('connection',conn=>setupHostConn(conn));
     p.on('error',err=>{
       if(err.type==='unavailable-id' && tries<3){ tries++; net.code=genCode(); tryOpen(); return; }
@@ -1016,38 +969,9 @@ function createRoom(){
   };
   tryOpen();
 }
-/* Egy kapcsolat mindig a hozzá tartozó JÁTÉKOS-azonosítót jelenti. Újracsatlakozáskor a
-   vendég új peer-id-t kap, de a régi pid-jén kell folytatnia (pontok, sorozat, jokerek),
-   ezért a conn-on tároljuk az „igazi" pid-et. */
-function pidOf(conn){ return conn.__pid || conn.peer; }
-function newTok(){ return Math.random().toString(36).slice(2,10); }
-/* A visszatérő vendég képernyőjének helyreállítása: kivel játszunk + mi látszik éppen. */
-function hostResync(pid, conn){
-  if(!host) return;
-  try{
-    if(host.cq && host.lastCq) conn.send(host.lastCq);
-    const sc=host.lastScreen;
-    if(!sc) return;
-    const m=Object.assign({}, sc);
-    if(m.players) m.players=playersMin();
-    if(m.t==='question'){
-      /* a hátralévő idő megy át, nem a teljes – különben többet látna, mint amennyi van */
-      const left=host.qDur-(performance.now()-(host.qAskedAt||0));
-      m.dur=Math.max(1200, Math.round(left));
-      m.reAnswered=!!host.answers[pid];       // ha már válaszolt, ne válaszolhasson újra
-      if(host.qData&&host.qData.type==='mc') m.options=host.qOptions||m.options;
-    } else if(m.t==='catdraw'){
-      const left=(m.spin+m.count)-(performance.now()-(host.catAt||0));
-      m.spin=0; m.count=Math.max(800, Math.round(left));
-    }
-    conn.send(m);
-  }catch(e){}
-}
-
 function setupHostConn(conn){
   conn.on('data',d=>{
     if(!d||typeof d!=='object') return;
-    if(d.t==='pong'){ const p=host&&host.players.find(p=>p.pid===pidOf(conn)); if(p) p.lastSeen=Date.now(); return; }
     if(d.t==='hello'){
       /* Verzióellenőrzés MINDEN más előtt: ez a legbeszédesebb hibaüzenet. */
       const gv=Number(d.v)||1;
@@ -1058,47 +982,29 @@ function setupHostConn(conn){
         toast(String(d.name||'Egy játékos').slice(0,14)+' nem tud csatlakozni: eltérő játékverzió (nála v'+gv+', a szobában v'+MY_PROTO+'). Frissítsetek oldalt (Ctrl+F5)!',9000);
         setTimeout(()=>conn.close(),600); return;
       }
-      /* ÚJRACSATLAKOZÁS: ismert pid + titok → a régi helyére ül vissza, akkor is, ha
-         közben megy a játék. A titkot csak ő kaphatta meg (a `welcome` privát üzenet). */
-      const rj=d.rejoin;
-      if(rj&&rj.pid&&rj.tok){
-        const old=host.players.find(x=>x.pid===rj.pid&&x.tok&&x.tok===rj.tok&&!x.isAI);
-        if(!old){ conn.send({t:'reject',reason:'Ez a hely már nem elérhető a szobában.'}); setTimeout(()=>conn.close(),400); return; }
-        if(net.conns[old.pid]&&net.conns[old.pid]!==conn){ try{net.conns[old.pid].close();}catch(e){} }
-        conn.__pid=old.pid; net.conns[old.pid]=conn;
-        old.connected=true; old.lastSeen=Date.now();
-        if(host.cq) clearTimeout(host.cq.waitT);
-        conn.send({t:'welcome', v:MY_PROTO, you:old.pid, tok:old.tok, back:true});
-        toast(old.name+' visszacsatlakozott 🎉',4000);
-        if(host.phase==='lobby') hostBroadcast(hostLobbyMsg()); else hostResync(old.pid, conn);
-        return;
-      }
       if(host.phase!=='lobby'){ conn.send({t:'reject',reason:'A játék már elkezdődött ebben a szobában.'}); setTimeout(()=>conn.close(),400); return; }
       if(host.players.length>=MAXP){ conn.send({t:'reject',reason:'A szoba megtelt (max 6 játékos).'}); setTimeout(()=>conn.close(),400); return; }
       const name=String(d.name||'Játékos').slice(0,14);
       const avatar=AVATARS.includes(d.avatar)?d.avatar:'🐼';
       net.conns[conn.peer]=conn;
-      const tok=newTok();
-      host.players.push({pid:conn.peer, name, avatar, connected:true, score:0, tok, lastSeen:Date.now()});
-      conn.send({t:'welcome', v:MY_PROTO, you:conn.peer, tok});
+      host.players.push({pid:conn.peer, name, avatar, connected:true, score:0});
+      conn.send({t:'welcome', v:MY_PROTO, you:conn.peer});
       hostBroadcast(hostLobbyMsg());
     }
     else if(d.t==='answer'){
-      const p=host.players.find(p=>p.pid===pidOf(conn));
+      const p=host.players.find(p=>p.pid===conn.peer);
       if(p && d.qi===host.qi) collectAnswer(p.pid, d.value, trustMs(d.ms));
     }
     else if(d.t==='joker'){
-      if(d.qi===host.qi && host.players.some(p=>p.pid===pidOf(conn))) hostJoker(pidOf(conn), d.kind);
+      if(d.qi===host.qi && host.players.some(p=>p.pid===conn.peer)) hostJoker(conn.peer, d.kind);
     }
     else if(d.t==='cqpick'){
-      const p=host.players.find(p=>p.pid===pidOf(conn));
+      const p=host.players.find(p=>p.pid===conn.peer);
       if(p&&host.cq&&host.cq.on&&Number(d.tok)===host.cq.pickTok) cqOnPick(p.team, Number(d.idx));
     }
-    else if(d.t==='bye'){ const p=host&&host.players.find(x=>x.pid===pidOf(conn)); if(p) p.tok=null; guestGone(pidOf(conn)); }
+    else if(d.t==='bye'){ guestGone(conn.peer); }
   });
-  /* Fontos: csak akkor számít kilépésnek, ha EZ a kapcsolat az aktuális – egy régi,
-     felváltott kapcsolat záródása nem dobhatja ki a már visszacsatlakozott játékost. */
-  conn.on('close',()=>{ const pid=pidOf(conn); if(net.conns[pid]===conn||!net.conns[pid]) guestGone(pid); });
+  conn.on('close',()=>guestGone(conn.peer));
 }
 function guestGone(pid){
   if(net.conns[pid]){ try{net.conns[pid].close();}catch(e){} delete net.conns[pid]; }
@@ -1106,95 +1012,33 @@ function guestGone(pid){
   if(!p||p.connected===false) return;
   if(host.phase==='lobby'){ host.players=host.players.filter(x=>x.pid!==pid); hostBroadcast(hostLobbyMsg()); }
   else if(host.cq&&host.cq.on&&host.cq.phase!=='over'){
-    p.connected=false;
-    if(p.tok){   /* van érvényes jegye – várunk a visszatérésére */
-      toast(p.name+' kapcsolata megszakadt – egy percet várunk rá.',6000);
-      clearTimeout(host.cq.waitT);
-      host.cq.waitT=setTimeout(()=>{
-        if(host&&host.cq&&host.cq.on&&host.cq.phase!=='over'){
-          toast('Nem jött vissza – a hódítás véget ért.',5000); clearHostTimers(); cqEnd();
-        }
-      }, CQ_WAIT_BACK);
-    } else { toast(p.name+' kilépett – a hódítás véget ért.',5000); clearHostTimers(); cqEnd(); }
+    p.connected=false; toast(p.name+' kilépett – a hódítás véget ért.',5000);
+    clearHostTimers(); cqEnd();
   }
-  else { p.connected=false;
-         toast(p.name+(p.tok?' kapcsolata megszakadt – vissza tud jönni.':' kilépett a játékból'),4500);
-         maybeAllAnswered(); }
+  else { p.connected=false; toast(p.name+' kilépett a játékból'); maybeAllAnswered(); }
 }
 
-/* Egy csatlakozási kísérlet. `rejoin` = {pid,tok} esetén a régi helyünkre ülünk vissza. */
-function guestConnect(code, rejoin, onFail){
-  net.mode='guest'; net.code=code;
-  try{ if(net.peer) net.peer.destroy(); }catch(e){}
-  const p=new Peer(undefined, peerOpts());
-  net.peer=p;
-  let opened=false, failed=false;
-  const fail=(why)=>{ if(opened||failed) return; failed=true; onFail(why); };
-  const failT=setTimeout(()=>fail('timeout'), rejoin?9000:12000);
-  p.on('open',()=>{
-    const conn=p.connect(peerId(code),{reliable:true});
-    net.conn=conn;
-    conn.on('open',()=>{
-      opened=true; clearTimeout(failT);
-      const hello={t:'hello', v:MY_PROTO, name:me.name, avatar:me.avatar};
-      if(rejoin) hello.rejoin=rejoin;
-      conn.send(hello);
-    });
-    conn.on('data',d=>handleMsg(d));
-    conn.on('close',()=>onGuestClose());
-  });
-  p.on('error',err=>{ clearTimeout(failT); fail(err&&err.type||'error'); });
-}
 function joinRoom(){
   if(!requireName()) return;
   const code=($('inp-code').value||'').trim().toUpperCase();
   if(code.length!==4){ toast('Add meg a 4 jegyű szobakódot!'); return; }
-  me.rejoin=null;
+  net.mode='guest';
   toast('Csatlakozás…',8000);
-  guestConnect(code, null, why=>{
-    toast(why==='peer-unavailable' ? ('Nincs ilyen szoba: '+code)
-        : (why==='timeout' ? 'Nem sikerült csatlakozni. Ellenőrizd a kódot és a netet!'
-                           : 'Kapcsolódási hiba: '+why));
-    resetAll();
+  const p=new Peer(undefined, peerOpts());
+  net.peer=p;
+  let opened=false;
+  const failT=setTimeout(()=>{ if(!opened){ toast('Nem sikerült csatlakozni. Ellenőrizd a kódot és a netet!'); resetAll(); } },12000);
+  p.on('open',()=>{
+    const conn=p.connect(peerId(code),{reliable:true});
+    net.conn=conn;
+    conn.on('open',()=>{ opened=true; clearTimeout(failT); conn.send({t:'hello', v:MY_PROTO, name:me.name, avatar:me.avatar}); });
+    conn.on('data',d=>handleMsg(d));
+    conn.on('close',()=>{ if(net.mode==='guest'){ toast('A kapcsolat a szobával megszakadt.'); resetAll(); } });
   });
-}
-/* A kapcsolat elszakadt. Ha van érvényes jegyünk, NEM esünk ki a meccsből: türelmesen
-   próbálkozunk vissza (telefon képernyőzár, wifi→mobilnet váltás, pillanatnyi kiesés). */
-function onGuestClose(){
-  if(net.mode!=='guest') return;
-  if(me.rejoin&&me.rejoin.code){ startRejoin(); return; }
-  toast('A kapcsolat a szobával megszakadt.');
-  resetAll();
-}
-function startRejoin(){
-  if(net.rejoining) return;
-  net.rejoining=true; net.tries=0;
-  attemptRejoin();
-}
-function attemptRejoin(){
-  if(net.mode!=='guest'||!me.rejoin){ net.rejoining=false; return; }
-  net.tries=(net.tries||0)+1;
-  if(net.tries>REJOIN_TRIES){
-    net.rejoining=false; me.rejoin=null;
-    toast('Nem sikerült visszakapcsolódni a szobába. 😞',6000);
-    resetAll(); return;
-  }
-  netBar('🔄 Megszakadt a kapcsolat – újracsatlakozás… ('+net.tries+'/'+REJOIN_TRIES+')');
-  guestConnect(me.rejoin.code, {pid:me.rejoin.pid, tok:me.rejoin.tok}, ()=>{
-    clearTimeout(net.rejoinT);
-    net.rejoinT=setTimeout(attemptRejoin, REJOIN_WAIT);
+  p.on('error',err=>{
+    if(err.type==='peer-unavailable'){ clearTimeout(failT); toast('Nincs ilyen szoba: '+code); resetAll(); }
+    else if(!opened){ clearTimeout(failT); toast('Kapcsolódási hiba: '+err.type); resetAll(); }
   });
-}
-/* Életjel-figyelés a vendégnél: ha elnémul a szoba (pl. a host telefonja háttérbe került),
-   szólunk – de NEM bontjuk a kapcsolatot, mert az sokszor még él és magától visszatér. */
-function guestWatch(){
-  clearInterval(net.watchT);
-  net.lastPing=Date.now();
-  net.watchT=setInterval(()=>{
-    if(net.mode!=='guest'||net.rejoining) return;
-    if(Date.now()-(net.lastPing||0)>PING_QUIET) netBar('⏳ A szoba nem válaszol – lehet, hogy a host telefonja elaludt…');
-    else netBar(null);
-  }, 2000);
 }
 
 function startSolo(){
@@ -1304,7 +1148,6 @@ function hostNext(){
   const FF=(host.finalFrom!=null&&host.finalFrom<=host.deck.length)?host.finalFrom:host.deck.length;
   const rest=host.qFinal?[]:host.deck.slice(host.qi, FF);
   const cms=catCountMs();   // 🐢 10 mp vagy ⚡ 4 mp a lobby tempó-beállítása szerint
-  host.catAt=performance.now();
   hostBroadcast({t:'catdraw', qi:host.qi, total:host.deck.length,
     cat: q.type==='tip' ? tipItemInfo(q.cat) : {name:cat.name,icon:cat.icon}, type:q.type, d:q.d,
     spin:CAT_SPIN_MS, count:cms, final:host.qFinal, finalLen:finalLen(host.deck.length),
@@ -1939,17 +1782,11 @@ function handleMsg(m){
           : 'A szoba újabb verziójú játékot futtat (v'+hv+', nálad v'+MY_PROTO+'). Frissítsd az oldalt (Ctrl+F5), és csatlakozz újra!', 9000);
         sendToHost({t:'bye'}); resetAll(); return;
       }
-      me.pid=m.you;
-      if(m.tok&&net.code) me.rejoin={code:net.code, pid:m.you, tok:m.tok};
-      net.rejoining=false; net.tries=0; clearTimeout(net.rejoinT);
-      netBar(null); guestWatch();
-      if(m.back) toast('Visszacsatlakoztál a szobába! 🎉',4000);
-      break;
+      me.pid=m.you; break;
     }
-    case 'ping': net.lastPing=Date.now(); sendToHost({t:'pong'}); break;
-    case 'reject': me.rejoin=null; toast(m.reason||'Elutasítva', m.ms); resetAll(); break;
-    case 'kicked': me.rejoin=null; toast('A host kitett a szobából.'); resetAll(); break;
-    case 'hostbye': me.rejoin=null; toast('A host bezárta a szobát.'); resetAll(); break;
+    case 'reject': toast(m.reason||'Elutasítva', m.ms); resetAll(); break;
+    case 'kicked': toast('A host kitett a szobából.'); resetAll(); break;
+    case 'hostbye': toast('A host bezárta a szobát.'); resetAll(); break;
     case 'lobby': lastPlayers=m.players; cqState=null; $('cq-wrap').classList.remove('on');
                   myJok={fifty:true,double:true,tip:true}; jokIntro=true;   // új meccs → új joker-készlet
                   SND.fanfared=false; lastPickKey=null;                     // meccs-szintű hang-flagek vissza
@@ -1957,9 +1794,7 @@ function handleMsg(m){
     case 'jokerack': jokerApply(m); break;
     case 'cq': cqOnState(m.st); break;
     case 'catdraw': lastPlayers=m.players; renderCatDraw(m); break;
-    case 'question': lastPlayers=m.players; renderQuestion(m); showScreen('game');
-                     if(m.reAnswered){ view.answered=true; lockAnswers('A válaszod már megvan ✔'); }
-                     break;
+    case 'question': lastPlayers=m.players; renderQuestion(m); showScreen('game'); break;
     case 'progress': renderProgress(m.answered||[]); break;
     case 'reveal': lastPlayers=m.players; if(m.cq) cqRenderReveal(m); else renderReveal(m); break;
     case 'end': if(m.cq) cqRenderEnd(m); else renderEnd(m); showScreen('end'); break;
@@ -2701,14 +2536,6 @@ function renderEnd(m){
 /* ---------------- indítás ---------------- */
 function boot(){
   $('ver-note').textContent='Játékverzió: v'+MY_PROTO+' · együtt játszani csak azonos verzióval lehet';
-  /* Telefon-feloldás / fülváltás: ilyenkor derül ki, hogy közben elszakadt a kapcsolat –
-     ne várjunk a következő ütemezett próbálkozásra, nézzük meg azonnal. */
-  document.addEventListener('visibilitychange',()=>{
-    if(document.visibilityState!=='visible'||net.mode!=='guest'||!me.rejoin) return;
-    const dead=!net.conn||net.conn.open===false;
-    if(dead&&!net.rejoining) startRejoin();
-    else if(net.rejoining){ clearTimeout(net.rejoinT); attemptRejoin(); }
-  });
   /* meghívó linkkel érkezett: a kód már ki van töltve, csak a név hiányzik */
   applyInvite();
   window.addEventListener('hashchange',()=>{ if(!net.mode) applyInvite(); });

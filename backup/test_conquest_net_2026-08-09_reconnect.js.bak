@@ -12,7 +12,7 @@ function check(name, got, want) {
 }
 
 /* Egy játékos önjáró ciklusa: ha rá kerül a sor, választ; ha kérdés van, válaszol. */
-async function play(page, tag, tipBase, stats, dropAt) {
+async function play(page, tag, tipBase, stats) {
   const t0 = Date.now();
   while (Date.now() - t0 < 300000) {
     if (await page.$('#s-end.on')) return;
@@ -28,10 +28,6 @@ async function play(page, tag, tipBase, stats, dropAt) {
     if (mc) {
       stats.mc++;
       await page.click('.mcbtn:nth-child(' + (1 + (stats.mc % 4)) + ')').catch(() => {});
-      if (dropAt && stats.mc === dropAt) {           // kapcsolat-szakadás hódítás közben
-        await page.evaluate(() => { try { net.conn.close(); } catch (e) {} });
-        console.log('ÚJRACSATLAKOZÁS: a vendég kapcsolatát elvágtuk a(z) ' + stats.mc + '. kérdés után');
-      }
       await page.waitForTimeout(150);
       continue;
     }
@@ -92,14 +88,7 @@ async function play(page, tag, tipBase, stats, dropAt) {
   check('host = piros (1), vendég = kék (2)', teams, [1, 2]);
 
   const sa = { picks: 0, mc: 0, tip: 0 }, sb = { picks: 0, mc: 0, tip: 0 };
-  await B.evaluate(() => { window.__nb = 0; window.__pid0 = window.__kv.me.pid;
-    new MutationObserver(() => { if (document.getElementById('netbar').classList.contains('on')) window.__nb++; })
-      .observe(document.getElementById('netbar'), { attributes: true, attributeFilter: ['class'] }); });
-  await Promise.all([play(A, 'HOST', 120, sa), play(B, 'GUEST', 300, sb, 3)]);
-  const rec = await B.evaluate(() => ({ nb: window.__nb, same: window.__pid0 === window.__kv.me.pid,
-                                        open: !!(net.conn && net.conn.open) }));
-  check('újracsatlakozás hódítás közben: sáv + ugyanaz a hely + élő kapcsolat',
-        [rec.nb > 0, rec.same, rec.open], [true, true, true]);
+  await Promise.all([play(A, 'HOST', 120, sa), play(B, 'GUEST', 300, sb)]);
 
   await A.waitForSelector('#s-end.on', { timeout: 30000 });
   await B.waitForSelector('#s-end.on', { timeout: 30000 });

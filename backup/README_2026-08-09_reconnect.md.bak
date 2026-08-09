@@ -167,12 +167,6 @@ Hasznos URL-hookok teszteléshez: `index.html#fast` (rövid időzítők), `#srv=
 
 Új kérdés hozzáadásához a `src/questions/part*.js` fájlokat bővítsd (MC-nél a helyes válasz mindig az első opció — a játék kever), majd pushold: a Pages magától frissül.
 
-## Ha megszakad a kapcsolat
-
-Meccs közben a kiesés nem jelenti a játék végét: ha lezárul a telefon képernyője vagy vált a hálózat, a képernyő tetején sárga sáv jelzi, hogy a játék magától próbál visszakapcsolódni (kb. fél percig). Visszatérve ugyanott folytatod – a pontjaid, a sorozatod és a jokereid megmaradnak, csak a kimaradt kérdések úsznak el. Az oldal újratöltése után viszont már nem lehet visszalépni a folyó meccsbe.
-
-A szoba folyamatosan életjelet küld, így ha a host telefonja elalszik, a többiek is látják, hogy épp várni kell rá – nem tűnik úgy, mintha a játék lefagyott volna.
-
 ## Ha valaki nem tud csatlakozni
 
 A játék minden frissítéskor új verziót kap, a böngésző viszont sokáig megőrizheti a régit. Ezért a szoba **ellenőrzi a játékverziót**: ha valaki régebbi (vagy újabb) változatot futtat, nem lép be, hanem pontos üzenetet kap arról, hogy **kinek kell frissítenie** az oldalt (Ctrl+F5, mobilon húzd le a lapot). A saját verziószámod a főoldal alján látszik – együtt játszani csak azonos számmal lehet.

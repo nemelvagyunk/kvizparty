@@ -5,7 +5,7 @@ const path = require('path');
 
 const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast&srv=127.0.0.1:9000';
 
-async function answerLoop(page, who, tipValue, cheat, slow, dropAt) {
+async function answerLoop(page, who, tipValue, cheat, slow) {
   let answered = 0;
   let jokerUsed = false;
   for (let i = 0; i < 400; i++) {
@@ -29,10 +29,6 @@ async function answerLoop(page, who, tipValue, cheat, slow, dropAt) {
         await page.click('.mcbtn:nth-child(' + (ci + 1) + ')').catch(() => {});
       } else await mc.click().catch(() => {});
       answered++;
-      if (dropAt && answered === dropAt) {
-        await page.evaluate(() => { try { net.conn.close(); } catch (e) {} });
-        console.log('ÚJRACSATLAKOZÁS: a vendég kapcsolatát elvágtuk a(z) ' + answered + '. válasz után');
-      }
     }
     else {
       const tip = await page.$('#tip-inp:not([disabled])');
@@ -120,10 +116,6 @@ async function answerLoop(page, who, tipValue, cheat, slow, dropAt) {
     window.collectAnswer = (pid, v, ms) => { window.__ms.push({ pid, ms }); return o(pid, v, ms); }; });
   await B.evaluate(() => { const o = window.sendToHost;
     window.sendToHost = m => { if (m && m.t === 'answer') m.ms = 0; return o(m); }; });
-  // az újracsatlakozás-sáv megjelenéseit számoljuk
-  await B.evaluate(() => { window.__nb = 0; window.__pid0 = window.__kv.me.pid;
-    new MutationObserver(() => { if (document.getElementById('netbar').classList.contains('on')) window.__nb++; })
-      .observe(document.getElementById('netbar'), { attributes: true, attributeFilter: ['class'] }); });
 
   await A.click('#btn-start');
   await A.waitForSelector('#s-game.on', { timeout: 8000 });
@@ -133,24 +125,10 @@ async function answerLoop(page, who, tipValue, cheat, slow, dropAt) {
   // Párhuzamos válaszadás
   const [ansA, ansB] = await Promise.all([
     answerLoop(A, 'HOST', 1500, true),
-    answerLoop(B, 'GUEST', 1600, false, true, 3),
+    answerLoop(B, 'GUEST', 1600, false, true),
   ]);
   await A.waitForSelector('#s-end.on', { timeout: 20000 });
   await B.waitForSelector('#s-end.on', { timeout: 20000 });
-  // --- ÚJRACSATLAKOZÁS + ÉLETJEL ---
-  const rec = await B.evaluate(() => ({ nb: window.__nb, pid0: window.__pid0, pid: window.__kv.me.pid,
-                                        ping: Date.now() - (net.lastPing || 0), open: !!(net.conn && net.conn.open) }));
-  const hostSees = await A.evaluate(() => {
-    const p = window.__kv.host.players.find(x => !x.isAI && !x.isHost) || {};
-    return { connected: p.connected, hasTok: !!p.tok, score: p.score };
-  });
-  console.log('ÚJRACSATLAKOZÁS: sáv megjelent ' + rec.nb + '× · a pid megmaradt:',
-              rec.pid === rec.pid0 ? 'IGEN ✔' : 'NEM ✘', '· a host szerint bent van:',
-              hostSees.connected ? 'IGEN ✔' : 'NEM ✘', '· kapcsolat él:', rec.open ? 'IGEN ✔' : 'NEM ✘');
-  console.log('ÉLETJEL: utolsó ping', rec.ping + ' ms', rec.ping < 12000 ? '✔' : '✘');
-  if (!rec.nb || rec.pid !== rec.pid0 || !hostSees.connected || !rec.open || rec.ping >= 12000)
-    throw new Error('az újracsatlakozás/életjel nem a várt módon működött');
-
   const msLog = await A.evaluate(() => window.__ms || []);
   const guestMs = msLog.filter(x => x.pid !== 'H' && !/^AI/.test(x.pid)).map(x => x.ms);
   const maxGuest = guestMs.length ? Math.max(...guestMs) : -1;
