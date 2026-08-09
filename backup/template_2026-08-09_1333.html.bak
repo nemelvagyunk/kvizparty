@@ -1438,7 +1438,7 @@ function renderCatDraw(m){
   gf.textContent=m.final?('🎬 DUPLA PONTOS FINÁLÉ · az utolsó '+(m.finalLen||'')+' kérdés kétszer annyit ér'):'';
   $('g-question').textContent=''; $('g-status').innerHTML=''; $('g-reveal').innerHTML='';
   const tLabel = m.type==='mc'
-    ? '🔵 <b>Kérdés-válasz</b> · '+m.val+' pont'
+    ? '🔵 <b>1 a 4-ből</b> · '+m.val+' pont'
     : '🎯 <b>Tippelős</b> · '+m.val+' pont'+(m.val2?' · a másodiknak '+m.val2:'');
   /* haladás-infók: hanyadik kérdés, mennyi van a fináléig, mennyi maradt a blokkból */
   const fromSuf=n=>{ const d=n%10;
