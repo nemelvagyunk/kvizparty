@@ -159,15 +159,9 @@ npm run test:ai        # csak az AI-szintek (találati arány, tipppontosság, i
 npm run test:net       # hálózati tesztek (helyi PeerJS szerverrel), klasszikus + hódítás
 ```
 
-Hasznos URL-hookok teszteléshez: `index.html#fast` (rövid időzítők), `#srv=127.0.0.1:9000` (saját PeerJS szerver a felhő helyett), `#pv=1` (a kliens régebbi protokoll-verziójúnak vallja magát – a verzió-ellenőrzés próbájához).
-
-**Protokoll-verzió:** a hálózati üzenetek verziózva vannak (`PROTO` a `src/template.html`-ben). Ha egy hálózati üzenet szerkezete vagy egy mező jelentése változik, **emelni kell** – különben egy régi, cache-elt buildet futtató játékos némán rossz pontozást kaphatna.
+Hasznos URL-hookok teszteléshez: `index.html#fast` (rövid időzítők), `#srv=127.0.0.1:9000` (saját PeerJS szerver a felhő helyett).
 
 Új kérdés hozzáadásához a `src/questions/part*.js` fájlokat bővítsd (MC-nél a helyes válasz mindig az első opció — a játék kever), majd pushold: a Pages magától frissül.
-
-## Ha valaki nem tud csatlakozni
-
-A játék minden frissítéskor új verziót kap, a böngésző viszont sokáig megőrizheti a régit. Ezért a szoba **ellenőrzi a játékverziót**: ha valaki régebbi (vagy újabb) változatot futtat, nem lép be, hanem pontos üzenetet kap arról, hogy **kinek kell frissítenie** az oldalt (Ctrl+F5, mobilon húzd le a lapot). A saját verziószámod a főoldal alján látszik – együtt játszani csak azonos számmal lehet.
 
 ## Megjegyzés az online módhoz
 

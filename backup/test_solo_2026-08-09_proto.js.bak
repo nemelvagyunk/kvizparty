@@ -663,40 +663,6 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   });
   ck('minden hang (és ismeretlen név is) hiba nélkül lejátszható', sndPlay, true);
 
-  // --- protokoll-verzió (néma inkompatibilitás elleni védelem) ---
-  console.log('PROTOKOLL-VERZIÓ:');
-  const pv = await page.evaluate(() => {
-    window.__kv.host = makeHost(true); __kv.host.players = [];
-    return { proto: window.__kv.proto, note: document.getElementById('ver-note').textContent || '',
-             lobbyV: hostLobbyMsg().v };
-  });
-  ck('van protokoll-verzió, és a főmenü ki is írja', [typeof pv.proto === 'number' && pv.proto >= 2,
-      pv.note.indexOf('v' + pv.proto) >= 0], [true, true]);
-  ck('a lobby üzenet viszi a verziót', pv.lobbyV, pv.proto);
-
-  const wOk = await page.evaluate(() => {
-    window.__kv.me.pid = null;
-    handleMsg({ t: 'welcome', v: window.__kv.proto, you: 'GUEST-1' });
-    return window.__kv.me.pid;
-  });
-  ck('egyező verziójú welcome: a vendég megkapja a pid-jét', wOk, 'GUEST-1');
-
-  const wBad = await page.evaluate(() => {
-    showScreen('lobby');                                   // legyen honnan visszaesni
-    handleMsg({ t: 'welcome', v: 1, you: 'GUEST-2' });      // RÉGI host szimulálása
-    return { pid: window.__kv.me.pid, menu: document.getElementById('s-menu').classList.contains('on'),
-             toast: document.getElementById('toast').textContent };
-  });
-  ck('régebbi verziójú host: nem lépünk be, vissza a főmenübe', [wBad.pid, wBad.menu], [null, true]);
-  ck('a vendég konkrét frissítési utasítást kap',
-     /régebbi verziójú/.test(wBad.toast) && /Ctrl\+F5/.test(wBad.toast), true);
-
-  const wNew = await page.evaluate(() => {
-    handleMsg({ t: 'welcome', v: 99, you: 'GUEST-3' });     // ÚJABB host
-    return document.getElementById('toast').textContent;
-  });
-  ck('újabb verziójú host: a vendégnek kell frissítenie', /újabb verziójú/.test(wNew) && /Frissítsd/.test(wNew), true);
-
   if (sf) { console.error('❌ ' + sf + ' hibás ellenőrzés'); process.exitCode = 1; }
 
   console.log(errors.length ? 'HIBÁK:\n' + errors.join('\n') : 'KONZOL: tiszta ✔');

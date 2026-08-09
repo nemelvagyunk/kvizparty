@@ -13,8 +13,8 @@
 
 ## Jelenlegi állapot (röviden)
 
-**Éles, tesztelt és kész** (158 ellenőrzés zöld + mindkét hálózati teszt):
-Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő Büntetéssel és **emberi baklövésekkel a tippelősben** · sorozat-bónusz (1,9× plafon, finálé-semleges, `3🔥` kijelzés) · dupla pontos finálé · fix pakli-terv (10/15/20/30) · kategória-sorsolás + 10 mp visszaszámlálás + haladás-infók · tipp-érték skálázás a létszámmal (**2. hely: 3 főnél 0,4×, 4 főtől 1×**) · végi díjátadó (a bakis díjaknál a kérdéssel) · külön tipp-zsák a 9 tippelős tétellel · **teljes 23 kategóriás kérdésbázis (2026-08-08)** · **szűrők nélküli, letisztult lobby** · **🃏 jokerek: ✂️ Felezés + 🎲 Dupla vagy semmi + 🔢 Első/Utolsó számjegy** · **📖 Játékszabályok FAQ a főmenüben** · **munkamenet-szintű kérdés-memória (`SESSION_USED`)** · **UI-csiszolás: kitöltő játéktér, konfetti, urgencia-timer (2026-08-09, lásd lent)** · **🔊 szintetizált hangok némítás-gombbal (2026-08-09, lásd lent)** · **🐢/⚡ tempó-kapcsoló a lobbyban (2026-08-09)** · **🔢 protokoll-verzió (`PROTO`, 2026-08-09, lásd lent)**.
+**Éles, tesztelt és kész** (152 ellenőrzés zöld + mindkét hálózati teszt):
+Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő Büntetéssel és **emberi baklövésekkel a tippelősben** · sorozat-bónusz (1,9× plafon, finálé-semleges, `3🔥` kijelzés) · dupla pontos finálé · fix pakli-terv (10/15/20/30) · kategória-sorsolás + 10 mp visszaszámlálás + haladás-infók · tipp-érték skálázás a létszámmal (**2. hely: 3 főnél 0,4×, 4 főtől 1×**) · végi díjátadó (a bakis díjaknál a kérdéssel) · külön tipp-zsák a 9 tippelős tétellel · **teljes 23 kategóriás kérdésbázis (2026-08-08)** · **szűrők nélküli, letisztult lobby** · **🃏 jokerek: ✂️ Felezés + 🎲 Dupla vagy semmi + 🔢 Első/Utolsó számjegy** · **📖 Játékszabályok FAQ a főmenüben** · **munkamenet-szintű kérdés-memória (`SESSION_USED`)** · **UI-csiszolás: kitöltő játéktér, konfetti, urgencia-timer (2026-08-09, lásd lent)** · **🔊 szintetizált hangok némítás-gombbal (2026-08-09, lásd lent)** · **🐢/⚡ tempó-kapcsoló a lobbyban (2026-08-09)**.
 
 **A kérdésbázis-terv LEZÁRVA** – nincs nyitott írási feladat. A felhasználó döntései az utolsó körből: Komolyzene fele magyar / fele nemzetközi (megvalósítva ~12/13 arányban) · a Gasztronómia nemzetközi része vegyes (konyhák, ételek és alapanyagok).
 
@@ -25,19 +25,6 @@ Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő
 - **Multiplayer:** PeerJS (WebRTC), host-vezérelt szoba 4 jegyű kóddal (`kvparty-hu-<KÓD>` peer id), a host az autoritás, ő futtatja az AI-kat is. Ingyenes PeerJS-felhő a jelzéshez. Vendég-üzenetek: hello/answer/joker/cqpick/bye; host-broadcast: lobby/catdraw/question/progress/reveal/cq/end/kicked/hostbye; host→egy játékos privát (`sendTo`): welcome/jokerack.
 - **Szóló mód:** ugyanaz a motor hálózat nélkül, AI-ellenfelekkel.
 - Build: `npm install` (peerjs kell hozzá), majd `python3 src/build.py`.
-
-## 🔢 Protokoll-verzió (2026-08-09) – **BUMPOLNI KELL!**
-
-- **`const PROTO = 2;`** a `src/template.html` hálózati szekciójának elején. **1 = a verziószám előtti buildek.**
-- **MIKOR KELL EMELNI:** ha bármelyik hálózati üzenet (`hello`/`welcome`/`lobby`/`catdraw`/`question`/`progress`/`reveal`/`cq`/`end`/`joker`/`jokerack`/`cqpick`) **szerkezete vagy egy mező JELENTÉSE** változik. A `qSecond` boolean→szorzó váltás (2026-08-09) pont ilyen néma elrontó változás volt. Új, opcionális mező hozzáadása önmagában nem indokol bumpot, de ha a régi kliens emiatt rosszul pontozna/rendezne, igen. **A `PROTO` emelése után a CLAUDE.md verziótörténetét is írd tovább.**
-- **Indok:** a GitHub Pages statikus fájlt szolgál ki és cache-el, nincs CI – két játékos triviálisan futhat más buildet. Némán elrontott pontozás helyett inkább ne induljon el a játék.
-- **Protokoll:** a vendég a `hello`-ban küldi (`v:MY_PROTO`), a host a `welcome`-ben és a `lobby`-ban. Mindkét irány védett:
-  - **Régi vendég → új host:** a `setupHostConn` `hello`-ága **minden más ellenőrzés előtt** verziót néz, és `{t:'reject', ms:9000, reason:…}`-tal utasít el (a `reject` üzenetet a jelenlegi éles build is ismeri, ezért az átállás azonnal működik). A host is kap toastot, hogy tudja, miért nem lép be a családtag.
-  - **Régi host → új vendég:** a régi host nem ismeri a `v`-t, ezért nem tud elutasítani – a vendég a `welcome`-ben ellenőriz, `bye`-t küld és kilép.
-  - A szövegek megmondják, **kinek** kell frissítenie (Ctrl+F5 / mobilon húzd le a lapot).
-- **`MY_PROTO`** = a `#pv=<szám>` hash-hook által felülírható „bevallott” verzió (alapból `PROTO`). A kliens ennek vallja magát ÉS ezt is várja el – így egy régi build viselkedése szimulálható. Élesben nem ad semmilyen előnyt (eltérésnél épp hogy kizár). A `test_net.js` ezzel ellenőrzi a verzió-őrt.
-- **Kijelzés:** a főmenü alján „Játékverzió: v2 · együtt játszani csak azonos verzióval lehet" (`#ver-note`, `.ver` CSS) – két eszközön ránézésre összehasonlítható. A FAQ „Hogyan indul egy játék?" tétele is említi.
-- Teszt-hook: `window.__kv.proto`.
 
 ## Játékszabályok és pontozás
 
@@ -210,10 +197,10 @@ Térképes párbaj két választható pályán. Csapatkód: **1 = piros** (a hos
 
 ## Tesztek (Playwright, `tests/`)
 
-- `npm test` → `test_solo.js` (a `window.__kv` teszt-hookon át: FAQ-képernyő, **protokoll-verzió**, sorozat-bónusz + skála-kiemelés, finálé, kategória-sorsolás, tipp-tételek, tipp-skálázás + 2. hely, jokerek, tipp-jokerek, kérdés-memória, tipp-tételek kijelzése, **tempó-kapcsoló**, **hangok+némítás**, **protokoll-verzió (welcome-ág, mindkét irány)** + teljes szóló játszma – 89 ellenőrzés), `test_ai.js` (AI-szintek: 800 mintás találati arány szintenként, tipppontosság + baklövés-arány, Robot Idő Büntetés, **éles tempó-értékek (10/4 mp)** – **éles időzítőkkel fut, nincs `#fast`** – 30 ellenőrzés), `test_conquest.js` (hódítás: logikai ellenőrzések + teljes szóló játszma AI ellen **mindkét térképen** – 39 ellenőrzés). Összesen 158 ellenőrzés.
+- `npm test` → `test_solo.js` (a `window.__kv` teszt-hookon át: FAQ-képernyő, sorozat-bónusz + skála-kiemelés, finálé, kategória-sorsolás, tipp-tételek, tipp-skálázás + 2. hely, jokerek, tipp-jokerek, kérdés-memória, tipp-tételek kijelzése, **tempó-kapcsoló**, **hangok+némítás** + teljes szóló játszma – 83 ellenőrzés), `test_ai.js` (AI-szintek: 800 mintás találati arány szintenként, tipppontosság + baklövés-arány, Robot Idő Büntetés, **éles tempó-értékek (10/4 mp)** – **éles időzítőkkel fut, nincs `#fast`** – 30 ellenőrzés), `test_conquest.js` (hódítás: logikai ellenőrzések + teljes szóló játszma AI ellen **mindkét térképen** – 39 ellenőrzés). Összesen 152 ellenőrzés.
 - `npm run verify` → `tools/verify.js`: kérdésbázis-ellenőrző (formai + duplikátum + szivárgások, baseline-nal – részletek a kérdésírási szekcióban).
 - `npm run test:cq` → csak a hódítás mód.
-- `npm run test:net` → `test_net.js` (klasszikus) és `test_conquest_net.js` (hódítás host+vendég a kis térképen, a két kliens állapotának egyezését is ellenőrzi), **helyi PeerJS szerverrel**: `node_modules/.bin/peerjs --port 9000 --host 127.0.0.1`, URL-hash: `#fast&srv=127.0.0.1:9000`. A `test_net.js` első szekciója a **verzió-őr**: egy `#pv=1`-gyel indított „régi" kliens megpróbál belépni, és ellenőrizzük, hogy elutasítást kap, a host is értesül, és a lobby érintetlen marad.
+- `npm run test:net` → `test_net.js` (klasszikus) és `test_conquest_net.js` (hódítás host+vendég a kis térképen, a két kliens állapotának egyezését is ellenőrzi), **helyi PeerJS szerverrel**: `node_modules/.bin/peerjs --port 9000 --host 127.0.0.1`, URL-hash: `#fast&srv=127.0.0.1:9000`.
 - Chromium a sandboxban: `executablePath: '/opt/pw-browsers/chromium'` (fallback: sima launch).
 - Teszt-hook a játékban: `window.__kv` (host/me/cq getter-setter); a globális függvények (pl. `finishQuestion`, `makeHost`, `cqPickList`, `cqTargets`) window-szintűek.
 - A `test_solo.js` kategória-egyenlőség ellenőrzése csak azokat a kategóriákat számolja, amelyekben VAN mc-kérdés, és külön ellenőrzi, hogy üres kategória sosem kerül a pakliba. **A minta 400 pakli** – 200-zal a 23 kategóriás készleten a 20%-os szórásküszöb statisztikailag határeset volt (ritkán, jogtalanul elbukott).
@@ -223,6 +210,5 @@ Térképes párbaj két választható pályán. Csapatkód: **1 = piros** (a hos
 
 - A tippbevitel vesszőt is elfogad tizedesjelként; a válaszok egészek.
 - Vendég kilépéskor `bye` üzenet megy (gyors érzékelés); host kilépéskor `hostbye`.
-- **A `destroyNet()` SORRENDJE kritikus (2026-08-09-i javítás):** előbb üríti a `net` objektumot, és csak utána hívja a `peer.destroy()`-t. A `destroy()` szinkron kiváltja a conn `close` eseményét, és ha a `net.mode` még `'guest'` lenne, a generikus „A kapcsolat a szobával megszakadt" **felülírná a valódi okot** (verzió-eltérés, kitiltás, tele szoba, már elkezdődött játék). Ez a hiba minden `reject`-et érintett – a verzió-teszt találta meg.
 - A PeerJS-felhő szigorú NAT mögött ritkán nem tud kapcsolatot építeni → mobilnet/hotspot a megoldás.
 - **Kérdés-ismétlődés (2026-08-09 óta munkamenet-szintű):** a `SESSION_USED` globális Set a feltett kérdéseket a TELJES böngésző-munkamenetre megjegyzi – túléli a főmenübe kilépést és az új játékokat, a `makeHost()` ezt köti be `usedIds`-ként, és a hódítás (`cqBuildPools`/`cqAsk`) is használja. Csak az oldal újratöltése törli (localStorage TILOS az artifact-kompatibilitás miatt). Ha a friss készlet elfogy, a szűrés kíméletesen visszaáll a teljes poolra (klasszikus: `un()` count/2 küszöb; hódítás: 40 mc / 15 tip küszöb). *Mérés a javítás előttről: 6 egymás utáni, menüből újraindított 15 kérdéses játék átlag ~2,8 ismétlődő kérdést hozott – a javítás után nullát.*

@@ -63,28 +63,6 @@ async function answerLoop(page, who, tipValue, cheat) {
   const code = await A.$eval('#lobby-code .code', el => el.textContent.trim());
   console.log('SZOBAKÓD:', code);
 
-  // --- PROTOKOLL-VERZIÓ: eltérő buildű vendég nem tud belépni (#pv=1 = régi kliens) ---
-  {
-    const ctxOld = await browser.newContext({ viewport: { width: 480, height: 900 } });
-    const O = await ctxOld.newPage();
-    await O.goto(URL + '&pv=1');
-    await O.fill('#inp-name', 'Regi');
-    await O.fill('#inp-code', code);
-    await O.click('#btn-join');
-    await O.waitForFunction(() => document.getElementById('s-menu').classList.contains('on') &&
-      /verzió/i.test(document.getElementById('toast').textContent), undefined, { timeout: 20000 });
-    const oldToast = await O.$eval('#toast', e => e.textContent);
-    const hostToast = await A.$eval('#toast', e => e.textContent);
-    const stillAlone = await A.$$eval('#lobby-players .pchip', els => els.length);
-    console.log('VERZIÓ-ŐR: a régi kliens elutasítva ✔ ·', oldToast);
-    console.log('VERZIÓ-ŐR: a host is értesül ·', /verzió/i.test(hostToast) ? 'IGEN ✔' : 'NEM ✘',
-                '· a lobby érintetlen:', stillAlone === 1 ? 'IGEN ✔' : 'NEM ✘ (' + stillAlone + ')');
-    if (!/Ctrl\+F5/.test(oldToast) || !/verzió/i.test(hostToast) || stillAlone !== 1)
-      throw new Error('a verzió-ellenőrzés nem a várt módon működött');
-    await ctxOld.close();
-    await A.waitForTimeout(500);
-  }
-
   // Vendég csatlakozik
   await B.fill('#inp-name', 'Viola');
   await B.click('#avatars button:nth-child(5)');

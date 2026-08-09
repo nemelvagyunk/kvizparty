@@ -256,8 +256,6 @@ input[type=number]{-moz-appearance:textfield;}
 #snd-btn:hover{opacity:1;}
 #snd-btn.off{opacity:.4; filter:grayscale(1);}
 .conn-note{color:var(--dim); text-align:center; font-size:.8rem; margin-top:22px; line-height:1.5;}
-/* verziójelző: együtt kell játszani tudni – ha két eszközön más szám van, frissíteni kell */
-.ver{display:inline-block; margin-top:6px; opacity:.55; font-size:.72rem; letter-spacing:.04em;}
 /* ---- HÓDÍTÁS mód – „Frontvonal” téma (neon HUD) ---- */
 :root{ --n1:#ff2e63; --n2:#00e5ff; --nAcc:#ffcc33; --nDim:#4a5b7d; --nGrid:#131d33; }
 #cq-wrap{display:none; margin-bottom:12px;}
@@ -360,8 +358,7 @@ input[type=number]{-moz-appearance:textfield;}
       <button class="btn ghost" id="btn-rules">📖 Játékszabályok</button>
     </div>
   </div>
-  <div class="conn-note">Az online játékhoz internet kell: a szobát nyitó játékos kódot kap,<br>a többiek ezzel csatlakoznak – bárhonnan, saját eszközről.
-    <br><span id="ver-note" class="ver"></span></div>
+  <div class="conn-note">Az online játékhoz internet kell: a szobát nyitó játékos kódot kap,<br>a többiek ezzel csatlakoznak – bárhonnan, saját eszközről.</div>
 </div>
 
 <!-- ================= JÁTÉKSZABÁLYOK ================= -->
@@ -377,7 +374,6 @@ input[type=number]{-moz-appearance:textfield;}
           <p>A KvízParty <b>2–6 fős</b> kvízparti. Egy játékos szobát nyit (🏠), és kap egy 4 jegyű kódot – a többiek ezzel csatlakoznak (🔗), mindenki a saját eszközéről. Egyedül is játszhatsz AI-ellenfelek ellen (🤖).</p>
           <p>A szobát nyitó játékos (a host) állítja be a játékmódot, a kérdésszámot és a tempót, és ő adhat a meccshez AI-játékosokat is – emberrel és robottal együtt legfeljebb 6 fő lehet.</p>
           <p class="dim">Ha nagyon ritkán nem jön létre a kapcsolat (szigorú céges/iskolai hálózaton fordulhat elő), mobilnetről vagy telefonos hotspotról szinte mindig működik.</p>
-          <p class="dim">Ha valaki „eltérő játékverzió" üzenetet kap, az az eszköz a játék régebbi, elmentett változatát futtatja: elég frissíteni az oldalt (Ctrl+F5, mobilon húzd le a lapot). A főoldal alján mindenki látja a saját <b>játékverzióját</b> – együtt játszani csak azonos számmal lehet.</p>
         </div>
       </details>
 
@@ -3185,20 +3181,9 @@ let lastPlayers = [];     // legutóbb ismert játékoslista (render alap)
 let view = {qi:-1,type:null,dur:0,qStart:0,answered:false,total:0,raf:0,locked:false,revealShown:false,cdT:null};
 /* belső állapot elérése automatizált tesztekhez */
 window.__kv = { get host(){return host}, set host(v){host=v}, get me(){return me}, set me(v){me=v},
-                get cq(){return cqState}, set cq(v){cqState=v}, get proto(){return MY_PROTO} };
+                get cq(){return cqState}, set cq(v){cqState=v} };
 
 /* ---------------- hálózat ---------------- */
-/* PROTOKOLL-VERZIÓ. A vendég a `hello`-ban, a host a `welcome`/`lobby`-ban küldi.
-   Eltérésnél a csatlakozás udvariasan elutasításra kerül – a néma inkompatibilitás
-   (pl. egy mező JELENTÉSÉNEK megváltozása) rossz pontozáshoz és követhetetlen
-   hibákhoz vezetne. A GitHub Pages cache-el, ezért két játékos könnyen fut más buildet.
-   BUMPOLD, ha bármelyik hálózati üzenet szerkezete vagy egy mező jelentése változik!
-   Verziótörténet: 1 = verziószám előtti buildek · 2 = 2026-08-09, a verziókezelés bevezetése. */
-const PROTO = 2;
-/* Teszt/hibakereső hook: #pv=<szám> – a kliens ennyinek vallja magát, ÉS ezt várja el a
-   másik oldaltól. Így egy régi (vagy újabb) build viselkedése szimulálható. Élesben
-   sosem szerepel a hash-ben, és nem ad semmilyen előnyt: eltérésnél épp hogy kizár. */
-const MY_PROTO = (function(){ const m=location.hash.match(/pv=(\d+)/); return m?+m[1]:PROTO; })();
 const CODE_ABC="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 function genCode(){let s="";for(let i=0;i<4;i++)s+=CODE_ABC[Math.floor(Math.random()*CODE_ABC.length)];return s;}
 function peerId(code){return 'kvparty-hu-'+code;}
@@ -3210,13 +3195,8 @@ function peerOpts(){
 }
 
 function destroyNet(){
-  /* FONTOS a sorrend: előbb ürítjük a `net`-et, és csak utána bontjuk a peert.
-     A `peer.destroy()` szinkron kiváltja a conn 'close' eseményét, és ha a `net.mode`
-     még 'guest' lenne, a generikus „A kapcsolat megszakadt" felülírná a valódi okot
-     (verzió-eltérés, kitiltás, tele szoba). */
-  const p=net.peer;
+  try{ if(net.peer) net.peer.destroy(); }catch(e){}
   net={mode:null,peer:null,conn:null,conns:{},code:null};
-  try{ if(p) p.destroy(); }catch(e){}
 }
 function resetAll(){
   stopTimers(); clearHostTimers();
@@ -3264,7 +3244,7 @@ function makeHost(solo){
 }
 function playersMin(){ return host.players.map(p=>({pid:p.pid,name:p.name,avatar:p.avatar,isAI:!!p.isAI,isHost:!!p.isHost,connected:p.connected!==false,score:p.score||0,streak:p.streak||0,best:p.best||0})); }
 function hostLobbyMsg(){
-  return {t:'lobby', v:MY_PROTO, code:net.code, solo:host.solo, players:playersMin(),
+  return {t:'lobby', code:net.code, solo:host.solo, players:playersMin(),
     settings:{...host.settings}, phase:host.phase};
 }
 function hostAddAI(tier){
@@ -3312,22 +3292,13 @@ function setupHostConn(conn){
   conn.on('data',d=>{
     if(!d||typeof d!=='object') return;
     if(d.t==='hello'){
-      /* Verzióellenőrzés MINDEN más előtt: ez a legbeszédesebb hibaüzenet. */
-      const gv=Number(d.v)||1;
-      if(gv!==MY_PROTO){
-        conn.send({t:'reject', ms:9000, reason: gv<MY_PROTO
-          ? 'Régebbi verziójú játékot futtatsz, mint a szoba. Frissítsd az oldalt (Ctrl+F5, mobilon húzd le a lapot), és csatlakozz újra!'
-          : 'Újabb verziójú játékot futtatsz, mint a szoba. A szoba gazdájának kell frissítenie az oldalt (Ctrl+F5).'});
-        toast(String(d.name||'Egy játékos').slice(0,14)+' nem tud csatlakozni: eltérő játékverzió (nála v'+gv+', a szobában v'+MY_PROTO+'). Frissítsetek oldalt (Ctrl+F5)!',9000);
-        setTimeout(()=>conn.close(),600); return;
-      }
       if(host.phase!=='lobby'){ conn.send({t:'reject',reason:'A játék már elkezdődött ebben a szobában.'}); setTimeout(()=>conn.close(),400); return; }
       if(host.players.length>=MAXP){ conn.send({t:'reject',reason:'A szoba megtelt (max 6 játékos).'}); setTimeout(()=>conn.close(),400); return; }
       const name=String(d.name||'Játékos').slice(0,14);
       const avatar=AVATARS.includes(d.avatar)?d.avatar:'🐼';
       net.conns[conn.peer]=conn;
       host.players.push({pid:conn.peer, name, avatar, connected:true, score:0});
-      conn.send({t:'welcome', v:MY_PROTO, you:conn.peer});
+      conn.send({t:'welcome', you:conn.peer});
       hostBroadcast(hostLobbyMsg());
     }
     else if(d.t==='answer'){
@@ -3370,7 +3341,7 @@ function joinRoom(){
   p.on('open',()=>{
     const conn=p.connect(peerId(code),{reliable:true});
     net.conn=conn;
-    conn.on('open',()=>{ opened=true; clearTimeout(failT); conn.send({t:'hello', v:MY_PROTO, name:me.name, avatar:me.avatar}); });
+    conn.on('open',()=>{ opened=true; clearTimeout(failT); conn.send({t:'hello', name:me.name, avatar:me.avatar}); });
     conn.on('data',d=>handleMsg(d));
     conn.on('close',()=>{ if(net.mode==='guest'){ toast('A kapcsolat a szobával megszakadt.'); resetAll(); } });
   });
@@ -4101,20 +4072,8 @@ function aiTip(q,tier){
 function handleMsg(m){
   if(!m||typeof m!=='object') return;
   switch(m.t){
-    /* A fordított irány: RÉGI host + ÚJ vendég. A régi host nem ismeri a `v` mezőt,
-       ezért nem tud elutasítani – itt a vendég lép ki, hogy ne induljon néma
-       inkompatibilitás. (A `bye` gyorsítja a host oldali észlelést.) */
-    case 'welcome': {
-      const hv=Number(m.v)||1;
-      if(hv!==MY_PROTO){
-        toast(hv<MY_PROTO
-          ? 'A szoba régebbi verziójú játékot futtat (v'+hv+', nálad v'+MY_PROTO+'). Kérd meg a szoba gazdáját, hogy frissítse az oldalt (Ctrl+F5)!'
-          : 'A szoba újabb verziójú játékot futtat (v'+hv+', nálad v'+MY_PROTO+'). Frissítsd az oldalt (Ctrl+F5), és csatlakozz újra!', 9000);
-        sendToHost({t:'bye'}); resetAll(); return;
-      }
-      me.pid=m.you; break;
-    }
-    case 'reject': toast(m.reason||'Elutasítva', m.ms); resetAll(); break;
+    case 'welcome': me.pid=m.you; break;
+    case 'reject': toast(m.reason||'Elutasítva'); resetAll(); break;
     case 'kicked': toast('A host kitett a szobából.'); resetAll(); break;
     case 'hostbye': toast('A host bezárta a szobát.'); resetAll(); break;
     case 'lobby': lastPlayers=m.players; cqState=null; $('cq-wrap').classList.remove('on');
@@ -4857,7 +4816,6 @@ function renderEnd(m){
 
 /* ---------------- indítás ---------------- */
 function boot(){
-  $('ver-note').textContent='Játékverzió: v'+MY_PROTO+' · együtt játszani csak azonos verzióval lehet';
   $('avatars').innerHTML=AVATARS.map((a,i)=>'<button data-a="'+a+'" class="'+(i===0?'sel':'')+'">'+a+'</button>').join('');
   document.querySelectorAll('#avatars button').forEach(b=>b.onclick=()=>{
     document.querySelectorAll('#avatars button').forEach(x=>x.classList.remove('sel'));
