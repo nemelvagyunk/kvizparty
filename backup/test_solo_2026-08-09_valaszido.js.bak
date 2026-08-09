@@ -733,20 +733,6 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   ck('a hamis avatar nem kerül a DOM-ba HTML-ként', [san.render, san.noImg, san.pwn, san.shown], ['ok', 0, false, true]);
   ck('a host a tippet egészre kerekíti', san.tipVal, 1956);
 
-  // --- válaszidő puha korlátja (hamis ms elleni védelem, késleltetés-barát módon) ---
-  const lat = await page.evaluate(() => {
-    window.__kv.host = makeHost(true);
-    __kv.host.qAskedAt = performance.now() - 3000;          // a host szerint 3 mp telt el
-    return { cheat: trustMs(0), honest: trustMs(2900), slow: trustMs(2500),
-             liar: trustMs(99999), grace: ANSWER_LAT_GRACE,
-             noAsk: (function(){ __kv.host.qAskedAt = 0; return trustMs(0); })() };
-  });
-  ck('hamis ms:0 → a host által mért időre húzva (türelmi sávval)',
-     lat.cheat >= 3000 - lat.grace - 60 && lat.cheat <= 3000 - lat.grace + 60, true);
-  ck('a valós, hálózati késleltetéssel érkező idő érintetlen', [lat.honest, lat.slow], [2900, 2500]);
-  ck('a felfelé hazudott idő sem lehet több a host által mértnél', lat.liar <= 3060, true);
-  ck('mérés nélkül (pl. teszt-injekció) a kliens ideje marad', lat.noAsk, 0);
-
   if (sf) { console.error('❌ ' + sf + ' hibás ellenőrzés'); process.exitCode = 1; }
 
   console.log(errors.length ? 'HIBÁK:\n' + errors.join('\n') : 'KONZOL: tiszta ✔');

@@ -697,56 +697,6 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   });
   ck('újabb verziójú host: a vendégnek kell frissítenie', /újabb verziójú/.test(wNew) && /Frissítsd/.test(wNew), true);
 
-  // --- bemenet-fertőtlenítés: avatar (HTML!) és a tipp egész volta ---
-  console.log('BEMENET-FERTŐTLENÍTÉS:');
-  const san = await page.evaluate(() => {
-    const out = {};
-    out.good = av({ avatar: '🦊' });
-    out.ai = av({ avatar: '🤖' });
-    out.evil = av({ avatar: '<img src=x onerror=alert(1)>' });
-    out.empty = av({});
-    // egy „módosított host" avatarja nem kerülhet ki HTML-ként a többi kliensen
-    try {
-      renderLobby({ solo: true, code: 'TEST', phase: 'lobby',
-        settings: { count: 15, mode: 'classic', mapKey: 'big', tempo: 'calm' },
-        players: [{ pid: 'X', name: 'Rosszfiú', connected: true, score: 0,
-                    avatar: '<img src=x onerror="window.__pwn=1">' }] });
-      out.render = 'ok';
-    } catch (e) { out.render = String(e); }
-    out.noImg = document.querySelectorAll('#lobby-players img').length;
-    out.shown = (document.getElementById('lobby-players').textContent || '').indexOf('❓') >= 0;
-    out.pwn = !!window.__pwn;
-
-    // tipp: a host egészre kerekít, akkor is, ha a kliens tizedeset küld
-    window.__kv.host = makeHost(true);
-    __kv.host.players = [{ pid: 'A', name: 'A', avatar: '🐼', connected: true, score: 0 }];
-    __kv.host.phase = 'q'; __kv.host.qi = 0;
-    __kv.host.qData = { type: 'tip', a: 1956, unit: '', note: '' };
-    const origBc = window.hostBroadcast; window.hostBroadcast = () => {};
-    collectAnswer('A', 1955.5, 1000);
-    window.hostBroadcast = origBc;
-    out.tipVal = __kv.host.answers.A.value;
-    return out;
-  });
-  ck('ismert avatar (játékos és AI) átmegy', [san.good, san.ai], ['🦊', '🤖']);
-  ck('ismeretlen/HTML avatar helyett ❓', [san.evil, san.empty], ['❓', '❓']);
-  ck('a hamis avatar nem kerül a DOM-ba HTML-ként', [san.render, san.noImg, san.pwn, san.shown], ['ok', 0, false, true]);
-  ck('a host a tippet egészre kerekíti', san.tipVal, 1956);
-
-  // --- válaszidő puha korlátja (hamis ms elleni védelem, késleltetés-barát módon) ---
-  const lat = await page.evaluate(() => {
-    window.__kv.host = makeHost(true);
-    __kv.host.qAskedAt = performance.now() - 3000;          // a host szerint 3 mp telt el
-    return { cheat: trustMs(0), honest: trustMs(2900), slow: trustMs(2500),
-             liar: trustMs(99999), grace: ANSWER_LAT_GRACE,
-             noAsk: (function(){ __kv.host.qAskedAt = 0; return trustMs(0); })() };
-  });
-  ck('hamis ms:0 → a host által mért időre húzva (türelmi sávval)',
-     lat.cheat >= 3000 - lat.grace - 60 && lat.cheat <= 3000 - lat.grace + 60, true);
-  ck('a valós, hálózati késleltetéssel érkező idő érintetlen', [lat.honest, lat.slow], [2900, 2500]);
-  ck('a felfelé hazudott idő sem lehet több a host által mértnél', lat.liar <= 3060, true);
-  ck('mérés nélkül (pl. teszt-injekció) a kliens ideje marad', lat.noAsk, 0);
-
   if (sf) { console.error('❌ ' + sf + ' hibás ellenőrzés'); process.exitCode = 1; }
 
   console.log(errors.length ? 'HIBÁK:\n' + errors.join('\n') : 'KONZOL: tiszta ✔');

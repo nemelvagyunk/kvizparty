@@ -3043,11 +3043,6 @@ const AI_TIERS = [
 const AI_THINK = FAST?[300,700]:[1000,2000];      // tényleges válaszidő (ms)
 const AI_LAG   = FAST?[600,2200]:[5000,25000];    // Robot Idő Büntetés (ms)
 const AVATARS = ["🦊","🐼","🦁","🐸","🐙","🦄","🐯","🐨","🐷","🐰","🦉","🐳"];
-/* Az avatar emoji, ezért nem esc()-elhető – HTML-be viszont beleíródik. A host már
-   validálja a vendégek avatarját, de egy MÓDOSÍTOTT HOST minden vendég böngészőjébe
-   injektálhatna. Második védvonalként rendereléskor csak ismert emojit engedünk át. */
-const AV_OK = new Set(AVATARS.concat(AI_TIERS.map(t=>t.avatar)));
-function av(x){ const a=(x&&typeof x==='object')?x.avatar:x; return AV_OK.has(a)?a:'❓'; }
 const SHAPES = ["▲","◆","●","■"];
 
 /* ============================================================
@@ -3198,9 +3193,8 @@ window.__kv = { get host(){return host}, set host(v){host=v}, get me(){return me
    (pl. egy mező JELENTÉSÉNEK megváltozása) rossz pontozáshoz és követhetetlen
    hibákhoz vezetne. A GitHub Pages cache-el, ezért két játékos könnyen fut más buildet.
    BUMPOLD, ha bármelyik hálózati üzenet szerkezete vagy egy mező jelentése változik!
-   Verziótörténet: 1 = verziószám előtti buildek · 2 = 2026-08-09, a verziókezelés bevezetése ·
-   3 = 2026-08-09, a `cqpick` üzenet kötelező `tok` (kör-token) mezője. */
-const PROTO = 3;
+   Verziótörténet: 1 = verziószám előtti buildek · 2 = 2026-08-09, a verziókezelés bevezetése. */
+const PROTO = 2;
 /* Teszt/hibakereső hook: #pv=<szám> – a kliens ennyinek vallja magát, ÉS ezt várja el a
    másik oldaltól. Így egy régi (vagy újabb) build viselkedése szimulálható. Élesben
    sosem szerepel a hash-ben, és nem ad semmilyen előnyt: eltérésnél épp hogy kizár. */
@@ -3249,24 +3243,6 @@ function clearHostTimers(){
   if(host.cq){ clearTimeout(host.cq.pickT); clearTimeout(host.cq.aiT); clearTimeout(host.cq.nextT); }
 }
 
-/* A válaszidőt a KLIENS jelenti (nála indul a saját órája), és ez dönti el a gyorsasági
-   bónuszt, a tippelős holtversenyeket és a ⚡/🎯 díjakat – vagyis hamisítható lenne
-   (`ms:0` → mindig maximális bónusz, minden holtverseny megnyerve).
-   Szigorú hostoldali mérés viszont igazságtalan: a host saját késleltetése definíció
-   szerint 0, a vendégé nem, tehát a lassabb neten játszó rendszeresen veszítene.
-   Ezért PUHA KORLÁT: a bevallott idő nem lehet kisebb, mint (a host által mért idő −
-   ANSWER_LAT_GRACE), és nem lehet nagyobb a host által mértnél. Így a csalás nem fizet,
-   a valós hálózati késleltetés viszont nem büntet. CSAK a hálózatról érkező válaszokra
-   fut: a host saját válasza ugyanarról az óráról jön, az AI ideje pedig szándékosan
-   felduzzasztott (Robot Idő Büntetés), azt nem szabad visszavágni. */
-const ANSWER_LAT_GRACE = 600;
-function trustMs(raw){
-  const c=Math.max(0,Math.min(120000, Number(raw)||0));
-  if(!host||!host.qAskedAt) return c;
-  const el=Math.max(0, performance.now()-host.qAskedAt);
-  return Math.round(Math.max(Math.min(c,el), el-ANSWER_LAT_GRACE));
-}
-
 /* Üzenet minden kliensnek (host) + saját képernyő frissítése */
 function hostBroadcast(msg){
   for(const pid in net.conns){ try{ net.conns[pid].send(msg); }catch(e){} }
@@ -3284,7 +3260,7 @@ function makeHost(solo){
   return { solo, players:[], settings:{count:15, mode:'classic', mapKey:'big', tempo:'calm'},
     cq:null, cqPool:{mc:[],tip:[]}, stats:{}, jokers:{}, qJok:{}, sMcLen:0,
     phase:'lobby', deck:[], qi:-1, answers:{}, qData:null, qCorrectIndex:0, qDur:0,
-    qDeadlineT:null, autoNextT:null, aiTimers:[], qAskedAt:0, usedIds:SESSION_USED };
+    qDeadlineT:null, autoNextT:null, aiTimers:[], usedIds:SESSION_USED };
 }
 function playersMin(){ return host.players.map(p=>({pid:p.pid,name:p.name,avatar:p.avatar,isAI:!!p.isAI,isHost:!!p.isHost,connected:p.connected!==false,score:p.score||0,streak:p.streak||0,best:p.best||0})); }
 function hostLobbyMsg(){
@@ -3356,14 +3332,14 @@ function setupHostConn(conn){
     }
     else if(d.t==='answer'){
       const p=host.players.find(p=>p.pid===conn.peer);
-      if(p && d.qi===host.qi) collectAnswer(p.pid, d.value, trustMs(d.ms));
+      if(p && d.qi===host.qi) collectAnswer(p.pid, d.value, Math.max(0,Math.min(120000, Number(d.ms)||0)));
     }
     else if(d.t==='joker'){
       if(d.qi===host.qi && host.players.some(p=>p.pid===conn.peer)) hostJoker(conn.peer, d.kind);
     }
     else if(d.t==='cqpick'){
       const p=host.players.find(p=>p.pid===conn.peer);
-      if(p&&host.cq&&host.cq.on&&Number(d.tok)===host.cq.pickTok) cqOnPick(p.team, Number(d.idx));
+      if(p&&host.cq&&host.cq.on) cqOnPick(p.team, Number(d.idx));
     }
     else if(d.t==='bye'){ guestGone(conn.peer); }
   });
@@ -3541,7 +3517,6 @@ function hostAsk(){
   /* joker a SIMA blokkokban: MC-nél Felezés/Dupla, tippnél a számjegy-kártyák (fináléban semmi) */
   msg.jok = !host.qFinal && (q.type==='mc' ? host.qi < (host.sMcLen||0) : true);
   host.qJok={};
-  host.qAskedAt=performance.now();      // a bevallott válaszidő puha korlátjához
   hostBroadcast(msg);
   /* az utolsó sima MC-n a megmaradt Felezések automatikusan élesednek */
   if(msg.jok && host.qi===host.sMcLen-1){
@@ -3593,9 +3568,6 @@ function collectAnswer(pid,value,ms){
   if(!host||host.phase!=='q') return;
   if(host.answers[pid]) return;
   if(!host.players.find(p=>p.pid===pid)) return;
-  /* tippnél hostoldalon is egészre kerekítünk: egy módosított kliens így sem tud
-     tizedessel „megnyerni" egy holtversenyt (a kérdések válaszai egészek) */
-  if(host.qData&&host.qData.type==='tip'){ const n=Number(value); value=isFinite(n)?Math.round(n):0; }
   host.answers[pid]={value,ms};
   hostBroadcast({t:'progress', answered:Object.keys(host.answers)});
   maybeAllAnswered();
@@ -3801,7 +3773,7 @@ function cqSnap(){
   const c=host.cq;
   return { phase:c.phase, sub:c.sub, owner:c.owner.slice(), val:c.val.slice(),
     castle:{1:c.castle[1],2:c.castle[2]}, picks:{1:c.picks[1],2:c.picks[2]},
-    turn:c.turn, target:c.target, atkTeam:c.atkTeam, round:c.round, tok:c.pickTok,
+    turn:c.turn, target:c.target, atkTeam:c.atkTeam, round:c.round,
     attacks:{1:c.attacks[1],2:c.attacks[2]}, tot:{1:cqTotal(1),2:cqTotal(2)},
     free:cqFree().length, sel:cqPickList(c.turn), log:c.log, pickMs:CQ_PICK_DUR,
     map:cqMap().key, maxAtk:cqMap().attacks,
@@ -3833,7 +3805,7 @@ function cqStart(){
   host.cq={ on:true, phase:'grab', sub:'pick', owner:new Array(M.n).fill(0), val:new Array(M.n).fill(0),
     castle:{1:CQ_CASTLE0,2:CQ_CASTLE0}, first:startTeam, startTeam, picks:{1:null,2:null}, turn:null,
     qtype:'mc', single:false, attacks:{1:M.attacks,2:M.attacks}, atkTeam:null, target:null,
-    decider:false, round:1, dry:0, pickTok:0, log:'🎲 Sorsolás: '+CQ_TEAM_NAME[startTeam]+' kezd a területválasztással!',
+    decider:false, round:1, dry:0, log:'🎲 Sorsolás: '+CQ_TEAM_NAME[startTeam]+' kezd a területválasztással!',
     pickT:null, aiT:null, nextT:null };
   host.phase='cq'; host.qi=-1;
   cqBroadcast();
@@ -3857,11 +3829,7 @@ function cqNextGrab(){
   cqAskPick(c.first);
 }
 function cqAskPick(team){
-  /* Kör-token: minden ÚJ választás-felkérés új számot kap, és a vendég kattintása
-     ezt visszaküldi. Így egy késleltetett/duplán érkező kattintás nem hat a KÖVETKEZŐ
-     körre (a cqOnPick a listán kívüli indexet véletlenre cserélné – vagyis a játékos
-     olyan területet kapna, amit sosem választott). */
-  const c=host.cq; c.turn=team; c.sub='pick'; c.pickTok=(c.pickTok||0)+1;
+  const c=host.cq; c.turn=team; c.sub='pick';
   const list=cqPickList(team);
   if(!list.length){ cqOnPick(team,null); return; }
   cqBroadcast();
@@ -3913,7 +3881,6 @@ function cqAsk(type, decider){
   if(q.type==='mc'){ const o=shuffle([0,1,2,3]); msg.options=o.map(i=>q.o[i]); host.qCorrectIndex=o.indexOf(0); }
   else msg.unit=q.unit||'';
   cqBroadcast();
-  host.qAskedAt=performance.now();      // a bevallott válaszidő puha korlátjához
   hostBroadcast(msg);
   host.players.filter(p=>p.isAI).forEach(p=>scheduleAI(p,q,host.qDur));
   clearTimeout(host.qDeadlineT);
@@ -4176,7 +4143,7 @@ function renderLobby(m){
     const badges=(p.isHost?' 👑':'')+(p.isAI?' <span title="AI">🤖</span>':'');
     const off=p.connected===false?' off':'';
     const x=(isHost&&p.pid!==me.pid)?'<span class="x" data-kick="'+esc(p.pid)+'" title="Eltávolítás">✕</span>':'';
-    return '<span class="pchip'+off+'"><span class="av">'+av(p)+'</span> '+esc(p.name)+badges+x+'</span>';
+    return '<span class="pchip'+off+'"><span class="av">'+p.avatar+'</span> '+esc(p.name)+badges+x+'</span>';
   }).join('');
   if(isHost){
     const conq = m.settings.mode==='conquest';
@@ -4380,7 +4347,7 @@ function renderQuestion(m){
   }
   if($('g-answers').querySelector('.jokbar')) jokIntro=false;   // az intro-pulzus csak egyszer fut le
   $('g-status').innerHTML=(m.players||[]).map(p=>
-    '<div class="stav" data-pid="'+esc(p.pid)+'"><span class="em">'+av(p)+'</span><span class="nm">'+esc(p.name)+'</span></div>').join('');
+    '<div class="stav" data-pid="'+esc(p.pid)+'"><span class="em">'+p.avatar+'</span><span class="nm">'+esc(p.name)+'</span></div>').join('');
   const deadline=view.qStart+m.dur;
   const tick=()=>{
     const rem=deadline-performance.now();
@@ -4427,7 +4394,7 @@ function submitMC(i){
 function submitTip(){
   if(view.locked||view.answered) return;
   const raw=($('tip-inp').value||'').replace(',','.').trim();
-  const v=Math.round(parseFloat(raw));   /* a megoldások egészek – a fél pont nem nyerhet holtversenyt */
+  const v=parseFloat(raw);
   if(!isFinite(v)){ toast('Írj be egy számot!'); return; }
   view.answered=true;
   play('send');
@@ -4577,7 +4544,7 @@ function cqBindClicks(){
     cqRenderMap();
     $('g-question').textContent='✔ Kijelölve: '+(i+1)+'. terület';
     $('g-answers').innerHTML='<div class="cq-hint wait"><span class="spinner"></span>Várakozás…</div>';
-    if(me.isHost) cqOnPick(cqMyTeam(), i); else sendToHost({t:'cqpick', idx:i, tok:(cqState&&cqState.tok)|0});
+    if(me.isHost) cqOnPick(cqMyTeam(), i); else sendToHost({t:'cqpick', idx:i});
   });
 }
 function cqRenderMap(){
@@ -4592,7 +4559,7 @@ function cqRenderMap(){
       for(let k=0;k<3;k++) pips+='<span class="pip"'+(k<lives[t]?'':' style="background:none;box-shadow:none;border-color:#34405e"')+'></span>';
       pips+='</span>';
     }
-    return '<span class="cq-team t'+t+(act?' act':'')+'">'+av(p)+
+    return '<span class="cq-team t'+t+(act?' act':'')+'">'+p.avatar+
            '<span class="nmx">'+esc(p.name)+(t===my?' (te)':'')+'</span>'+pips+
            '<span class="tot">'+st.tot[t]+'</span></span>';
   };
@@ -4682,7 +4649,7 @@ function cqRenderReveal(m){
     else val=(r.val==null)?'– nem tippelt'
       :(fmtNum(r.val)+(r.dist>0?' <span style="color:var(--dim);font-size:.85em">(±'+fmtNum(r.dist)+')</span>':(r.dist===0?' 🎯':'')));
     const tm=(r.ms!=null)?((r.ms/1000).toFixed(1)+'s'):'';
-    return '<div class="rrow'+(r.pid===me.pid?' me':'')+'"><span class="av">'+av(p)+'</span>'+
+    return '<div class="rrow'+(r.pid===me.pid?' me':'')+'"><span class="av">'+p.avatar+'</span>'+
       '<span class="nm">'+esc(p.name)+'<span class="cq-tag t'+r.team+'">'+(r.team===1?'piros':'kék')+'</span></span>'+
       '<span class="val">'+val+'</span><span class="tm">'+tm+'</span></div>';
   }).join('');
@@ -4700,7 +4667,7 @@ function cqRenderEnd(m){
   const card=t=>{
     const p=cqTeamPl(t), owned=m.st.owner.filter(o=>o===t).length;
     return '<div class="cq-fcard t'+t+(win===t?' win':'')+'">'+
-      '<div style="font-size:1.7rem">'+av(p)+'</div>'+
+      '<div style="font-size:1.7rem">'+p.avatar+'</div>'+
       '<div style="font-weight:800">'+esc(p.name)+(win===t?' 👑':'')+'</div>'+
       '<div class="big">'+(t===1?t1:t2)+'</div>'+
       '<div class="sub">'+owned+' terület · vár '+m.st.castle[t]+'</div></div>';
@@ -4787,14 +4754,14 @@ function renderReveal(m){
             :((r.jok==='first'||r.jok==='last')?'<span class="jk" title="Számjegy-joker">🔢</span>':''));
     const rk=r.win?'<span class="rk">👑</span>':(r.second?'<span class="rk">🥈</span>':'');
     return '<div class="rrow'+(r.win?' win':(r.second?' second':''))+(r.pid===me.pid?' me':'')+'">'+
-      '<span class="av">'+av(p)+'</span><span class="nm">'+esc(p.name)+'</span>'+rk+jk+
+      '<span class="av">'+p.avatar+'</span><span class="nm">'+esc(p.name)+'</span>'+rk+jk+
       '<span class="val">'+val+'</span><span class="tm">'+tm+'</span>'+strk+
       '<span class="pts'+(r.pts>0?'':(r.pts<0?' neg':' zero'))+'">'+pts+'</span></div>';
   }).join('');
   const standings=m.players.slice().sort((a,b)=>b.score-a.score).map((p,i)=>{
     const med=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
     const fl=(!m.final&&p.streak>=2)?'<span class="fl">'+p.streak+'🔥</span>':'';   // a fináléban nincs sorozat-jelzés; szám ELÖL, hogy ne folyjon egybe a pontszámmal
-    return '<span class="sc">'+med+av(p)+' '+esc(p.name)+fl+' <span class="s">'+p.score+'</span></span>';
+    return '<span class="sc">'+med+p.avatar+' '+esc(p.name)+fl+' <span class="s">'+p.score+'</span></span>';
   }).join('');
   const correctLine = m.type==='mc'
     ? 'Helyes válasz: <b>'+esc(m.correctText)+'</b>'
@@ -4861,18 +4828,18 @@ function renderEnd(m){
   const podOrder=[1,0,2].filter(i=>i<r.length);
   $('podium').innerHTML=podOrder.map(i=>{
     const p=r[i];
-    return '<div class="pod p'+(i+1)+'"><span class="em">'+av(p)+'</span>'+
+    return '<div class="pod p'+(i+1)+'"><span class="em">'+p.avatar+'</span>'+
       '<span class="nm">'+esc(p.name)+'</span><span class="scr">'+p.score+' pont</span>'+
       '<div class="base">'+(i+1)+'.</div></div>';
   }).join('');
   const awards=(m.awards||[]).map(a=>
     '<div class="aw'+(a.sub?' wsub':'')+'"><span class="ic">'+a.icon+'</span>'+
     '<span class="ti">'+esc(a.title)+'</span>'+
-    '<span class="wh">'+a.avatars.map(av).join('')+' '+esc(a.names.join(', '))+'</span>'+
+    '<span class="wh">'+a.avatars.join('')+' '+esc(a.names.join(', '))+'</span>'+
     '<span class="vl">'+esc(a.value)+'</span>'+
     (a.sub?'<span class="sb">'+esc(a.sub)+'</span>':'')+'</div>').join('');
   $('end-list').innerHTML=r.map((p,i)=>
-    '<div class="rrow'+(p.pid===me.pid?' me':'')+'"><span class="av">'+av(p)+'</span>'+
+    '<div class="rrow'+(p.pid===me.pid?' me':'')+'"><span class="av">'+p.avatar+'</span>'+
     '<span class="nm">'+(i+1)+'. '+esc(p.name)+(p.isAI?' 🤖':'')+'</span>'+
     ((p.best||0)>=2?'<span class="strk">'+p.best+'🔥</span>':'')+
     '<span class="pts">'+p.score+' pont</span></div>').join('')+

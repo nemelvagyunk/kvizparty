@@ -827,24 +827,6 @@ function clearHostTimers(){
   if(host.cq){ clearTimeout(host.cq.pickT); clearTimeout(host.cq.aiT); clearTimeout(host.cq.nextT); }
 }
 
-/* A válaszidőt a KLIENS jelenti (nála indul a saját órája), és ez dönti el a gyorsasági
-   bónuszt, a tippelős holtversenyeket és a ⚡/🎯 díjakat – vagyis hamisítható lenne
-   (`ms:0` → mindig maximális bónusz, minden holtverseny megnyerve).
-   Szigorú hostoldali mérés viszont igazságtalan: a host saját késleltetése definíció
-   szerint 0, a vendégé nem, tehát a lassabb neten játszó rendszeresen veszítene.
-   Ezért PUHA KORLÁT: a bevallott idő nem lehet kisebb, mint (a host által mért idő −
-   ANSWER_LAT_GRACE), és nem lehet nagyobb a host által mértnél. Így a csalás nem fizet,
-   a valós hálózati késleltetés viszont nem büntet. CSAK a hálózatról érkező válaszokra
-   fut: a host saját válasza ugyanarról az óráról jön, az AI ideje pedig szándékosan
-   felduzzasztott (Robot Idő Büntetés), azt nem szabad visszavágni. */
-const ANSWER_LAT_GRACE = 600;
-function trustMs(raw){
-  const c=Math.max(0,Math.min(120000, Number(raw)||0));
-  if(!host||!host.qAskedAt) return c;
-  const el=Math.max(0, performance.now()-host.qAskedAt);
-  return Math.round(Math.max(Math.min(c,el), el-ANSWER_LAT_GRACE));
-}
-
 /* Üzenet minden kliensnek (host) + saját képernyő frissítése */
 function hostBroadcast(msg){
   for(const pid in net.conns){ try{ net.conns[pid].send(msg); }catch(e){} }
@@ -862,7 +844,7 @@ function makeHost(solo){
   return { solo, players:[], settings:{count:15, mode:'classic', mapKey:'big', tempo:'calm'},
     cq:null, cqPool:{mc:[],tip:[]}, stats:{}, jokers:{}, qJok:{}, sMcLen:0,
     phase:'lobby', deck:[], qi:-1, answers:{}, qData:null, qCorrectIndex:0, qDur:0,
-    qDeadlineT:null, autoNextT:null, aiTimers:[], qAskedAt:0, usedIds:SESSION_USED };
+    qDeadlineT:null, autoNextT:null, aiTimers:[], usedIds:SESSION_USED };
 }
 function playersMin(){ return host.players.map(p=>({pid:p.pid,name:p.name,avatar:p.avatar,isAI:!!p.isAI,isHost:!!p.isHost,connected:p.connected!==false,score:p.score||0,streak:p.streak||0,best:p.best||0})); }
 function hostLobbyMsg(){
@@ -934,7 +916,7 @@ function setupHostConn(conn){
     }
     else if(d.t==='answer'){
       const p=host.players.find(p=>p.pid===conn.peer);
-      if(p && d.qi===host.qi) collectAnswer(p.pid, d.value, trustMs(d.ms));
+      if(p && d.qi===host.qi) collectAnswer(p.pid, d.value, Math.max(0,Math.min(120000, Number(d.ms)||0)));
     }
     else if(d.t==='joker'){
       if(d.qi===host.qi && host.players.some(p=>p.pid===conn.peer)) hostJoker(conn.peer, d.kind);
@@ -1119,7 +1101,6 @@ function hostAsk(){
   /* joker a SIMA blokkokban: MC-nél Felezés/Dupla, tippnél a számjegy-kártyák (fináléban semmi) */
   msg.jok = !host.qFinal && (q.type==='mc' ? host.qi < (host.sMcLen||0) : true);
   host.qJok={};
-  host.qAskedAt=performance.now();      // a bevallott válaszidő puha korlátjához
   hostBroadcast(msg);
   /* az utolsó sima MC-n a megmaradt Felezések automatikusan élesednek */
   if(msg.jok && host.qi===host.sMcLen-1){
@@ -1491,7 +1472,6 @@ function cqAsk(type, decider){
   if(q.type==='mc'){ const o=shuffle([0,1,2,3]); msg.options=o.map(i=>q.o[i]); host.qCorrectIndex=o.indexOf(0); }
   else msg.unit=q.unit||'';
   cqBroadcast();
-  host.qAskedAt=performance.now();      // a bevallott válaszidő puha korlátjához
   hostBroadcast(msg);
   host.players.filter(p=>p.isAI).forEach(p=>scheduleAI(p,q,host.qDur));
   clearTimeout(host.qDeadlineT);

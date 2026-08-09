@@ -222,7 +222,7 @@ function check(name, got, want) {
     await page.click('#btn-start');
     await page.waitForSelector('#cq-wrap.on', { timeout: 10000 });
 
-    let picks = 0, mcs = 0, tips = 0; const shots = {}, toks = [];
+    let picks = 0, mcs = 0, tips = 0; const shots = {};
     const t0 = Date.now();
     while (Date.now() - t0 < 300000) {
       if (await page.$('#s-end.on')) break;
@@ -233,7 +233,6 @@ function check(name, got, want) {
           await page.screenshot({ path: 'shots/cq_' + mapKey + (ph === 'war' ? '_04_warpick' : '_02_grabpick') + '.png' });
           shots[ph] = 1;
         }
-        toks.push(await page.evaluate(() => (__kv.cq ? __kv.cq.tok : null)));
         const hits = await page.$$('#cq-svg .hit');
         await hits[Math.floor(Math.random() * hits.length)].click().catch(() => {});
         picks++;
@@ -280,10 +279,6 @@ function check(name, got, want) {
     check(tag + ': elfogytak a támadások', [fin.attacks[1], fin.attacks[2]], [0, 0]);
     check(tag + ': végösszeg = várak + területek', fin.tot, fin.sum);
     check(tag + ': nincs 150 fölötti terület', fin.vals.filter(v => v > 150).length, 0);
-    // kör-token: minden választás-felkérés új számot kap (késleltetett kattintás védelme)
-    check(tag + ': minden választáshoz tartozik kör-token',
-          toks.length > 0 && toks.every(t => typeof t === 'number' && t > 0), true);
-    check(tag + ': a kör-token szigorúan nő', toks.every((t, i) => i === 0 || t > toks[i - 1]), true);
     console.log('  piros:', fin.red, 'terület /', fin.tot[1], 'pont (vár ' + fin.castle[1] + ')  |  kék:',
                 fin.blue, 'terület /', fin.tot[2], 'pont (vár ' + fin.castle[2] + ')');
     console.log('  választások:', picks, '| 4 válaszos:', mcs, '| tippelős:', tips,
