@@ -77,11 +77,11 @@ Egy 3★-os (100 pontos) tippelős kérdés tehát 6 játékosnál 200 pontot é
 
 Az egymás utáni helyes válaszok egyre többet érnek:
 
-| Hányadik helyes egymás után | 1. | 2. | 3. | 4. | 5. | 6. | 7. | 8. | 9.+ |
-|---|---|---|---|---|---|---|---|---|---|
-| Szorzó | 1,0× | 1,1× | 1,3× | 1,5× | 1,7× | 1,9× | 2,1× | 2,3× | **2,5×** |
+| Hányadik helyes egymás után | 1. | 2. | 3. | 4. | 5. | 6.+ |
+|---|---|---|---|---|---|---|
+| Szorzó | 1,0× | 1,1× | 1,3× | 1,5× | 1,7× | **1,9×** |
 
-A szorzó a teljes pontra vonatkozik (alapérték + gyorsasági bónusz), és a 9. találat után nem nő tovább. **A sorozat csak a „1 a 4-ből" kérdéseken épül és szakad meg** — a tippelős kérdés semleges: nem folytatja, nem töri meg, és nem kap szorzót. Az eredményhirdetésnél látod a sorozatodat és a következő szorzót, a végeredménynél pedig a meccs leghosszabb sorozatát.
+A szorzó a teljes pontra vonatkozik (alapérték + gyorsasági bónusz), és a 6. találat után nem nő tovább. **A sorozat csak a sima „1 a 4-ből" kérdéseken épül és szakad meg** — a tippelős kérdés semleges: nem folytatja, nem töri meg, és nem kap szorzót. **A dupla pontos fináléban a sorozat „befagy":** ott se nem épül, se nem szakadhat meg, és a szorzó sem érvényesül — a finálé tétje maga a dupla érték. Az eredményhirdetésnél látod a sorozatodat és a következő szorzót, a végeredménynél pedig a meccs leghosszabb sorozatát.
 
 ### 🎬 A meccs felépítése (klasszikus mód)
 
@@ -94,7 +94,7 @@ A kérdések nem véletlenszerű sorrendben jönnek, hanem blokkokban: **előbb 
 | **20** | 10 | 6 | 2 | 2 |
 | **30** | 14 | 10 | 4 | 2 |
 
-Ennek a sorrendnek az a lényege, hogy a **sorozatod egyben építhető fel** a meccs elején, a tippelős blokk pedig nem töri meg — így a dupla pontos zárókérdésekre már a felépített szorzóval érkezel. Egy hibátlan 20-as meccsen ez azt jelenti, hogy az első dupla pontos „1 a 4-ből" kérdés 2,5×-es szorzóval **és** dupla értékkel jön: egy 3★-os kérdés így 500 pontot ér a szokásos 100 helyett.
+Ennek a sorrendnek az a lényege, hogy a **sorozatod egyben építhető fel** a meccs elején, a tippelős blokk pedig nem töri meg. A fináléban a sorozat már nem számít — ott minden kérdés önmagában duplán ér (egy 3★-os 200 pontot), és a szériádat sem tudod elrontani vele.
 
 A finálé alatt arany sáv jelzi a kérdés fölött, és a pontérték-jelző is a duplázott értéket mutatja.
 

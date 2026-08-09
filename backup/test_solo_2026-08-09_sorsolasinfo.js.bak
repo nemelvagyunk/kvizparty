@@ -88,7 +88,7 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
     out.tipMult = t1.mult;                  // várt: 1 (nincs szorzó a tippelősön)
     const afterTip = mcRound(2);
     out.afterTipStreak = afterTip.streak;   // várt: 13 – a tippelős nem törte meg
-    out.afterTipMult = afterTip.mult;       // várt: 1.9 (plafon)
+    out.afterTipMult = afterTip.mult;       // várt: 2.5 (plafon)
 
     // hibás válasz nullázza, és jelzi a megszakadást
     const brk = mcRound(0);
@@ -142,7 +142,7 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
     for (let i = 0; i < 10; i++) play('mc', false, true);       // 10 sima MC hibátlanul
     for (let i = 0; i < 6; i++) play('tip', false, false);      // 6 tippelős, mind vesztes
     const fm1 = play('mc', true, true);                          // 1. dupla MC
-    out.acrossTips = [fm1.streak, fm1.mult, fm1.pts];            // várt: [10, 1, 200] – a finálé sorozat-semleges
+    out.acrossTips = [fm1.streak, fm1.mult, fm1.pts];            // várt: [11, 2.5, 500]
     __kv.host.qFinal = false;
 
     // értékelés: ugyanaz a kérdés normál és finálé alatt
@@ -159,7 +159,7 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
     };
     out.normalPts = one(false);   // várt: 100
     out.finalPts  = one(true);    // várt: 200
-    // finálé + sorozat: a szorzó a fináléban már NEM érvényesül
+    // finálé + sorozat: a szorzó a duplázott értékre megy
     __kv.host.players.find(p => p.pid === 'A').streak = 4;   // a következő az 5. -> 1,7×
     out.finalStreakPts = one2();
     function one2() {
@@ -281,14 +281,14 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   const ck = (n, got, want) => { const ok = JSON.stringify(got) === JSON.stringify(want); if (!ok) sf++;
     console.log((ok ? '  ✔ ' : '  ✘ ') + n + '  → ' + JSON.stringify(got) + (ok ? '' : ' (várt: ' + JSON.stringify(want) + ')')); };
   console.log('SOROZAT-BÓNUSZ:');
-  ck('szorzók az 1–12. helyes válaszra (1,90-nél plafon)', logic.multSeq,
-     [1, 1.1, 1.3, 1.5, 1.7, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9]);
+  ck('szorzók az 1–12. helyes válaszra (2,50-nél plafon)', logic.multSeq,
+     [1, 1.1, 1.3, 1.5, 1.7, 1.9, 2.1, 2.3, 2.5, 2.5, 2.5, 2.5]);
   ck('pontok ugyanezekre (100 alapérték, gyorsbónusz nélkül)', logic.ptsSeq,
-     [100, 110, 130, 150, 170, 190, 190, 190, 190, 190, 190, 190]);
-  ck('összpont = a szorzók összege × 100 (19,90 × 100)', logic.streakScore, 1990);
+     [100, 110, 130, 150, 170, 190, 210, 230, 250, 250, 250, 250]);
+  ck('összpont = a szorzók összege × 100 (22,90 × 100)', logic.streakScore, 2290);
   ck('tippelős nem töri meg a sorozatot', logic.tipKeepsStreak, 12);
   ck('tippelős pontja nem kap szorzót', logic.tipMult, 1);
-  ck('a tippelős után a sorozat folytatódik', [logic.afterTipStreak, logic.afterTipMult], [13, 1.9]);
+  ck('a tippelős után a sorozat folytatódik', [logic.afterTipStreak, logic.afterTipMult], [13, 2.5]);
   ck('hibás válasz nullázza és jelzi a megszakadást', [logic.brokeFlag, logic.brokeStreak], [13, 0]);
   ck('utána elölről indul', logic.restartMult, 1);
   ck('a leghosszabb sorozat megmarad a végeredményhez', logic.bestKept, 13);
@@ -305,9 +305,9 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   }
   ck('3★ kérdés normál körben 100 pont', logic.normalPts, 100);
   ck('ugyanaz a fináléban 200 pont', logic.finalPts, 200);
-  ck('a fináléban a sorozat-szorzó NEM él: 5-ös sorozattal is 200 pont', logic.finalStreakPts, 200);
-  ck('a sorozat átível a tipp-blokkon, de a dupla MC már semleges: sorozat marad 10, 1×, 200 pont',
-     logic.acrossTips, [10, 1, 200]);
+  ck('finálé + 5-ös sorozat (1,7×) = 340 pont', logic.finalStreakPts, 340);
+  ck('a sorozat átível a tipp-blokkon: 10 MC → 6 tipp → dupla MC = 11. találat, 2,5×, 500 pont',
+     logic.acrossTips, [11, 2.5, 500]);
   console.log('KATEGÓRIA-SORSOLÁS:');
   console.log('    ' + logic.catFair.cats + ' kategória · 400 pakli × 30 kérdés · kategóriánként átlag '
     + logic.catFair.avg + ' (min ' + logic.catFair.min + ' / max ' + logic.catFair.max + ')');

@@ -91,10 +91,6 @@ input:focus{border-color:var(--acc);}
 @keyframes finalGlow{0%,100%{box-shadow:0 0 0 rgba(251,191,36,0)}50%{box-shadow:0 0 18px rgba(251,191,36,.4)}}
 .draw{display:flex; flex-direction:column; align-items:center; gap:14px; padding:6px 0 4px;}
 .draw-lbl{color:var(--dim); font-size:.9rem; font-weight:700; letter-spacing:.06em;}
-.draw-prog{font-size:.98rem; font-weight:700; text-align:center;}
-.draw-prog b{color:#fbbf24; font-weight:900;}
-.draw-note{color:var(--dim); font-size:.85rem; font-weight:600; text-align:center;}
-.draw-note.fin{color:#fde68a; font-weight:800; letter-spacing:.04em;}
 .draw-cat{display:flex; flex-direction:column; align-items:center; gap:8px; width:100%;
   padding:20px 16px; border-radius:20px; background:rgba(0,0,0,.3);
   border:2px solid rgba(255,255,255,.12); transition:border-color .2s, box-shadow .3s;}
@@ -2952,17 +2948,15 @@ const TIP_SECOND_FROM = 4;
 function activePlayers(){ return host.players.filter(p=>p.isAI||p.connected!==false).length; }
 function tipMultNow(){ return TIP_PLAYER_MULT[Math.max(2,Math.min(6,activePlayers()))]; }
 /* Sorozat-bónusz (CSAK a klasszikus módban, CSAK a „4 válaszos” kérdéseken).
-   Az n-edik egymás utáni helyes válasz szorzója; a 6. után nem nő tovább (plafon 1,90×).
+   Az n-edik egymás utáni helyes válasz szorzója; a 9. után nem nő tovább.
    A tippelős kérdés semleges: nem folytatja és nem is töri meg a sorozatot,
-   és a rajta szerzett pont nem kap szorzót.
-   A DUPLA PONTOS FINÁLÉ szintén sorozat-semleges: ott csak a dupla érték él,
-   a sorozat se nem épül, se nem szakad, és a szorzó sem érvényesül. */
-const STREAK_MULT = [1.00, 1.10, 1.30, 1.50, 1.70, 1.90];
+   és a rajta szerzett pont nem kap szorzót. */
+const STREAK_MULT = [1.00, 1.10, 1.30, 1.50, 1.70, 1.90, 2.10, 2.30, 2.50];
 /* A pakli felépítése és SORRENDJE (csak klasszikus mód).
    Előbb az összes sima „4 válaszos” kérdés egymás után – így a sorozat jól követhető –,
    utána a sima tippelősök, végül a DUPLA PONTOS blokk (előbb MC, aztán tipp).
-   A tippelős és a finálé is semleges a sorozatra nézve: a szorzó a sima MC-blokkban
-   érvényesül, a finálé jutalma pedig maga a dupla érték. */
+   A tippelős semleges a sorozatra nézve, ezért a sorozat átível a tipp-blokkon,
+   és a dupla pontos MC-k már a felépített szorzóval indulnak. */
 const Q_PLAN = {
   10: { mc: 5,  tip: 3,  fmc: 1, ftip: 1 },
   15: { mc: 7,  tip: 5,  fmc: 2, ftip: 1 },
@@ -3301,15 +3295,9 @@ function hostNext(){
   host.qFinal = host.qi >= (host.finalFrom!=null?host.finalFrom:Infinity);
   const bV=QVAL[(q.d||3)-1]*(host.qFinal?2:1);
   host.qTipMult=tipMultNow(); host.qSecond=activePlayers()>=TIP_SECOND_FROM;
-  /* haladás-infók a sorsolás-képernyőhöz: hátralévők a fináléig + a blokk maradéka */
-  const FF=(host.finalFrom!=null&&host.finalFrom<=host.deck.length)?host.finalFrom:host.deck.length;
-  const rest=host.qFinal?[]:host.deck.slice(host.qi, FF);
   hostBroadcast({t:'catdraw', qi:host.qi, total:host.deck.length,
     cat:{name:cat.name,icon:cat.icon}, type:q.type, d:q.d,
     spin:CAT_SPIN_MS, count:CAT_COUNT_MS, final:host.qFinal, finalLen:finalLen(host.deck.length),
-    toFinal:rest.length,
-    mcLeft:rest.filter(x=>x.type==='mc').length,
-    tipLeft:rest.filter(x=>x.type==='tip').length,
     val: q.type==='tip' ? Math.round(bV*host.qTipMult) : bV,
     val2:(q.type==='tip'&&host.qSecond) ? bV : 0, players:playersMin()});
   host.catT=setTimeout(hostAsk, CAT_SPIN_MS+CAT_COUNT_MS);
@@ -3409,19 +3397,17 @@ function finishQuestion(){
         val=a.value; ms=a.ms; ok=(val===host.qCorrectIndex);
       }
       const prev=p.streak||0;
-      if(!host.qFinal){                               // a sorozat csak a SIMA MC-ken épül és szakad; a finálé semleges
-        p.streak = ok ? prev+1 : 0;
-        p.best = Math.max(p.best||0, p.streak);
-      }
+      p.streak = ok ? prev+1 : 0;                     // a sorozat csak MC-n épül és szakad
+      p.best = Math.max(p.best||0, p.streak);
       if(val!=null){ const st=statOf(p.pid); if(ok) st.okMc=statMin(st.okMc,ms); else st.badMc=statMin(st.badMc,ms); }
       if(ok){
         base = V+Math.max(0,Math.round(V*MC_SPEED_BONUS*(1-ms/host.qDur)));
-        mult = host.qFinal ? 1 : streakMult(p.streak); // a fináléban nincs sorozat-szorzó
+        mult = streakMult(p.streak);
         pts  = Math.round(base*mult);
         p.score += pts;
       }
       results.push({pid:p.pid,val,ms,pts,ok,win:ok,base,mult,streak:p.streak,
-                    broke:(!host.qFinal&&!ok&&prev>=2)?prev:0});
+                    broke:(!ok&&prev>=2)?prev:0});
     }
   } else {
     const cands=[];
@@ -3458,7 +3444,7 @@ function finishQuestion(){
     }
   }
   const msg={t:'reveal', qi:host.qi, type:q.type, results, players:playersMin(),
-             final:host.qFinal, autoNextIn:REVEAL_AUTO, note:q.note||'', tie, last:host.qi===host.deck.length-1};
+             autoNextIn:REVEAL_AUTO, note:q.note||'', tie, last:host.qi===host.deck.length-1};
   if(q.type==='mc'){ msg.correctIndex=host.qCorrectIndex; msg.correctText=q.o[0]; }
   else { msg.correctValue=q.a; msg.unit=q.unit||''; }
   hostBroadcast(msg);
@@ -3947,25 +3933,10 @@ function renderCatDraw(m){
   const tLabel = m.type==='mc'
     ? '🔵 <b>1 a 4-ből</b> · '+m.val+' pont'
     : '🎯 <b>Tippelős</b> · '+m.val+' pont'+(m.val2?' · a másodiknak '+m.val2:'');
-  /* haladás-infók: hanyadik kérdés, mennyi van a fináléig, mennyi maradt a blokkból */
-  const fromSuf=n=>{ const d=n%10;
-    if(d) return ['','ből','ből','ból','ből','ből','ból','ből','ból','ből'][d];
-    return ['','ből','ból','ból','ből','ből','ból','ből','ból','ből'][(n/10)%10]||'ból'; };
-  let prog='<b>'+(m.qi+1)+'.</b> kérdés a '+m.total+'-'+fromSuf(m.total);
-  let note;
-  if(m.final){
-    note='<div class="draw-note fin">🎬 Dupla pontos finálé · '+(m.type==='mc'?'kérdés-válasz':'tippelős')+'</div>';
-  } else {
-    if(m.toFinal>0) prog+=' · még '+m.toFinal+' kérdés a 🎬 fináléig';
-    note='<div class="draw-note">'+(m.type==='mc'
-      ? 'Még '+m.mcLeft+' kérdés-válasz kártya maradt'
-      : 'Még '+m.tipLeft+' tipp maradt')+'</div>';
-  }
   $('g-answers').innerHTML='<div class="draw">'+
-    '<div class="draw-prog">'+prog+'</div>'+
     '<div class="draw-lbl">A KÖVETKEZŐ KATEGÓRIA…</div>'+
     '<div class="draw-cat spin" id="draw-cat"><span class="ic">🎲</span><span class="nm">…</span></div>'+
-    '<div class="draw-type">'+tLabel+'</div>'+ note +
+    '<div class="draw-type">'+tLabel+'</div>'+
     '<div class="draw-cd" id="draw-cd"></div>'+
     (me.isHost?'<button class="btn small ghost" id="draw-skip">▶ Mehet, ne várjunk</button>':'')+
     '</div>';
@@ -4328,10 +4299,9 @@ function cqRenderEnd(m){
   $('btn-exit').onclick=resetAll;
 }
 
-/* Saját sorozat visszajelzése a 4 válaszos kérdések után (klasszikus mód).
-   A fináléban nincs sorozat, ezért ott nem jelenik meg. */
+/* Saját sorozat visszajelzése a 4 válaszos kérdések után (klasszikus mód). */
 function streakBlock(m){
-  if(m.type!=='mc'||m.final) return '';
+  if(m.type!=='mc') return '';
   const r=(m.results||[]).find(x=>x.pid===me.pid);
   if(!r) return '';
   if(r.broke) return '<div class="strk-line broke">💔 Megszakadt a '+r.broke+'-es sorozatod</div>';

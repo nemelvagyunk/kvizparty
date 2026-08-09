@@ -41,8 +41,9 @@ Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő
   `TIP_SECOND_FROM`=4. A telitalálat **+25%** (`TIP_EXACT_BONUS`) a **skálázott** nyertes-értékre jön (6 fő, 3★: 200 + 25% = 250). A második helyezett fixen a normál kérdésértéket kapja, telitalálat-bónusz nélkül. A dupla pontos fináléban `V` már duplázott, tehát minden érték automatikusan kétszereződik (4 fő: 300 / 200).
   - „Aktív játékos" = `activePlayers()` (AI + kapcsolódott emberek), 2–6 közé klampolva. A szorzót a `hostNext()` rögzíti (`host.qTipMult`, `host.qSecond`), hogy a kiírt és a kiosztott érték biztosan egyezzen akkor is, ha közben kilép valaki.
   - A `question` üzenet `val` (nyertes) és `val2` (2. hely, 0 ha nincs) mezőt kap; a kliens a tipp-mező fölött írja ki. A `reveal` sorokban új `second` mező (🥈 + halvány kiemelés).
-- **Sorozat-bónusz (`STREAK_MULT`) – CSAK a klasszikus módban:** `[1.00, 1.10, 1.30, 1.50, 1.70, 1.90, 2.10, 2.30, 2.50]`, az n-edik egymás utáni helyes válasz szorzója; a 9. után **plafon 2,50×**. `streakMult(n)` klampol.
-  - A sorozat **kizárólag a 4 válaszos kérdéseken épül és szakad meg**. A **tippelős semleges**: nem folytatja, nem töri meg, és a rajta szerzett pont **nem kap szorzót** (`mult:1`).
+- **Sorozat-bónusz (`STREAK_MULT`) – CSAK a klasszikus módban:** `[1.00, 1.10, 1.30, 1.50, 1.70, 1.90]`, az n-edik egymás utáni helyes válasz szorzója; a 6. után **plafon 1,90×** (2026-08-09-ig 2,50× volt). `streakMult(n)` klampol.
+  - A sorozat **kizárólag a SIMA 4 válaszos kérdéseken épül és szakad meg**. A **tippelős semleges**: nem folytatja, nem töri meg, és a rajta szerzett pont **nem kap szorzót** (`mult:1`).
+  - **A dupla pontos finálé is sorozat-semleges (2026-08-09 óta):** a fináléban a sorozat „befagy" – se nem épül, se nem szakad, és a szorzó sem érvényesül (`mult:1`, `broke:0`). A jutalom ott maga a dupla érték. A `reveal` üzenet `final` mezőt kap; a kliens `streakBlock()`-ja fináléban nem jelenik meg.
   - A szorzó a teljes MC-pontra megy (alapérték + gyorsasági bónusz), kerekítve: `Math.round(base*mult)`.
   - Játékos-mezők: `p.streak` (aktuális), `p.best` (meccs legjobbja, a végeredményhez). `hostStart()`/`hostRematch()` nullázza, `playersMin()` átküldi.
   - A `reveal` sorok extra mezői: `base`, `mult`, `streak`, `broke` (ha egy ≥2-es sorozat most szakadt meg – a saját sorodra a `streakBlock()` írja ki).
@@ -56,14 +57,15 @@ Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő
   | 20 | 10 | 6 | 2 | 2 |
   | 30 | 14 | 10 | 4 | 2 |
 
-  Az indok: a sima MC-k egy tömbben jönnek, így **a sorozat követhető**; a tipp-blokk semleges, ezért a sorozat **átível rajta**, és a dupla pontos MC-k már a felépített szorzóval indulnak (10 hibátlan MC → a tippek után az első dupla MC 2,5× **és** dupla = 500 pont egy 3★-oson).
+  Az indok: a sima MC-k egy tömbben jönnek, így **a sorozat egyben építhető és követhető**; a tipp-blokk semleges, a finálé pedig szintén – ott már csak a dupla érték számít, a sorozat-szorzó nem él.
 - **Dupla pontos finálé:** a `Q_PLAN` dupla blokkja. `finalLen(n)=fmc+ftip` → **10→2 · 15→3 · 20→4 · 30→6**.
   - `buildDeck()` beállítja a `host.finalFrom`-ot = `simaMC.length + simaTipp.length` (a ténylegesen felvett kérdésekből, nem a tervből – szűkös szűrőnél is helyes; ilyenkor a pakli rövidebb lesz, és `hostStart()` szól róla toasttal).
   - `hostNext()` beteszi a `host.qFinal`-t és a `question` üzenetbe a `final` / `finalLen` / `val` (már duplázott pontérték) mezőket; `finishQuestion()` a `V`-t duplázza.
-  - **A sorozat-szorzó a duplázott értékre megy** (pl. 3★ + finálé + 1,7× = 340 pont).
+  - **A fináléban sorozat-szorzó NINCS** – minden helyes válasz a duplázott alapértéket éri (+ gyorsasági bónusz), pl. 3★ = 200 pont.
   - Kliens: `#g-final` sáv a kérdés fölött, és a `#g-diff` chip a valós (duplázott) pontértéket mutatja. Hódításban a `cqRenderPickUI()` üríti a sávot.
 - Időzítők: MC 20 mp, tip 25 mp; `#fast` hash-sel rövidítve (teszthez).
 - **Kategória-sorsolás minden kérdés előtt (klasszikus mód).** `hostNext()` már nem küld kérdést: `phase='catdraw'`, kimegy a `{t:'catdraw', …}` üzenet (kategória, típus, pontérték, finálé-jelzés), majd `CAT_SPIN_MS` (1,8 mp pörgetés) + `CAT_COUNT_MS` (10 mp visszaszámlálás) után a `hostAsk()` küldi a `question`-t. A host a „▶ Mehet, ne várjunk" gombbal bármikor előrehozhatja (`hostAsk()` közvetlenül). Kliens: `renderCatDraw()`.
+  - **Haladás-infók a sorsolás-képernyőn (2026-08-09 óta).** A `catdraw` üzenet `toFinal` / `mcLeft` / `tipLeft` mezőket is visz (a normál szakasz maradéka a pakliból számolva, az aktuális kérdést is beleértve). A kliens kiírja: „**5.** kérdés a 15-ből · még 8 kérdés a 🎬 fináléig", alatta MC-blokkban „Még N kérdés-válasz kártya maradt", tipp-blokkban „Még N tipp maradt"; a fináléban ehelyett „🎬 Dupla pontos finálé · kérdés-válasz / tippelős" felirat jön (`.draw-prog` / `.draw-note` CSS). A magyar -ból/-ből toldalékot a `fromSuf()` segéd adja.
 - **`catBag(pool)` – kategória-zsák.** A pakli nem a nyers kérdéspoolból épül, hanem megkevert kategórialistából: minden kategória sorra kerül, mielőtt bármelyik ismétlődne. Így a 100 kérdéses kategória **ugyanakkora eséllyel** jön, mint az 50 kérdéses – a kategóriaméret nem befolyásolja a gyakoriságot. A hódítás mód `cqDraw()`-ja is ezt használja (ott nincs sorsolás-képernyő).
 - Lobby-beállítások: **játékmód (Klasszikus / Hódítás)**, **hódításnál térkép (Nagy 13 / Kicsi 10)**, kérdésszám (`Q_COUNTS` = **10/15/20/30** – hódításban rejtve), nehézségszűrő (1★–5★), AI hozzáadása (max 6 játékos összesen).
 - **Kategória-szűrő NINCS (2026-08-08-án a felhasználó kérésére kivezetve** – túlbonyolította a felületet). Minden téma mindig játékban van; a `settings.cats`, a `catOn()`, az `optCats()` és az `opt` jelzők törölve lettek a kódból és az adatból. Ha valaha visszakerülne, a backup/ mappában megvan a szűrős verzió.
@@ -160,7 +162,7 @@ Térképes párbaj két választható pályán. Csapatkód: **1 = piros** (a hos
 - `npm run test:net` → `test_net.js` (klasszikus) és `test_conquest_net.js` (hódítás host+vendég a kis térképen, a két kliens állapotának egyezését is ellenőrzi), **helyi PeerJS szerverrel**: `node_modules/.bin/peerjs --port 9000 --host 127.0.0.1`, URL-hash: `#fast&srv=127.0.0.1:9000`.
 - Chromium a sandboxban: `executablePath: '/opt/pw-browsers/chromium'` (fallback: sima launch).
 - Teszt-hook a játékban: `window.__kv` (host/me/cq getter-setter); a globális függvények (pl. `finishQuestion`, `makeHost`, `cqPickList`, `cqTargets`) window-szintűek.
-- A `test_solo.js` kategória-egyenlőség ellenőrzése csak azokat a kategóriákat számolja, amelyekben VAN mc-kérdés (a Néphagyomány és a Filozófia még üres), és külön ellenőrzi, hogy üres kategória sosem kerül a pakliba.
+- A `test_solo.js` kategória-egyenlőség ellenőrzése csak azokat a kategóriákat számolja, amelyekben VAN mc-kérdés, és külön ellenőrzi, hogy üres kategória sosem kerül a pakliba. **A minta 400 pakli** – 200-zal a 23 kategóriás készleten a 20%-os szórásküszöb statisztikailag határeset volt (ritkán, jogtalanul elbukott).
 - `#fast` a hódítás módban is rövidít (MC 2,5 mp / tip 2,2 mp / választás 1,4 mp) – egy teljes játszma így ~70–110 mp.
 
 ## Ismert finomságok
