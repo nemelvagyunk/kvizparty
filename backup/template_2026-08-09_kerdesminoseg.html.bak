@@ -361,7 +361,7 @@ body.nbon{padding-top:42px;}   /* a sáv ne takarja el a fejlécet (pontok, óra
 <div id="netbar"></div>
 <div class="screen on" id="s-menu">
   <div class="logo">🎉 KvízParty</div>
-  <div class="tagline" id="menu-tagline">2–6 fős kvízparti · 5 nehézségi szint · AI-ellenféllel is</div>
+  <div class="tagline">2–6 fős kvízparti · 23 kategória · 1333 kérdés · 5 nehézségi szint · AI-ellenféllel is</div>
   <div class="card">
     <div class="invite" id="invite-note" style="display:none"></div>
     <label>Játékosnév</label>
@@ -2700,9 +2700,6 @@ function renderEnd(m){
 
 /* ---------------- indítás ---------------- */
 function boot(){
-  /* a kategória- és kérdésszám az ADATBÓL jön – így nem avul el egy kérdés hozzáadásakor */
-  $('menu-tagline').textContent='2–6 fős kvízparti · '+CATEGORIES.length+' kategória · '+
-    QUESTIONS.length+' kérdés · 5 nehézségi szint · AI-ellenféllel is';
   $('ver-note').textContent='Játékverzió: v'+MY_PROTO+' · együtt játszani csak azonos verzióval lehet';
   /* Telefon-feloldás / fülváltás: ilyenkor derül ki, hogy közben elszakadt a kapcsolat –
      ne várjunk a következő ütemezett próbálkozásra, nézzük meg azonnal. */

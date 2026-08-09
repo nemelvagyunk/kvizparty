@@ -361,7 +361,7 @@ body.nbon{padding-top:42px;}   /* a sáv ne takarja el a fejlécet (pontok, óra
 <div id="netbar"></div>
 <div class="screen on" id="s-menu">
   <div class="logo">🎉 KvízParty</div>
-  <div class="tagline" id="menu-tagline">2–6 fős kvízparti · 5 nehézségi szint · AI-ellenféllel is</div>
+  <div class="tagline">2–6 fős kvízparti · 23 kategória · 1333 kérdés · 5 nehézségi szint · AI-ellenféllel is</div>
   <div class="card">
     <div class="invite" id="invite-note" style="display:none"></div>
     <label>Játékosnév</label>
@@ -902,7 +902,7 @@ const QUESTIONS = [
 {cat:3,type:'tip',d:1,q:"Hány országgal határos Magyarország?",a:7,unit:"db",note:"Ausztria, Szlovákia, Ukrajna, Románia, Szerbia, Horvátország és Szlovénia."},
 {cat:3,type:'tip',d:1,q:"Hány kerülete van Budapestnek?",a:23,unit:"db",note:""},
 {cat:3,type:'tip',d:2,q:"Hány méter magas a Kékes?",a:1014,unit:"m",note:""},
-{cat:3,type:'tip',d:2,q:"Hány vármegyéje van Magyarországnak?",a:19,unit:"vármegye",note:"Budapest önálló, fővárosi státusza ezen felül van."},
+{cat:3,type:'tip',d:2,q:"Hány vármegyéje van Magyarországnak?",a:19,unit:"",note:"Budapest nélkül"},
 {cat:3,type:'tip',d:2,q:"Hány négyzetkilométer Magyarország területe?",a:93030,unit:"km²",note:"kb. 93 030 km²"},
 {cat:3,type:'tip',d:2,q:"Hány méter magas a budapesti Gellért-hegy?",a:235,unit:"m",note:"A tetején áll a Citadella."},
 {cat:3,type:'tip',d:3,q:"Hány kilométer hosszú a Balaton?",a:77,unit:"km",note:"Európa legnagyobb sekély tava"},
@@ -1443,9 +1443,9 @@ const QUESTIONS = [
 {cat:8,type:'tip',d:2,q:"Hány független ország található Dél-Amerikában?",a:12,unit:"db",note:"Francia Guyana nem önálló állam, hanem Franciaország tengerentúli megyéje."},
 {cat:8,type:'tip',d:2,q:"Milyen széles a La Manche csatorna a legkeskenyebb pontján?",a:34,unit:"km",note:"A Doveri-szorosnál, Dover és Calais között."},
 {cat:8,type:'tip',d:2,q:"Hány országgal határos Németország?",a:9,unit:"db",note:"Ezzel az európai élmezőnybe tartozik."},
-{cat:8,type:'tip',d:3,q:"Hány ENSZ-tagállam található Afrikában?",a:54,unit:"ország",note:"Ez a világ országainak több mint negyede – Afrika a legtöbb önálló államot adó kontinens."},
+{cat:8,type:'tip',d:3,q:"Hány ország található Afrikában?",a:54,unit:"",note:""},
 {cat:8,type:'tip',d:3,q:"Hány kilométer hosszú az Egyenlítő?",a:40075,unit:"km",note:"kb. 40 075 km"},
-{cat:8,type:'tip',d:3,q:"Hány időzóna van Oroszországban?",a:11,unit:"időzóna",note:"Amikor Kalinyingrádban reggeliznek, Kamcsatkán már éjszaka van."},
+{cat:8,type:'tip',d:3,q:"Hány időzóna van Oroszországban?",a:11,unit:"",note:""},
 {cat:8,type:'tip',d:3,q:"Milyen hosszú a Nílus?",a:6650,unit:"km",note:""},
 {cat:8,type:'tip',d:3,q:"Hány méter magas a Mont Blanc?",a:4808,unit:"m",note:"A csúcs jégsapkája miatt a hivatalos érték néhány métert ingadozik."},
 {cat:8,type:'tip',d:3,q:"Mekkora Ausztrália területe?",a:7692000,unit:"km²",note:"A Föld hatodik legnagyobb országa."},
@@ -1687,10 +1687,8 @@ const QUESTIONS = [
  o:["A méh","A darázs","A hangya","A légy"], c:0},
 {cat:12,type:'mc',d:1,q:"Melyik nagyvad alszik téli álmot a barlangjában?",
  o:["A barnamedve","A farkas","A vaddisznó","A szarvas"], c:0},
-{cat:12,type:'mc',d:2,q:"Mivel mozog a csiga?",
- o:["Egyetlen izmos talppal","Apró lábakkal a ház alatt","A csápjaival","Hullámzó úszószegéllyel"], c:0},
-{cat:12,type:'mc',d:3,q:"Melyik állat páncélja a saját bordáiból és csigolyáiból nőtt össze?",
- o:["A teknősé","A csigáé","A rákoké","A tatuké"], c:0},
+{cat:12,type:'mc',d:1,q:"Melyik állat hordja a házát a hátán?",
+ o:["A csiga","A teknős","A remeterák","A sün"], c:0},
 {cat:12,type:'mc',d:2,q:"Melyik a legnagyobb ma élő macskaféle, a csíkos bundájú ragadozó?",
  o:["A tigris","Az oroszlán","A jaguár","A hópárduc"], c:0},
 {cat:12,type:'mc',d:2,q:"Melyik állat „könnyeit” emlegetjük, ha valaki képmutatóan sajnálkozik?",
@@ -1796,7 +1794,7 @@ const QUESTIONS = [
 {cat:12,type:'tip',d:4,q:"Hány kilométert repül évente a sarki csér a vándorlásai során?",a:70000,unit:"km",note:"Az Északi-sarkvidékről az Antarktiszra jár – övé a leghosszabb vándorút."},
 {cat:12,type:'tip',d:4,q:"Hány méter mélyre merül a császárpingvin táplálék után kutatva?",a:500,unit:"m",note:"Minden madár közül ő merül a legmélyebbre."},
 {cat:12,type:'tip',d:4,q:"Hány centiméteres a világ legkisebb madara, a kubai méhkolibri?",a:5,unit:"cm",note:"Alig nagyobb egy dongónál, a fészke dióhéjnyi."},
-{cat:12,type:'tip',d:4,q:"Hányat ver a kolibri szíve percenként repülés közben?",a:1200,unit:"dobbanás",note:"Az emberi szív ennek a tizenötödét sem éri el."},
+{cat:12,type:'tip',d:4,q:"Hányat ver a kolibri szíve percenként repülés közben?",a:1200,unit:"db",note:"Az emberi szív ennek a tizenötödét sem éri el."},
 {cat:12,type:'tip',d:4,q:"Hány pingvinfajt tartanak számon a világon?",a:18,unit:"faj",note:"A rendszertantól függően 17-20 fajról beszélnek a kutatók."},
 {cat:12,type:'tip',d:4,q:"Hány évig élhet a grönlandi bálna?",a:200,unit:"év",note:"A leghosszabb életű emlős – egyes példányok még a 19. században születtek."},
 {cat:12,type:'tip',d:4,q:"Hány méter hosszúra nőhet az óriáskalmár?",a:13,unit:"m",note:"Hatalmas szeme labdányi méretű – a legnagyobb szem az állatvilágban."},
@@ -2024,7 +2022,7 @@ const QUESTIONS = [
 {cat:14,type:'tip',d:2,q:"Hány liter vér kering egy felnőtt ember testében?",a:5,unit:"liter",note:"A testtömeg nagyjából 7-8 százaléka vér."},
 {cat:14,type:'tip',d:2,q:"Hány kamrája van az emberi szívnek?",a:4,unit:"db",note:"Két pitvar és két kamra dolgozik összehangoltan."},
 {cat:14,type:'tip',d:2,q:"Hány másodperc alatt tesz meg a hang egy kilométert a levegőben?",a:3,unit:"mp",note:"Ezért számolhatod ki a villámlás távolságát a dörgésig eltelt időből."},
-{cat:14,type:'tip',d:3,q:"Hány kémiai elem szerepel a periódusos rendszerben az oganeszonnal bezárólag?",a:118,unit:"elem",note:"Az oganeszon a 118-as rendszámú, mesterségesen előállított elem."},
+{cat:14,type:'tip',d:3,q:"Hány elemet tartalmaz jelenleg a periódusos rendszer?",a:118,unit:"",note:"az utolsó az oganeszon"},
 {cat:14,type:'tip',d:3,q:"Hány pár bordája van az embernek?",a:12,unit:"pár",note:"Az alsó két pár az úgynevezett lengőborda."},
 {cat:14,type:'tip',d:3,q:"Hány kromoszóma található az ember testi sejtjeiben?",a:46,unit:"db",note:"23 párba rendeződnek."},
 {cat:14,type:'tip',d:3,q:"Hány perc alatt ér a napfény a Napból a Földre?",a:8,unit:"perc",note:"Pontosabban körülbelül 8 perc 20 másodperc alatt."},
@@ -5124,9 +5122,6 @@ function renderEnd(m){
 
 /* ---------------- indítás ---------------- */
 function boot(){
-  /* a kategória- és kérdésszám az ADATBÓL jön – így nem avul el egy kérdés hozzáadásakor */
-  $('menu-tagline').textContent='2–6 fős kvízparti · '+CATEGORIES.length+' kategória · '+
-    QUESTIONS.length+' kérdés · 5 nehézségi szint · AI-ellenféllel is';
   $('ver-note').textContent='Játékverzió: v'+MY_PROTO+' · együtt játszani csak azonos verzióval lehet';
   /* Telefon-feloldás / fülváltás: ilyenkor derül ki, hogy közben elszakadt a kapcsolat –
      ne várjunk a következő ütemezett próbálkozásra, nézzük meg azonnal. */

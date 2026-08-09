@@ -130,7 +130,7 @@ A 🙈 díj **arányos hibát** mér, nem abszolútat — így nem az nyeri, aki
 
 ## Kérdésbázis
 
-**1334 kérdés, 23 kategória**, négy pillérre építve: magyar és nemzetközi általános műveltség, magyar és nemzetközi popkultúra – a családi játszhatóság jegyében. Minden kategória feltöltve (általában 40 kérdés, a Gasztronómia 70, a szándékosan kisebb Filozófia és Komolyzene 25-25), a tippelős kérdések kilenc témaköre mind legalább 40 kérdéssel.
+**1333 kérdés, 23 kategória**, négy pillérre építve: magyar és nemzetközi általános műveltség, magyar és nemzetközi popkultúra – a családi játszhatóság jegyében. Minden kategória feltöltve (általában 40 kérdés, a Gasztronómia 70, a szándékosan kisebb Filozófia és Komolyzene 25-25), a tippelős kérdések kilenc témaköre mind legalább 40 kérdéssel.
 
 ## AI-ellenfelek
 
@@ -166,8 +166,6 @@ Hasznos URL-hookok teszteléshez: `index.html#fast` (rövid időzítők), `#srv=
 **Protokoll-verzió:** a hálózati üzenetek verziózva vannak (`PROTO` a `src/template.html`-ben). Ha egy hálózati üzenet szerkezete vagy egy mező jelentése változik, **emelni kell** – különben egy régi, cache-elt buildet futtató játékos némán rossz pontozást kaphatna.
 
 Új kérdés hozzáadásához a `src/questions/part*.js` fájlokat bővítsd (MC-nél a helyes válasz mindig az első opció — a játék kever), majd pushold: a Pages magától frissül.
-
-A kérdésírás mércéje a **`design/kerdesiras.md`** — disztraktor-írás, nehézség-kalibráció, tippelős szabályok, ellenőrzőlista. A gépesíthető részét az `npm run verify` ellenőrzi (formai hibák és rossz mértékegység = hiba; hossz-árulkodás, önleleplező kérdés, elévülő megfogalmazás, hiányzó note = figyelmeztetés), és riportot ad az évszám-arányról meg a kérdéskezdetek eloszlásáról.
 
 ## Ha megszakad a kapcsolat
 

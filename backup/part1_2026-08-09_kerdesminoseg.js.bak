@@ -328,7 +328,7 @@ const QUESTIONS = [
 {cat:3,type:'tip',d:1,q:"Hány országgal határos Magyarország?",a:7,unit:"db",note:"Ausztria, Szlovákia, Ukrajna, Románia, Szerbia, Horvátország és Szlovénia."},
 {cat:3,type:'tip',d:1,q:"Hány kerülete van Budapestnek?",a:23,unit:"db",note:""},
 {cat:3,type:'tip',d:2,q:"Hány méter magas a Kékes?",a:1014,unit:"m",note:""},
-{cat:3,type:'tip',d:2,q:"Hány vármegyéje van Magyarországnak?",a:19,unit:"vármegye",note:"Budapest önálló, fővárosi státusza ezen felül van."},
+{cat:3,type:'tip',d:2,q:"Hány vármegyéje van Magyarországnak?",a:19,unit:"",note:"Budapest nélkül"},
 {cat:3,type:'tip',d:2,q:"Hány négyzetkilométer Magyarország területe?",a:93030,unit:"km²",note:"kb. 93 030 km²"},
 {cat:3,type:'tip',d:2,q:"Hány méter magas a budapesti Gellért-hegy?",a:235,unit:"m",note:"A tetején áll a Citadella."},
 {cat:3,type:'tip',d:3,q:"Hány kilométer hosszú a Balaton?",a:77,unit:"km",note:"Európa legnagyobb sekély tava"},

@@ -2,31 +2,20 @@
 /* KvízParty – kérdésbázis-ellenőrző
    Futtatás a repo gyökeréből:  node tools/verify.js   (vagy: npm run verify)
 
-   Minden új kérdésblokk után KÖTELEZŐ lefuttatni. A mögötte álló írásbeli mércét
-   a design/kerdesiras.md tartalmazza – ez a szkript annak a gépesíthető része.
+   Minden új kérdésblokk után érdemes lefuttatni (CLAUDE.md minőségi szabályai).
 
-   ✘ HIBA (exit 1):
-       · formai hiba (kategória, nehézség, 4 opció, c:0, egész tipp-megoldás)
-       · szó szerinti duplikátum
-       · „alvó” tipp (tip:false kategóriában)
-       · üres `unit`, de a kérdés nem évszámot kér – a játék ilyenkor ÉVKÉNT írná ki
+   ✘ HIBA (exit 1):   formai hiba · szó szerinti duplikátum · „alvó” tipp
+                      (tip:false kategóriában) · érvénytelen kategória/nehézség.
+   ⚠ FIGYELEM (exit 0): lehetséges válasz-szivárgás – kézi átnézésre. Csak az
+                      AZONOS témájú (kategória / tipg-csoport) egyezéseket
+                      listázza tételesen, a kereszt-témájú évszám-egybeeséseket
+                      (pl. 1956: forradalom ↔ IBM-merevlemez) csak összesíti.
 
-   ⚠ FIGYELEM (exit 0) – kézi átnézésre, a szakasz végén szakaszonként összesítve:
-       · válasz-szivárgás (azonos témán belüli évszám- és mc-válasz-egyezés)
-       · hossz-árulkodás: a helyes opció > 1,5× a disztraktorok átlaga
-       · a kérdés elárulja a saját válaszát (számnév-összetétel tippnél,
-         közös szó a kérdés és a helyes válasz között mc-nél)
-       · elévülő megfogalmazás („jelenleg” jellegű szavak, rekord-szuperlatívuszok)
-       · tippelős hiányosságok: hiányzó note, nagy horgonyzatlan érték
-   Riportok (csak információ): évszám-arány tippelős tételenként, a leggyakoribb
-   kérdéskezdetek, a „helyes válasz a leghosszabb” arány, kvóták.
-
-   BASELINE: a már átnézett és elfogadott egyezések kulcsai – ezekre nem szól újra,
-   így csak az ÚJ eset látszik. Egy figyelmeztetés akkor kerül ide, ha EMBER
-   átnézte és rendben találta.
-   Kapcsolók:  --all   mindent kiír (a baseline-t és a levágott listákat is)
+   BASELINE: a 2026-08-09-én átnézett és elfogadott egyezések kulcsai – ezekre
+   nem szól újra, így a kimenet tiszta marad, és csak az ÚJ szivárgás látszik.
+   Kapcsolók:  --all   a baseline-ba sorolt egyezéseket is kiírja
                --keys  az összes aktuális figyelmeztetés kulcsát listázza
-                       (átnézés UTÁN ezekből frissítsd a BASELINE-t) */
+                       (új kérdésblokk átnézése UTÁN ezekből frissítsd a BASELINE-t) */
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -142,28 +131,17 @@ const BASELINE = new Set([
 const hash = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return h.toString(16).padStart(8, '0'); };
 
 let err = 0, warn = 0, known = 0;
-let SECTION = '', sectionWarns = [];
 const E = m => { err++; console.log('  ✘ HIBA: ' + m); };
 const pending = [];   // {key, msg} – a szakasz végén szűrjük a BASELINE-nal
 const W = (key, msg) => pending.push({ key, msg });
-function flushWarns(limit){
-  const cap = ALL ? Infinity : (limit || 12);
-  let shown = 0, hidden = 0, mine = 0;
+function flushWarns(){
   for (const p of pending) {
     if (KEYS) console.log("  '" + p.key + "',  // " + p.msg.slice(0, 90));
     if (BASELINE.has(p.key) && !ALL) { known++; continue; }
-    warn++; mine++;
-    if (shown < cap) { shown++; console.log('  ⚠ ' + (BASELINE.has(p.key) ? '(baseline) ' : 'ÚJ: ') + p.msg); }
-    else hidden++;
+    warn++; console.log('  ⚠ ' + (BASELINE.has(p.key) ? '(baseline) ' : 'ÚJ: ') + p.msg);
   }
-  if (hidden) console.log('  … és még ' + hidden + ' hasonló (mind: --all)');
-  if (mine && SECTION) sectionWarns.push([SECTION, mine]);
   pending.length = 0;
 }
-/* a szakasz címe + a figyelmeztetés-számlálás egy helyen */
-function section(title){ SECTION = title; console.log('— ' + title + ' —'); }
-/* szavak a normalizált szövegből */
-const words = s => norm(s).split(' ').filter(Boolean);
 
 console.log('KvízParty kérdésbázis-ellenőrző · ' + files.join(' + '));
 console.log('Összesen ' + Q.length + ' kérdés (' + Q.filter(q => q.type === 'mc').length + ' mc + '
@@ -203,7 +181,7 @@ Q.filter(q => q.type === 'tip' && !(catOf(q.cat) || {}).tip)
   .forEach(q => E('alvó tipp a(z) ' + (catOf(q.cat) || {}).name + ' kategóriában: „' + short(q.q) + '”'));
 
 /* ---------- 4) évszám-szivárgás (azonos témán belül) ---------- */
-section('évszám-szivárgás');
+console.log('— évszám-szivárgás —');
 {
   const tips = Q.filter(q => q.type === 'tip' && !q.unit && q.a >= 800 && q.a <= 2100);
   let cross = 0;
@@ -223,7 +201,7 @@ section('évszám-szivárgás');
 }
 
 /* ---------- 5) válasz-szivárgás: mc-válasz másik ÉLŐ kérdés szövegében/note-jában ---------- */
-section('válasz-szivárgás (mc-válaszok más kérdésekben)');
+console.log('— válasz-szivárgás (mc-válaszok más kérdésekben) —');
 {
   let cross = 0;
   for (const m of Q.filter(q => q.type === 'mc')) {
@@ -243,129 +221,7 @@ section('válasz-szivárgás (mc-válaszok más kérdésekben)');
   console.log('  (kereszt-témájú említés: ' + cross + ' db – kézi átnézés csak akkor kell, ha gyanús)');
 }
 
-/* ---------- 6) hossz-árulkodás: a helyes opció feltűnően hosszabb ----------
-   Ha a helyes válasz jóval hosszabb a disztraktoroknál, a játékos tudás nélkül is
-   ráismer (a leghosszabb, legárnyaltabb opció szokott a helyes lenni). A javítás
-   NEM a helyes válasz rövidítése, hanem a rosszak feltöltése azonos regiszterre. */
-section('hossz-árulkodás (a helyes opció túl hosszú)');
-{
-  const RATIO = 1.5, MINLEN = 18;
-  let longest = 0, total = 0;
-  for (const q of Q.filter(q => q.type === 'mc' && Array.isArray(q.o) && q.o.length === 4)) {
-    total++;
-    const L = q.o.map(o => String(o).length);
-    if (L[0] === Math.max(...L) && L.filter(x => x === L[0]).length === 1) longest++;
-    const avg = (L[1] + L[2] + L[3]) / 3;
-    if (L[0] >= MINLEN && L[0] > avg * RATIO)
-      W(hash('len|' + norm(q.q)),
-        'a helyes válasz ' + (L[0] / avg).toFixed(1) + '× hosszabb a disztraktorok átlagánál: „'
-        + short(q.q) + '” ✓„' + short(q.o[0]) + '”');
-  }
-  const n = pending.length;
-  flushWarns();
-  console.log('  (a helyes válasz ' + (100 * longest / total).toFixed(1) + '%-ban a leghosszabb opció – '
-    + 'a véletlen ~25% · ' + n + ' kérdés lépi túl az ' + RATIO + '× küszöböt)');
-}
-
-/* ---------- 7) a kérdés elárulja a saját válaszát ----------
-   „Hány púpja van a KÉTPÚPÚ tevének?” → 2. Nulla megkülönböztető erő, tiszta
-   sebességverseny. Tippnél számnév-összetételt keresünk, mc-nél olyan szót,
-   ami a helyes válaszban ÉS a kérdésben szerepel, de egyik rossz válaszban sem. */
-section('a kérdés elárulja a választ');
-{
-  const NUM = {1:'egy', 2:'ket', 3:'harom', 4:'negy', 5:'ot', 6:'hat', 7:'het', 8:'nyolc', 9:'kilenc', 10:'tiz'};
-  for (const q of Q.filter(q => q.type === 'tip' && NUM[q.a])) {
-    const w = NUM[q.a];
-    /* csak ÖSSZETÉTELT fogadunk el találatnak (kétpúpú, egynyári, négylevelű),
-       a puszta számnevet nem – az „hat”/„öt” magyarul túl sok szó eleje */
-    if (words(q.q).some(t => t.startsWith(w) && t.length >= w.length + 3))
-      W(hash('leak|' + norm(q.q)), 'a kérdés szövege tartalmazza a megoldást (' + q.a + '): „' + short(q.q) + '”');
-  }
-  for (const q of Q.filter(q => q.type === 'mc' && Array.isArray(q.o) && q.o.length === 4)) {
-    const qw = new Set(words(q.q));
-    const dw = new Set(q.o.slice(1).flatMap(o => words(o)));
-    const hit = words(q.o[0]).filter(w => w.length >= 6 && qw.has(w) && !dw.has(w));
-    if (hit.length)
-      W(hash('leakmc|' + norm(q.q)), 'a „' + hit.join(', ') + '” szó a kérdésben ÉS a helyes válaszban is szerepel, '
-        + 'a rosszakban nem: „' + short(q.q) + '” ✓„' + short(q.o[0]) + '”');
-  }
-  flushWarns();
-}
-
-/* ---------- 8) elévülő megfogalmazás ----------
-   Időtálló tény a szabály. A „jelenleg” típusú szavak és a rekord-jellegű
-   szuperlatívuszok egyszer biztosan hazuggá teszik a kérdést. */
-section('elévülő megfogalmazás');
-{
-  const NOW = /(^|[^a-z])(jelenleg|jelenlegi|manapsag|napjainkban|az aktualis|aktualisan|iden|tavaly|a mai napig|eddig osszesen)([^a-z]|$)/;
-  /* szuperlatívusz ÖNMAGÁBAN rendben (a legmagasabb hegy nem változik) – csak
-     akkor gyanús, ha rekordhoz/teljesítményhez kötődik, mert az megdőlhet */
-  const SUP = /(legtobb|legnagyobb|legdragabb|legnepesebb|legmagasabb|leggyorsabb|leghosszabb|legfiatalabb|legidosebb)/;
-  /* a „legjobb” szándékosan kimarad: nálunk szinte mindig Oscar-KATEGÓRIA neve, nem rekord */
-  const REC = /(nyert|gyozelem|trofea|rekord|eladott|nezett|bevetel|gazdag|ertekes|nepesebb|nepessegu|dijat)/;
-  for (const q of Q) {
-    const txt = norm(q.q + ' ' + (q.note || ''));
-    if (NOW.test(' ' + txt + ' '))
-      W(hash('now|' + norm(q.q)), 'elévülő szóhasználat („jelenleg” jellegű): „' + short(q.q) + '”');
-    else if (SUP.test(txt) && REC.test(txt))
-      W(hash('sup|' + norm(q.q)), 'megdönthető rekord-szuperlatívusz: „' + short(q.q) + '”');
-  }
-  flushWarns();
-}
-
-/* ---------- 9) tippelős józansági ellenőrzés ---------- */
-section('tippelős kérdések józansági ellenőrzése');
-{
-  for (const q of Q.filter(q => q.type === 'tip')) {
-    const tag = '„' + short(q.q) + '” → ' + q.a;
-    /* üres unit = ÉVSZÁM: a játék évszámként formázza. Ha nem évet kérdez, hibás. */
-    if (q.unit === '' && !/ev/.test(norm(q.q)))
-      E('üres unit, de a kérdés nem évszámot kér (a játék évként írná ki): ' + tag);
-    if (q.unit === '' && (q.a < 1 || q.a > 2100))
-      E('üres unit (évszám-formátum), de a megoldás nem lehet évszám: ' + tag);
-    if (!q.note || !String(q.note).trim())
-      W(hash('note|' + norm(q.q)), 'nincs note – az eredményhirdetésnél elvész egy „nahát!”: ' + tag);
-    /* nagy, horgonyzatlan érték: a nyertes a nagyságrendet találja el, nem a tényt,
-       és a telitalálat-bónusz tiszta szerencse. Kérdezd ezerben/millióban vagy arányban. */
-    if (q.unit !== '' && Math.abs(q.a) >= 10000 && !/(ezer|millio|milliard)/.test(norm(q.q + ' ' + q.unit)))
-      W(hash('big|' + norm(q.q)), 'nagy, horgonyzatlan érték (' + q.a + ') – érdemes ezerben/millióban vagy '
-        + 'arányban kérdezni: „' + short(q.q) + '”');
-  }
-  flushWarns();
-}
-
-/* ---------- 10) változatosság-riport (információ, nem hiba) ---------- */
-console.log('\n— változatosság (információ) —');
-{
-  const tipGroups = {};
-  for (const q of Q.filter(q => q.type === 'tip')) {
-    const k = tipgOf(q.cat);
-    (tipGroups[k] = tipGroups[k] || { n: 0, y: 0 }).n++;
-    if (q.unit === '') tipGroups[k].y++;
-  }
-  console.log('  évszám-arány a tippelős tételekben (a 40–50% fölötti egyhangú):');
-  Object.keys(tipGroups).sort((a, b) => tipGroups[b].y / tipGroups[b].n - tipGroups[a].y / tipGroups[a].n)
-    .forEach(k => {
-      const t = tipGroups[k], pct = Math.round(100 * t.y / t.n);
-      console.log('    ' + (k + ' ').padEnd(16, '·') + ' ' + String(pct).padStart(3) + '%  ('
-        + t.y + '/' + t.n + ')  ' + '█'.repeat(Math.round(pct / 5)));
-    });
-
-  const starts = {};
-  const mcs = Q.filter(q => q.type === 'mc');
-  mcs.forEach(q => { const w = words(q.q).slice(0, 2).join(' '); starts[w] = (starts[w] || 0) + 1; });
-  const top = Object.entries(starts).sort((a, b) => b[1] - a[1]).slice(0, 8);
-  console.log('  leggyakoribb kérdéskezdetek (' + mcs.length + ' mc):');
-  top.forEach(([w, n]) => console.log('    ' + (w + ' ').padEnd(20, '·') + ' ' + String(n).padStart(3)
-    + '  (' + (100 * n / mcs.length).toFixed(1) + '%)'));
-  const first = {};
-  mcs.forEach(q => { const w = words(q.q)[0] || '?'; first[w] = (first[w] || 0) + 1; });
-  const t2 = Object.entries(first).sort((a, b) => b[1] - a[1]).slice(0, 3)
-    .map(([w, n]) => w + ' ' + (100 * n / mcs.length).toFixed(0) + '%').join(' · ');
-  console.log('    első szó szerint: ' + t2);
-}
-
-/* ---------- 11) kvóta-áttekintés (információ) ---------- */
+/* ---------- 6) kvóta-áttekintés (információ) ---------- */
 console.log('\n— kvóták (információ) —');
 for (const c of C) {
   const mc = Q.filter(q => q.cat === c.id && q.type === 'mc').length;
@@ -378,12 +234,6 @@ Q.forEach(q => { if (dd[q.type]) dd[q.type][(q.d || 3) - 1]++; });
 console.log('  nehézség (d1..d5)  mc: ' + dd.mc.join(' / ') + '   tip: ' + dd.tip.join(' / '));
 
 /* ---------- összegzés ---------- */
-if (sectionWarns.length) {
-  console.log('\n— átnézendő (szakaszonként) —');
-  sectionWarns.sort((a, b) => b[1] - a[1]).forEach(([t, n]) =>
-    console.log('  ' + String(n).padStart(4) + ' × ' + t));
-  console.log('  (részletek: --all · ha valamelyiket ÁTNÉZTED és rendben van, a --keys kimenetből emeld a BASELINE-ba)');
-}
 console.log('\n' + (err ? ('❌ ' + err + ' hiba') : '✅ nincs hiba')
   + (warn ? (' · ⚠ ' + warn + ' ÚJ, átnézendő figyelmeztetés') : ' · nincs új figyelmeztetés')
   + (known ? (' · ' + known + ' ismert egyezés a baseline-ban') : ''));
