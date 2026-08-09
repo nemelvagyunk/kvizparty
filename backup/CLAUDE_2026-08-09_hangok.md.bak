@@ -13,8 +13,8 @@
 
 ## Jelenlegi állapot (röviden)
 
-**Éles, tesztelt és kész** (146 ellenőrzés zöld + mindkét hálózati teszt):
-Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő Büntetéssel és **emberi baklövésekkel a tippelősben** · sorozat-bónusz (1,9× plafon, finálé-semleges, `3🔥` kijelzés) · dupla pontos finálé · fix pakli-terv (10/15/20/30) · kategória-sorsolás + 10 mp visszaszámlálás + haladás-infók · tipp-érték skálázás a létszámmal (**2. hely: 3 főnél 0,4×, 4 főtől 1×**) · végi díjátadó (a bakis díjaknál a kérdéssel) · külön tipp-zsák a 9 tippelős tétellel · **teljes 23 kategóriás kérdésbázis (2026-08-08)** · **szűrők nélküli, letisztult lobby** · **🃏 jokerek: ✂️ Felezés + 🎲 Dupla vagy semmi + 🔢 Első/Utolsó számjegy** · **📖 Játékszabályok FAQ a főmenüben** · **munkamenet-szintű kérdés-memória (`SESSION_USED`)** · **UI-csiszolás: kitöltő játéktér, konfetti, urgencia-timer (2026-08-09, lásd lent)** · **🔊 szintetizált hangok némítás-gombbal (2026-08-09, lásd lent)**.
+**Éles, tesztelt és kész** (144 ellenőrzés zöld + mindkét hálózati teszt):
+Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő Büntetéssel és **emberi baklövésekkel a tippelősben** · sorozat-bónusz (1,9× plafon, finálé-semleges, `3🔥` kijelzés) · dupla pontos finálé · fix pakli-terv (10/15/20/30) · kategória-sorsolás + 10 mp visszaszámlálás + haladás-infók · tipp-érték skálázás a létszámmal (**2. hely: 3 főnél 0,4×, 4 főtől 1×**) · végi díjátadó (a bakis díjaknál a kérdéssel) · külön tipp-zsák a 9 tippelős tétellel · **teljes 23 kategóriás kérdésbázis (2026-08-08)** · **szűrők nélküli, letisztult lobby** · **🃏 jokerek: ✂️ Felezés + 🎲 Dupla vagy semmi + 🔢 Első/Utolsó számjegy** · **📖 Játékszabályok FAQ a főmenüben** · **munkamenet-szintű kérdés-memória (`SESSION_USED`)** · **UI-csiszolás: kitöltő játéktér, konfetti, urgencia-timer (2026-08-09, lásd lent)**.
 
 **A kérdésbázis-terv LEZÁRVA** – nincs nyitott írási feladat. A felhasználó döntései az utolsó körből: Komolyzene fele magyar / fele nemzetközi (megvalósítva ~12/13 arányban) · a Gasztronómia nemzetközi része vegyes (konyhák, ételek és alapanyagok).
 
@@ -185,18 +185,9 @@ Térképes párbaj két választható pályán. Csapatkód: **1 = piros** (a hos
 - **Hódítás feliratok magyarul:** a fejléc `PHASE 1/2 //` → **`FÁZIS 1/2 //`**, a `MISSION COMPLETE` → **`KÜLDETÉS TELJESÍTVE`**. (A térkép sarkában a stilizált `FRONTVONAL // FOGLALAS/HARC/VEGE` ékezet nélkül maradt – szándékos retro-monospace.)
 - **Hódítás élet-rombuszok rejtve** – részletek a Hódítás szekció „3 élet" pontjánál.
 
-## 🔊 Hangok (2026-08-09, asset nélkül)
-
-- **Motor:** `SND` állapot + `sndInit()` / `sndResume()` / `tone()` / `play(name)` a `showScreen()` után. Minden hang oszcillátorból szintetizált, NINCS audio-asset. Az AudioContext **csak felhasználói gesztusra** jön létre (mobil autoplay-szabály): a `boot()` `pointerdown`/`keydown` „ébresztőt" köt (capture, sosem szedjük le – iOS-felfüggesztés után is visszakapcsol). Minden hívás try/catch mögött: ha nincs WebAudio, a játék némán megy tovább.
-- **Hangtár (`play('…')`):** `tick` – utolsó 5 mp ketyegés, a `timerUrgency()`-ből, másodpercenként egyszer (`SND.lastTick` őrzi) · `spin`/`land` – sorsolás-pörgés kattogása + megállás · `q` – új kérdés · `send` – válasz elküldve · `good`/`small`/`bad`/`meh` – a SAJÁT eredmény a reveal-nél (nyertes / 2. hely / hiba vagy negatív pont / semleges) · `joker` – jokerack · `turn` – hódítás „te jössz" (a `lastPickKey` kulcs őrzi, hogy fordulónként csak egyszer szóljon) · `fanfare` – a finálé ELSŐ sorsolás-képernyőjén (`SND.fanfared` flag) · `win` – végeredmény-fanfár (hódításban csak győztesnél, döntetlennél nincs).
-- **Hódítás reveal-hang:** a saját csapat `rows`-beli soraiból számol (MC: `ok`/rossz; tippnél a közelebbi `dist`, egyenlőnél a gyorsabb) – hangulatjelzés, nem pontos pontozás-tükör.
-- **Némítás:** `#snd-btn` fix gomb a JOBB ALSÓ sarokban (z-index 90, minden képernyőn látszik), 🔊/🔇 ikon + `.off` osztály. Az `SND.on` csak memóriában él – oldal-újratöltés visszakapcsolja (localStorage tilos). Alapból BE.
-- **Meccs-szintű flagek** (`SND.fanfared`, `lastPickKey`) a `lobby` üzenetnél állnak vissza (rematch is).
-- **Teszt:** `test_solo.js` „HANGOK" szekció (5 ellenőrzés: motor + gomb + némítás-toggle + AudioContext-létrejötte + az összes hang hibamentes lejátszása). A Playwright `--mute-audio`-val fut, így a hangok némán, de hibamentesen renderelődnek.
-
 ## Tesztek (Playwright, `tests/`)
 
-- `npm test` → `test_solo.js` (a `window.__kv` teszt-hookon át: FAQ-képernyő, sorozat-bónusz, finálé, kategória-sorsolás, tipp-tételek, tipp-skálázás + 2. hely, jokerek, tipp-jokerek, kérdés-memória, tipp-tételek kijelzése, **hangok+némítás** + teljes szóló játszma – 78 ellenőrzés), `test_ai.js` (AI-szintek: 800 mintás találati arány szintenként, tipppontosság + baklövés-arány, Robot Idő Büntetés – **éles időzítőkkel fut, nincs `#fast`** – 29 ellenőrzés), `test_conquest.js` (hódítás: logikai ellenőrzések + teljes szóló játszma AI ellen **mindkét térképen** – 39 ellenőrzés). Összesen 146 ellenőrzés.
+- `npm test` → `test_solo.js` (a `window.__kv` teszt-hookon át: FAQ-képernyő, sorozat-bónusz, finálé, kategória-sorsolás, tipp-tételek, tipp-skálázás + 2. hely, jokerek, tipp-jokerek, kérdés-memória, díjak + teljes szóló játszma – 73 ellenőrzés), `test_ai.js` (AI-szintek: 800 mintás találati arány szintenként, tipppontosság + baklövés-arány, Robot Idő Büntetés – **éles időzítőkkel fut, nincs `#fast`**), `test_conquest.js` (hódítás: logikai ellenőrzések + teljes szóló játszma AI ellen **mindkét térképen**). Összesen 144 ellenőrzés.
 - `npm run test:cq` → csak a hódítás mód.
 - `npm run test:net` → `test_net.js` (klasszikus) és `test_conquest_net.js` (hódítás host+vendég a kis térképen, a két kliens állapotának egyezését is ellenőrzi), **helyi PeerJS szerverrel**: `node_modules/.bin/peerjs --port 9000 --host 127.0.0.1`, URL-hash: `#fast&srv=127.0.0.1:9000`.
 - Chromium a sandboxban: `executablePath: '/opt/pw-browsers/chromium'` (fallback: sima launch).

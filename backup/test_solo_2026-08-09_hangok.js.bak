@@ -590,34 +590,6 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   ck('pontosan 9 tippelős sorsolási tétel van', ti.n, 9);
   ck('űrkutatási tipp tétele: Feltalálók és találmányok', [ti.urk, ti.drawCat], ['Feltalálók és találmányok', 'Feltalálók és találmányok']);
   ck('földrajz és film tételek összevonva, a saját tétel marad', [ti.vf, ti.film, ti.mt], ['Földrajz', 'Filmek', 'Magyar történelem']);
-
-  // --- HANGOK: WebAudio motor + némítás gomb ---
-  console.log('HANGOK:');
-  const snd0 = await page.evaluate(() => ({
-    btn: !!document.getElementById('snd-btn'),
-    icon: document.getElementById('snd-btn').textContent,
-    engine: typeof SND === 'object' && typeof play === 'function' && typeof sndInit === 'function',
-    ctx: !!SND.ctx,          // a korábbi kattintások (gesztusok) már létrehozták
-    on: SND.on,
-  }));
-  ck('van hang-motor, és a némítás gomb 🔊-val indul', [snd0.btn, snd0.engine, snd0.icon, snd0.on], [true, true, '🔊', true]);
-  ck('az AudioContext felhasználói gesztusra létrejött', snd0.ctx, true);
-  await page.click('#snd-btn');
-  const snd1 = await page.evaluate(() => ({ icon: document.getElementById('snd-btn').textContent, on: SND.on,
-    off: document.getElementById('snd-btn').classList.contains('off') }));
-  ck('némítás: 🔇 ikon, SND.on=false, halvány gomb', [snd1.icon, snd1.on, snd1.off], ['🔇', false, true]);
-  await page.click('#snd-btn');
-  const snd2 = await page.evaluate(() => ({ icon: document.getElementById('snd-btn').textContent, on: SND.on }));
-  ck('visszakapcsolás: 🔊 ikon, SND.on=true', [snd2.icon, snd2.on], ['🔊', true]);
-  const sndPlay = await page.evaluate(() => {
-    try {
-      ['tick','spin','land','q','send','good','small','bad','meh','joker','turn','fanfare','win','nincsilyen']
-        .forEach(n => play(n));
-      return true;
-    } catch (e) { return String(e); }
-  });
-  ck('minden hang (és ismeretlen név is) hiba nélkül lejátszható', sndPlay, true);
-
   if (sf) { console.error('❌ ' + sf + ' hibás ellenőrzés'); process.exitCode = 1; }
 
   console.log(errors.length ? 'HIBÁK:\n' + errors.join('\n') : 'KONZOL: tiszta ✔');

@@ -249,12 +249,6 @@ input[type=number]{-moz-appearance:textfield;}
 #toast{position:fixed; top:14px; left:50%; transform:translateX(-50%); background:#1f2937; color:#fff; border:1px solid rgba(255,255,255,.2);
   padding:12px 20px; border-radius:14px; font-weight:700; opacity:0; pointer-events:none; transition:opacity .25s; z-index:99; max-width:90vw; text-align:center;}
 #toast.on{opacity:1;}
-/* némítás gomb – minden képernyőn elérhető, diszkrét sarok-gomb */
-#snd-btn{position:fixed; right:12px; bottom:12px; z-index:90; width:42px; height:42px; border-radius:50%;
-  border:1px solid rgba(255,255,255,.18); background:rgba(12,9,32,.6); backdrop-filter:blur(6px);
-  font-size:1.1rem; line-height:1; cursor:pointer; opacity:.7; transition:opacity .15s, filter .15s; padding:0;}
-#snd-btn:hover{opacity:1;}
-#snd-btn.off{opacity:.4; filter:grayscale(1);}
 .conn-note{color:var(--dim); text-align:center; font-size:.8rem; margin-top:22px; line-height:1.5;}
 /* ---- HÓDÍTÁS mód – „Frontvonal” téma (neon HUD) ---- */
 :root{ --n1:#ff2e63; --n2:#00e5ff; --nAcc:#ffcc33; --nDim:#4a5b7d; --nGrid:#131d33; }
@@ -337,7 +331,6 @@ input[type=number]{-moz-appearance:textfield;}
 <body>
 
 <div id="toast"></div>
-<button id="snd-btn" title="Hangok ki/be">🔊</button>
 
 <!-- ================= FŐMENÜ ================= -->
 <div class="screen on" id="s-menu">
@@ -688,65 +681,6 @@ let toastT=null;
 function toast(msg,ms){ const t=$('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'), ms||3200); }
 function showScreen(name){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); $('s-'+name).classList.add('on'); }
 
-/* ============================================================
-   HANGOK – WebAudio, asset nélkül (minden hang szintetizált)
-   Az AudioContext csak felhasználói gesztusra jön létre (mobil-szabály);
-   a boot() köt egy pointerdown/keydown "ébresztőt". Minden hívás
-   try/catch mögött van: ha nincs hang, a játék némán megy tovább.
-   ============================================================ */
-const SND = { on:true, ctx:null, master:null, lastTick:-1, fanfared:false };
-function sndInit(){
-  if(SND.ctx) return;
-  try{
-    const AC=window.AudioContext||window.webkitAudioContext;
-    if(!AC) return;
-    SND.ctx=new AC();
-    SND.master=SND.ctx.createGain();
-    SND.master.gain.value=0.55;
-    SND.master.connect(SND.ctx.destination);
-  }catch(e){ SND.ctx=null; }
-}
-function sndResume(){ try{ if(SND.ctx&&SND.ctx.state==='suspended') SND.ctx.resume(); }catch(e){} }
-/* egy hangjegy: f frekvencia, t0 késleltetés (mp), dur hossz, opciók: type/g(hangerő)/to(csúszás) */
-function tone(f,t0,dur,o){
-  if(!SND.ctx) return;
-  o=o||{};
-  try{
-    const c=SND.ctx, osc=c.createOscillator(), v=c.createGain(), at=c.currentTime+t0;
-    osc.type=o.type||'triangle';
-    osc.frequency.setValueAtTime(f,at);
-    if(o.to) osc.frequency.exponentialRampToValueAtTime(o.to,at+dur);
-    v.gain.setValueAtTime(0.0001,at);
-    v.gain.exponentialRampToValueAtTime(o.g||0.12,at+0.012);
-    v.gain.exponentialRampToValueAtTime(0.0001,at+dur);
-    osc.connect(v); v.connect(SND.master);
-    osc.start(at); osc.stop(at+dur+0.05);
-  }catch(e){}
-}
-function play(name){
-  if(!SND.on||!SND.ctx) return;
-  sndResume();
-  const S={
-    tick:   ()=>tone(1150,0,.04,{type:'square',g:.05}),                       // óra-ketyegés (utolsó 5 mp)
-    spin:   ()=>tone(500+Math.random()*300,0,.03,{type:'square',g:.035}),     // sorsolás-pörgés kattogása
-    land:   ()=>{ tone(740,0,.12,{g:.1}); tone(1108,.09,.2,{g:.12}); },       // a kategória "beesik"
-    q:      ()=>tone(520,0,.1,{g:.07,to:660}),                                // új kérdés
-    send:   ()=>tone(600,0,.06,{type:'square',g:.06,to:800}),                 // válasz elküldve
-    good:   ()=>{ [523,659,784].forEach((f,i)=>tone(f,i*.09,.16,{g:.13})); tone(1046,.28,.3,{g:.1}); },
-    small:  ()=>{ tone(523,0,.12,{g:.1}); tone(659,.1,.2,{g:.1}); },          // 2. hely
-    bad:    ()=>{ tone(311,0,.2,{type:'sawtooth',g:.08,to:220}); tone(233,.18,.3,{type:'sawtooth',g:.07,to:180}); },
-    meh:    ()=>tone(330,0,.15,{g:.05}),                                      // semleges (nem nyertél, nem hibáztál)
-    joker:  ()=>{ [1046,1318,1568,2093].forEach((f,i)=>tone(f,i*.06,.12,{g:.07})); },
-    turn:   ()=>{ tone(740,0,.12,{g:.09}); tone(740,.18,.12,{g:.09}); },      // hódítás: te jössz
-    fanfare:()=>{ [392,523,659].forEach((f,i)=>tone(f,i*.12,.18,{type:'sawtooth',g:.07}));
-                  [523,659,784].forEach(f=>tone(f,.4,.5,{type:'sawtooth',g:.06})); },   // finálé kezdete
-    win:    ()=>{ [523,659,784,1046].forEach((f,i)=>tone(f,i*.13,.22,{type:'sawtooth',g:.06}));
-                  [523,659,784,1046].forEach(f=>tone(f,.6,.7,{type:'sawtooth',g:.05}));
-                  [659,784,1046].forEach(f=>tone(f,1.35,.45,{g:.05})); },      // győzelmi fanfár a végén
-  }[name];
-  if(S) try{ S(); }catch(e){}
-}
-
 /* ---------------- globális állapot ---------------- */
 let me = {pid:null, name:'', avatar:AVATARS[0], isHost:false};
 let myJok = {fifty:true, double:true, tip:true};   // a saját joker-készletem (a host validál)
@@ -782,15 +716,11 @@ function resetAll(){
   showScreen('menu');
 }
 function stopTimers(){ cancelAnimationFrame(view.raf); clearInterval(view.cdT); view.cdT=null; }
-/* az utolsó 5 másodperc jelzése: piros pulzáló szám + izzó sáv + ketyegés */
+/* az utolsó 5 másodperc vizuális jelzése (piros pulzáló szám + izzó sáv) */
 function timerUrgency(rem){
   const on=rem>0&&rem<=5000;
   $('g-timer-num').classList.toggle('urgent',on);
   $('g-timerbar').classList.toggle('urgent',on);
-  if(on){
-    const s=Math.ceil(rem/1000);
-    if(s!==SND.lastTick){ SND.lastTick=s; play('tick'); }
-  } else SND.lastTick=-1;
 }
 function clearHostTimers(){
   if(!host) return;
@@ -1653,7 +1583,6 @@ function handleMsg(m){
     case 'hostbye': toast('A host bezárta a szobát.'); resetAll(); break;
     case 'lobby': lastPlayers=m.players; cqState=null; $('cq-wrap').classList.remove('on');
                   myJok={fifty:true,double:true,tip:true}; jokIntro=true;   // új meccs → új joker-készlet
-                  SND.fanfared=false; lastPickKey=null;                     // meccs-szintű hang-flagek vissza
                   renderLobby(m); showScreen('lobby'); break;
     case 'jokerack': jokerApply(m); break;
     case 'cq': cqOnState(m.st); break;
@@ -1737,7 +1666,6 @@ function renderLobby(m){
 function renderCatDraw(m){
   stopTimers();
   showScreen('game');
-  if(m.final&&!SND.fanfared){ SND.fanfared=true; play('fanfare'); }   // a finálé kezdetét fanfár jelzi
   $('cq-wrap').classList.remove('on');
   $('g-count').textContent=(m.qi+1)+' / '+m.total;
   $('g-cat').textContent='🎲 Sorsolás';
@@ -1788,12 +1716,10 @@ function renderCatDraw(m){
         last=el; step=55+Math.pow(el/spin,3)*260;
         const c=spinList[Math.floor(Math.random()*spinList.length)];
         ic.textContent=c.icon; nm.textContent=c.name;
-        play('spin');
       }
     } else if(!box.classList.contains('hit')){
       box.classList.remove('spin'); box.classList.add('hit');
       ic.textContent=m.cat.icon; nm.textContent=m.cat.name;
-      play('land');
     }
     const rem=spin+count-el;
     const cd=$('draw-cd');
@@ -1812,7 +1738,6 @@ function renderCatDraw(m){
 /* ---------------- render: kérdés ---------------- */
 function renderQuestion(m){
   stopTimers();
-  play('q');
   view={qi:m.qi,type:m.type,dur:m.dur,qStart:performance.now(),answered:false,total:m.total,raf:0,locked:false,cdT:null,mcLabels:m.options||[]};
   $('g-count').textContent = m.label ? m.label : ((m.qi+1)+' / '+m.total);
   $('g-cat').textContent=m.cat.icon+' '+m.cat.name;
@@ -1892,7 +1817,6 @@ function jokBtnsOff(){ ['jok-fifty','jok-double','jok-first','jok-last'].forEach
 /* joker-visszaigazolás a hosttól (privát üzenet) */
 function jokerApply(m){
   if(m.qi!==view.qi) return;
-  play('joker');
   jokBtnsOff();
   const jm=$('jokmsg');
   if(m.kind==='fifty'){
@@ -1912,7 +1836,6 @@ function jokerApply(m){
 function submitMC(i){
   if(view.locked||view.answered) return;
   view.answered=true;
-  play('send');
   jokBtnsOff();
   const ms=Math.round(performance.now()-view.qStart);
   document.querySelectorAll('.mcbtn').forEach((b,bi)=>{ b.classList.add('dis'); if(bi===i)b.classList.add('sel'); });
@@ -1925,7 +1848,6 @@ function submitTip(){
   const v=parseFloat(raw);
   if(!isFinite(v)){ toast('Írj be egy számot!'); return; }
   view.answered=true;
-  play('send');
   jokBtnsOff();
   const ms=Math.round(performance.now()-view.qStart);
   $('tip-inp').disabled=true; $('tip-btn').disabled=true;
@@ -1954,7 +1876,6 @@ function renderProgress(pids){
    HÓDÍTÁS mód – kliensoldali megjelenítés
    ============================================================ */
 let cqState=null;
-let lastPickKey=null;   // hódítás: "te jössz" hang csak fordulóváltáskor szóljon
 function cqMyTeam(){
   if(!cqState) return 0;
   const t=cqState.teams.find(x=>x.pid===me.pid);
@@ -2114,9 +2035,6 @@ function cqRenderPickUI(){
     return;
   }
   const who=cqTeamPl(st.turn);
-  const pkey=st.phase+':'+st.round+':'+st.turn+':'+(st.attacks?st.attacks[1]+'|'+st.attacks[2]:'');
-  if(mine&&pkey!==lastPickKey) play('turn');
-  lastPickKey=pkey;
   $('g-question').textContent = mine
     ? (st.phase==='war' ? '⚔️ Melyik területet támadod meg?' : '🚩 Melyik területet foglalnád el?')
     : (who.avatar+' '+who.name+' épp választ…');
@@ -2158,14 +2076,6 @@ function cqRenderReveal(m){
       if(b.classList.contains('sel')&&i!==m.correctIndex){ b.classList.remove('faded'); b.classList.add('wrongsel'); }
     });
   } else lockAnswers(null);
-  /* a saját csapatom hangja a hódítás-eredménynél */
-  { const my=cqMyTeam(), a=(m.rows||[]).find(r=>r.team===my), b=(m.rows||[]).find(r=>r.team!==my);
-    let s='meh';
-    if(m.type==='mc'){ if(a&&a.ok) s='good'; else if(a&&a.val!=null) s='bad'; }
-    else { const ad=(a&&a.dist!=null)?a.dist:null, bd=(b&&b.dist!=null)?b.dist:null;
-      if(ad!=null&&(bd==null||ad<bd||(ad===bd&&a.ms<=b.ms))) s='good'; }
-    play(s);
-  }
   const unit=m.unit?(' '+esc(m.unit)):'';
   const correctLine = m.type==='mc'
     ? 'Helyes válasz: <b>'+esc(m.correctText)+'</b>'
@@ -2210,7 +2120,7 @@ function cqRenderEnd(m){
       '<button class="btn ghost" id="btn-exit">🚪 Kilépés a főmenübe</button>';
   if(me.isHost) $('btn-rematch').onclick=hostRematch;
   $('btn-exit').onclick=resetAll;
-  if(win){ confettiBurst(); play('win'); }     // döntetlennél nincs konfetti/fanfár
+  if(win) confettiBurst();     // döntetlennél nincs konfetti
 }
 
 /* Saját sorozat visszajelzése a 4 válaszos kérdések után (klasszikus mód).
@@ -2253,14 +2163,6 @@ function renderReveal(m){
   } else {
     lockAnswers(null);
   }
-  /* a saját eredményem hangja: nyertem / 2. hely / hibáztam / semleges */
-  { const r0=(m.results||[]).find(r=>r.pid===me.pid);
-    if(r0){
-      if(r0.win) play('good');
-      else if(r0.second) play('small');
-      else if(r0.pts<0||(m.type==='mc'&&r0.val!=null&&!r0.ok)) play('bad');
-      else play('meh');
-    } }
   const unit=m.unit?(' '+esc(m.unit)):'';
   let rows;
   if(m.type==='mc'){
@@ -2379,7 +2281,6 @@ function renderEnd(m){
   if(me.isHost) $('btn-rematch').onclick=hostRematch;
   $('btn-exit').onclick=resetAll;
   confettiBurst();
-  play('win');
 }
 
 /* ---------------- indítás ---------------- */
@@ -2396,16 +2297,6 @@ function boot(){
   $('btn-solo').onclick=startSolo;
   $('btn-rules').onclick=()=>showScreen('rules');
   $('btn-rules-back').onclick=()=>showScreen('menu');
-  /* hangok: az AudioContext az ELSŐ gesztusra jön létre (mobil autoplay-szabály),
-     és minden további gesztus felébreszti, ha a böngésző felfüggesztette */
-  const sndWake=()=>{ sndInit(); sndResume(); };
-  window.addEventListener('pointerdown',sndWake,true);
-  window.addEventListener('keydown',sndWake,true);
-  const sb=$('snd-btn');
-  sb.onclick=()=>{ sndInit(); SND.on=!SND.on;
-    sb.textContent=SND.on?'🔊':'🔇'; sb.classList.toggle('off',!SND.on);
-    sb.title=SND.on?'Hangok némítása':'Hangok bekapcsolása';
-    if(SND.on) play('send'); };
   /* gyors "búcsúüzenet" lapbezáráskor, hogy a többiek ne várjanak percekig */
   window.addEventListener('pagehide',()=>{
     try{
