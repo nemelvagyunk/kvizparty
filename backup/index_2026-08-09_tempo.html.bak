@@ -372,7 +372,7 @@ input[type=number]{-moz-appearance:textfield;}
         <summary>🎮 Hogyan indul egy játék?</summary>
         <div class="rules-body">
           <p>A KvízParty <b>2–6 fős</b> kvízparti. Egy játékos szobát nyit (🏠), és kap egy 4 jegyű kódot – a többiek ezzel csatlakoznak (🔗), mindenki a saját eszközéről. Egyedül is játszhatsz AI-ellenfelek ellen (🤖).</p>
-          <p>A szobát nyitó játékos (a host) állítja be a játékmódot, a kérdésszámot és a tempót, és ő adhat a meccshez AI-játékosokat is – emberrel és robottal együtt legfeljebb 6 fő lehet.</p>
+          <p>A szobát nyitó játékos (a host) állítja be a játékmódot és a kérdésszámot, és ő adhat a meccshez AI-játékosokat is – emberrel és robottal együtt legfeljebb 6 fő lehet.</p>
           <p class="dim">Ha nagyon ritkán nem jön létre a kapcsolat (szigorú céges/iskolai hálózaton fordulhat elő), mobilnetről vagy telefonos hotspotról szinte mindig működik.</p>
         </div>
       </details>
@@ -382,7 +382,7 @@ input[type=number]{-moz-appearance:textfield;}
         <div class="rules-body">
           <p><b>Kérdés-válasz:</b> négy lehetőség, egy helyes – <b>20 másodperc</b> alatt kell választani.</p>
           <p><b>Tippelős:</b> egy számot kell megtippelni (évszám, mennyiség…) <b>25 másodperc</b> alatt. A legközelebbi tipp nyer, egyenlőségnél a gyorsabb. A tippet vesszővel is beírhatod, de a megoldás mindig egész szám.</p>
-          <p>Minden kérdés előtt <b>kategória-sorsolás</b> jön: látod, milyen téma, milyen típus és hány pont következik, plusz hogy hányadik kérdésnél jártok és mennyi van hátra a 🎬 fináléig. A kérdés <b>🐢 Nyugodt tempónál 10, ⚡ Pörgős tempónál 4 másodperc</b> múlva indul (a lobbyban állítható) – a host korábban is elindíthatja.</p>
+          <p>Minden kérdés előtt <b>kategória-sorsolás</b> jön: látod, milyen téma, milyen típus és hány pont következik, plusz hogy hányadik kérdésnél jártok és mennyi van hátra a 🎬 fináléig. 10 másodperc múlva indul a kérdés – a host korábban is elindíthatja.</p>
         </div>
       </details>
 
@@ -2977,9 +2977,7 @@ const REVEAL_AUTO = FAST?1800:7000;
    Ettől minden kategória egyenlő eséllyel jön, akárhány kérdés van benne.
    Kategória-szűrő NINCS (2026-08-08-án kivezetve): minden téma mindig játékban van. */
 const CAT_SPIN_MS  = FAST?400:1800;
-const CAT_COUNT_MS      = FAST?700:10000;   // 🐢 Nyugodt tempó (alapértelmezés)
-const CAT_COUNT_FAST_MS = FAST?700:4000;    // ⚡ Pörgős tempó (lobby-kapcsoló)
-function catCountMs(){ return (host&&host.settings&&host.settings.tempo==='fast') ? CAT_COUNT_FAST_MS : CAT_COUNT_MS; }
+const CAT_COUNT_MS = FAST?700:10000;
 const MAXP = 6;
 /* Kérdésérték nehézség szerint: 1★=75, 2★=90, 3★=100, 4★=110, 5★=125 pont */
 const QVAL = [75, 90, 100, 110, 125];
@@ -3237,7 +3235,7 @@ function sendToHost(msg){ try{ net.conn.send(msg); }catch(e){} }
 
 /* ---------------- host: szoba ---------------- */
 function makeHost(solo){
-  return { solo, players:[], settings:{count:15, mode:'classic', mapKey:'big', tempo:'calm'},
+  return { solo, players:[], settings:{count:15, mode:'classic', mapKey:'big'},
     cq:null, cqPool:{mc:[],tip:[]}, stats:{}, jokers:{}, qJok:{}, sMcLen:0,
     phase:'lobby', deck:[], qi:-1, answers:{}, qData:null, qCorrectIndex:0, qDur:0,
     qDeadlineT:null, autoNextT:null, aiTimers:[], usedIds:SESSION_USED };
@@ -3457,16 +3455,15 @@ function hostNext(){
   /* haladás-infók a sorsolás-képernyőhöz: hátralévők a fináléig + a blokk maradéka */
   const FF=(host.finalFrom!=null&&host.finalFrom<=host.deck.length)?host.finalFrom:host.deck.length;
   const rest=host.qFinal?[]:host.deck.slice(host.qi, FF);
-  const cms=catCountMs();   // 🐢 10 mp vagy ⚡ 4 mp a lobby tempó-beállítása szerint
   hostBroadcast({t:'catdraw', qi:host.qi, total:host.deck.length,
     cat: q.type==='tip' ? tipItemInfo(q.cat) : {name:cat.name,icon:cat.icon}, type:q.type, d:q.d,
-    spin:CAT_SPIN_MS, count:cms, final:host.qFinal, finalLen:finalLen(host.deck.length),
+    spin:CAT_SPIN_MS, count:CAT_COUNT_MS, final:host.qFinal, finalLen:finalLen(host.deck.length),
     toFinal:rest.length,
     mcLeft:rest.filter(x=>x.type==='mc').length,
     tipLeft:rest.filter(x=>x.type==='tip').length,
     val: q.type==='tip' ? Math.round(bV*host.qTipMult) : bV,
     val2:(q.type==='tip') ? Math.round(bV*host.qSecond) : 0, players:playersMin()});
-  host.catT=setTimeout(hostAsk, CAT_SPIN_MS+cms);
+  host.catT=setTimeout(hostAsk, CAT_SPIN_MS+CAT_COUNT_MS);
 }
 function hostAsk(){
   if(!host||host.phase!=='catdraw') return;
@@ -4122,10 +4119,6 @@ function renderLobby(m){
         : '<div class="setrow"><span class="lab">Kérdések száma</span><span class="seg" id="seg-count">'+
         Q_COUNTS.map(v=>'<button data-c="'+v+'" class="'+(m.settings.count===v?'sel':'')+'">'+v+'</button>').join('')+
       '</span></div>'+
-      '<div class="setrow"><span class="lab">Tempó</span><span class="seg" id="seg-tempo">'+
-        '<button data-t="calm" title="10 mp visszaszámlálás a kérdések előtt" class="'+((m.settings.tempo||'calm')!=='fast'?'sel':'')+'">🐢 Nyugodt · 10 mp</button>'+
-        '<button data-t="fast" title="4 mp visszaszámlálás a kérdések előtt" class="'+(m.settings.tempo==='fast'?'sel':'')+'">⚡ Pörgős · 4 mp</button>'+
-      '</span></div>'+
       '<div class="hint" style="text-align:left;margin:0 0 4px">'+
         qPlan(m.settings.count).mc+' × Kérdés-válasz → '+qPlan(m.settings.count).tip+' × tippelős → '+
         '🎬 <b>'+qPlan(m.settings.count).fmc+' dupla Kérdés-válasz + '+qPlan(m.settings.count).ftip+' dupla tippelős</b>'+
@@ -4148,7 +4141,6 @@ function renderLobby(m){
     document.querySelectorAll('#seg-map button').forEach(b=>b.onclick=()=>{
       host.settings.mapKey=b.dataset.k; hostBroadcast(hostLobbyMsg()); });
     document.querySelectorAll('#seg-count button').forEach(b=>b.onclick=()=>{ host.settings.count=+b.dataset.c; hostBroadcast(hostLobbyMsg()); });
-    document.querySelectorAll('#seg-tempo button').forEach(b=>b.onclick=()=>{ host.settings.tempo=b.dataset.t; hostBroadcast(hostLobbyMsg()); });
     document.querySelectorAll('[data-kick]').forEach(el=>el.onclick=()=>hostRemovePlayer(el.dataset.kick));
     $('lobby-hint').innerHTML = m.solo
       ? 'Adj hozzá további AI-ellenfeleket, állítsd be a játékot, és indíts!'
@@ -4156,8 +4148,7 @@ function renderLobby(m){
   } else {
     const head=m.settings.mode==='conquest'
       ? '⚔️ <b>Hódítás</b> – '+CQ_MAPS[m.settings.mapKey||'big'].desc
-      : m.settings.count+' kérdés · 🎬 az utolsó '+finalLen(m.settings.count)+' dupla pontos'+
-        (m.settings.tempo==='fast'?' · ⚡ pörgős tempó':'');
+      : m.settings.count+' kérdés · 🎬 az utolsó '+finalLen(m.settings.count)+' dupla pontos';
     $('lobby-settings').innerHTML='<div class="hint">'+head+' · minden téma és nehézség játékban</div>';
     $('lobby-actions').innerHTML='<div class="hint"><span class="spinner"></span>Várakozás, hogy a host elindítsa a játékot…</div>';
     $('lobby-hint').textContent='';

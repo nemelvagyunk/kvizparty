@@ -28,7 +28,6 @@ function check(name, ok, detail) {
     monotonPerTier: AI_TIERS.every(t => t.p.every((v, i) => i === 0 || v <= t.p[i - 1])),
     aboveChance: AI_TIERS.every(t => t.p.every(v => v >= 0.25)),
     think: AI_THINK, lag: AI_LAG,
-    tempo: [CAT_COUNT_MS, CAT_COUNT_FAST_MS],   // éles (nem #fast) értékek
   }));
   console.log('— konfiguráció —');
   check('három AI-szint van', cfg.n === 3, cfg.names.join(' · '));
@@ -39,7 +38,6 @@ function check(name, ok, detail) {
   check('a butább AI többször követ el baklövést', cfg.blund[0] < cfg.blund[1] && cfg.blund[1] < cfg.blund[2], JSON.stringify(cfg.blund));
   check('gondolkodási idő 1–2 mp', JSON.stringify(cfg.think) === '[1000,2000]', JSON.stringify(cfg.think));
   check('Robot Idő Büntetés 5–25 mp', JSON.stringify(cfg.lag) === '[5000,25000]', JSON.stringify(cfg.lag));
-  check('tempó: 🐢 Nyugodt 10 mp / ⚡ Pörgős 4 mp', JSON.stringify(cfg.tempo) === '[10000,4000]', JSON.stringify(cfg.tempo));
 
   /* ---- 2) valódi scheduleAI-futtatás szintenként (a timerek párhuzamosan járnak le) ---- */
   const N = 800, DUR = 30000;

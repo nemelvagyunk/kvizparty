@@ -438,39 +438,6 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   ck('a lobbyban nincs téma-kapcsoló', chips, 0);
   ck('a settings nem tartalmaz cats mezőt', await page.evaluate(() => 'cats' in __kv.host.settings), false);
 
-  // --- TEMPÓ-KAPCSOLÓ: Nyugodt (10 mp) / Pörgős (4 mp) visszaszámlálás ---
-  console.log('TEMPÓ:');
-  const tmp0 = await page.evaluate(() => ({
-    btns: document.querySelectorAll('#seg-tempo button').length,
-    calmSel: document.querySelector('#seg-tempo button[data-t="calm"]').classList.contains('sel'),
-    def: __kv.host.settings.tempo,
-  }));
-  ck('a lobbyban van tempó-kapcsoló, alapból 🐢 Nyugodt', [tmp0.btns, tmp0.calmSel, tmp0.def], [2, true, 'calm']);
-  await page.click('#seg-tempo button[data-t="fast"]');
-  const tmp1 = await page.evaluate(() => ({
-    t: __kv.host.settings.tempo,
-    sel: document.querySelector('#seg-tempo button[data-t="fast"]').classList.contains('sel'),
-  }));
-  ck('a ⚡ Pörgős gomb átállítja a beállítást', [tmp1.t, tmp1.sel], ['fast', true]);
-  const tmp2 = await page.evaluate(() => {
-    const out = {};
-    __kv.me = { pid: 'H', isHost: true, name: 'T', avatar: '🦊' };
-    __kv.host = makeHost(true);
-    const deck = [{ id: 3, cat: 1, type: 'mc', d: 3, q: 'x', o: ['a', 'b', 'c', 'd'], c: 0 }];
-    const orig = window.hostBroadcast; let cap = [];
-    window.hostBroadcast = m => cap.push(m);
-    __kv.host.deck = deck; __kv.host.qi = -1; __kv.host.finalFrom = 99; __kv.host.sMcLen = 1;
-    hostNext(); clearTimeout(__kv.host.catT);
-    out.calm = cap.find(m => m.t === 'catdraw').count === CAT_COUNT_MS;
-    __kv.host.settings.tempo = 'fast';
-    __kv.host.qi = -1; cap = [];
-    hostNext(); clearTimeout(__kv.host.catT);
-    out.fast = cap.find(m => m.t === 'catdraw').count === CAT_COUNT_FAST_MS;
-    window.hostBroadcast = orig;
-    return out;
-  });
-  ck('a catdraw üzenet a tempó szerinti visszaszámlálást viszi', [tmp2.calm, tmp2.fast], [true, true]);
-
   // --- JOKEREK: felezés + dupla vagy semmi (host-oldali logika) ---
   console.log('JOKEREK:');
   const jok = await page.evaluate(() => {
