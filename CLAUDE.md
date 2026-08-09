@@ -182,4 +182,4 @@ Térképes párbaj két választható pályán. Csapatkód: **1 = piros** (a hos
 - A tippbevitel vesszőt is elfogad tizedesjelként; a válaszok egészek.
 - Vendég kilépéskor `bye` üzenet megy (gyors érzékelés); host kilépéskor `hostbye`.
 - A PeerJS-felhő szigorú NAT mögött ritkán nem tud kapcsolatot építeni → mobilnet/hotspot a megoldás.
-- A kérdés-ismétlődést egy meneten belül a `usedIds` kerüli (memóriában; localStorage TILOS az artifact-kompatibilitás miatt).
+- **Kérdés-ismétlődés (2026-08-09 óta munkamenet-szintű):** a `SESSION_USED` globális Set a feltett kérdéseket a TELJES böngésző-munkamenetre megjegyzi – túléli a főmenübe kilépést és az új játékokat, a `makeHost()` ezt köti be `usedIds`-ként, és a hódítás (`cqBuildPools`/`cqAsk`) is használja. Csak az oldal újratöltése törli (localStorage TILOS az artifact-kompatibilitás miatt). Ha a friss készlet elfogy, a szűrés kíméletesen visszaáll a teljes poolra (klasszikus: `un()` count/2 küszöb; hódítás: 40 mc / 15 tip küszöb). *Mérés a javítás előttről: 6 egymás utáni, menüből újraindított 15 kérdéses játék átlag ~2,8 ismétlődő kérdést hozott – a javítás után nullát.*

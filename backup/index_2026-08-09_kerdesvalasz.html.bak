@@ -2913,10 +2913,6 @@ const CQ_MAPS = {
 function cqMap(){ return CQ_MAPS[(host&&host.settings&&host.settings.mapKey)||'big']; }
 function cqM(){ return CQ_MAPS[(cqState&&cqState.map)||'big']; }
 
-/* A feltett kérdések MUNKAMENET-szintű memóriája: túléli a főmenübe kilépést és az
-   új játékokat is, így nem térnek vissza ugyanazok a kérdések. Csak az oldal
-   újratöltése törli (localStorage tilos az artifact-kompatibilitás miatt). */
-const SESSION_USED = new Set();
 const $ = id=>document.getElementById(id);
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
@@ -2984,7 +2980,7 @@ function makeHost(solo){
   return { solo, players:[], settings:{count:15, mode:'classic', mapKey:'big', diffs:[true,true,true,true,true]},
     cq:null, cqPool:{mc:[],tip:[]}, stats:{}, jokers:{}, qJok:{}, sMcLen:0,
     phase:'lobby', deck:[], qi:-1, answers:{}, qData:null, qCorrectIndex:0, qDur:0,
-    qDeadlineT:null, autoNextT:null, aiTimers:[], usedIds:SESSION_USED };
+    qDeadlineT:null, autoNextT:null, aiTimers:[], usedIds:new Set() };
 }
 function playersMin(){ return host.players.map(p=>({pid:p.pid,name:p.name,avatar:p.avatar,isAI:!!p.isAI,isHost:!!p.isHost,connected:p.connected!==false,score:p.score||0,streak:p.streak||0,best:p.best||0})); }
 function hostLobbyMsg(){
@@ -3442,12 +3438,8 @@ function cqLater(fn,ms){ clearTimeout(host.cq.nextT); host.cq.nextT=setTimeout(f
 
 function cqBuildPools(){
   const df=host.settings.diffs;
-  let mcAll =QUESTIONS.filter(q=>q.type==='mc'  && df[q.d-1]);
-  let tipAll=QUESTIONS.filter(q=>q.type==='tip' && df[q.d-1] && isTipCat(q.cat));
-  /* a munkamenetben már feltett kérdéseket itt is kerüljük, amíg van elég friss */
-  const fm=mcAll.filter(q=>!host.usedIds.has(q.id)), ft=tipAll.filter(q=>!host.usedIds.has(q.id));
-  if(fm.length>=40) mcAll=fm;
-  if(ft.length>=15) tipAll=ft;
+  const mcAll =QUESTIONS.filter(q=>q.type==='mc'  && df[q.d-1]);
+  const tipAll=QUESTIONS.filter(q=>q.type==='tip' && df[q.d-1] && isTipCat(q.cat));
   host.cqPool={mc:mcAll, tip:tipAll, draw:catBag(mcAll,tipAll)};
   return host.cqPool;
 }
@@ -3530,7 +3522,6 @@ function cqLabel(){
 function cqAsk(type, decider){
   const c=host.cq; if(!c||!c.on) return;
   const q=cqDraw(type);
-  if(q.id!=null) host.usedIds.add(q.id);   // munkamenet-memória a hódításban is
   host.qData=q; host.answers={}; host.phase='q'; host.qi++; host.qDur=(type==='mc'?CQ_MC_DUR:CQ_TIP_DUR);
   c.sub='q'; c.decider=!!decider;
   const cat=CATEGORIES[q.cat-1];

@@ -469,28 +469,6 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   ck('fináléban nem aktiválható joker', jok.finalBlocked, true);
   ck('a sima MC-blokk után nem aktiválható joker', jok.pastBlocked, true);
   ck('az utolsó sima MC-n automatikusan élesedik a megmaradt Felezés (AI-nak nincs)', jok.auto, [false, 'fifty', 0, 0, true]);
-
-  // --- KÉRDÉS-MEMÓRIA: a feltett kérdések a munkameneten át nem térnek vissza ---
-  console.log('KÉRDÉS-MEMÓRIA:');
-  const rep = await page.evaluate(() => {
-    __kv.me = { pid: 'H', isHost: true, name: 'T', avatar: '🦊' };
-    __kv.host = makeHost(true);                       // usedIds = munkamenet-szintű készlet
-    __kv.host.settings.count = 30; buildDeck();
-    const first = __kv.host.deck.map(q => q.id);
-    first.forEach(id => __kv.host.usedIds.add(id));   // mintha végigjátszottuk volna
-    __kv.host = makeHost(true);                       // ÚJ játék a főmenüből – a memória megmarad
-    __kv.host.settings.count = 30; buildDeck();
-    const second = __kv.host.deck.map(q => q.id);
-    // hódítás-pool is kerüli a használtakat
-    const pools = cqBuildPools();
-    const cqHit = pools.mc.filter(q => first.includes(q.id)).length +
-                  pools.tip.filter(q => first.includes(q.id)).length;
-    return { overlap: second.filter(id => first.includes(id)).length,
-             shared: __kv.host.usedIds.size >= first.length, cqHit };
-  });
-  ck('új játékban nem térnek vissza a már feltett kérdések', rep.overlap, 0);
-  ck('a memória a főmenübe kilépést is túléli (közös készlet)', rep.shared, true);
-  ck('a hódítás kérdés-poolja is kerüli a használtakat', rep.cqHit, 0);
   if (sf) { console.error('❌ ' + sf + ' hibás ellenőrzés'); process.exitCode = 1; }
 
   console.log(errors.length ? 'HIBÁK:\n' + errors.join('\n') : 'KONZOL: tiszta ✔');
