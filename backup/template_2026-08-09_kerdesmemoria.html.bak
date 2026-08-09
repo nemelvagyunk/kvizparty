@@ -699,26 +699,6 @@ function requireName(){
    sportos kategória, illetve a magyar és a világföldrajz egy tétel). */
 function tipKey(cat){ const c=CATEGORIES[cat-1]; return (c&&c.tipg) ? c.tipg : String(cat); }
 function isTipCat(cat){ const c=CATEGORIES[cat-1]; return !!(c&&c.tip); }
-/* A tippelős kérdéseknél MINDIG a 9 sorsolási tétel neve jelenik meg, nem a
-   kérdés alkategóriája (pl. az űrkutatási tipp is „Feltalálók és találmányok"). */
-const TIP_GROUP_INFO = {
-  foldrajz:  {name:'Földrajz', icon:'🌍'},
-  feltalalo: {name:'Feltalálók és találmányok', icon:'💡'},
-  film:      {name:'Filmek', icon:'🎬'},
-};
-function tipItemInfo(cat){
-  const c=CATEGORIES[cat-1]||{};
-  return (c.tipg && TIP_GROUP_INFO[c.tipg]) ? TIP_GROUP_INFO[c.tipg] : {name:c.name, icon:c.icon};
-}
-function tipItems(){   // a 9 tétel listája (a sorsolás-pörgetéshez)
-  const seen={}, out=[];
-  for(const c of CATEGORIES){
-    if(!c.tip) continue;
-    const k=c.tipg||String(c.id);
-    if(seen[k]) continue; seen[k]=1; out.push(tipItemInfo(c.id));
-  }
-  return out;
-}
 function catBag(mcPool, tipPool){
   const by={mc:{}, tip:{}}, bag={mc:[], tip:[]};
   for(const q of mcPool)  (by.mc[String(q.cat)] = by.mc[String(q.cat)] ||[]).push(q);
@@ -781,7 +761,7 @@ function hostNext(){
   const FF=(host.finalFrom!=null&&host.finalFrom<=host.deck.length)?host.finalFrom:host.deck.length;
   const rest=host.qFinal?[]:host.deck.slice(host.qi, FF);
   hostBroadcast({t:'catdraw', qi:host.qi, total:host.deck.length,
-    cat: q.type==='tip' ? tipItemInfo(q.cat) : {name:cat.name,icon:cat.icon}, type:q.type, d:q.d,
+    cat:{name:cat.name,icon:cat.icon}, type:q.type, d:q.d,
     spin:CAT_SPIN_MS, count:CAT_COUNT_MS, final:host.qFinal, finalLen:finalLen(host.deck.length),
     toFinal:rest.length,
     mcLeft:rest.filter(x=>x.type==='mc').length,
@@ -799,8 +779,7 @@ function hostAsk(){
   const dur=q.type==='mc'?MC_DUR:TIP_DUR;
   host.qDur=dur;
   const baseV = QVAL[(q.d||3)-1]*(host.qFinal?2:1);   // a sorsoláskor rögzített értékek
-  const msg={t:'question', qi:host.qi, total:host.deck.length,
-             cat: q.type==='tip' ? tipItemInfo(q.cat) : {name:cat.name,icon:cat.icon},
+  const msg={t:'question', qi:host.qi, total:host.deck.length, cat:{name:cat.name,icon:cat.icon},
              type:q.type, d:q.d, q:q.q, dur, players:playersMin(), last:host.qi===host.deck.length-1,
              final:host.qFinal, finalLen:finalLen(host.deck.length),
              val: q.type==='tip' ? Math.round(baseV*host.qTipMult) : baseV,
@@ -1134,8 +1113,7 @@ function cqAsk(type, decider){
   c.sub='q'; c.decider=!!decider;
   const cat=CATEGORIES[q.cat-1];
   const msg={t:'question', qi:host.qi, total:0, cq:true, decider:!!decider, label:cqLabel(),
-    cat: q.type==='tip' ? tipItemInfo(q.cat) : {name:cat.name,icon:cat.icon},
-    type:q.type, d:q.d, q:q.q, dur:host.qDur, players:playersMin()};
+    cat:{name:cat.name,icon:cat.icon}, type:q.type, d:q.d, q:q.q, dur:host.qDur, players:playersMin()};
   if(q.type==='mc'){ const o=shuffle([0,1,2,3]); msg.options=o.map(i=>q.o[i]); host.qCorrectIndex=o.indexOf(0); }
   else msg.unit=q.unit||'';
   cqBroadcast();
@@ -1497,15 +1475,13 @@ function renderCatDraw(m){
 
   const box=$('draw-cat'), ic=box.querySelector('.ic'), nm=box.querySelector('.nm');
   const t0=performance.now(), spin=m.spin||1800, count=m.count||10000;
-  /* tippelősnél a 9 sorsolási tétel pörög, négy válaszosnál a 23 kategória */
-  const spinList = m.type==='tip' ? tipItems() : CATEGORIES;
   let last=0, step=55;
   const tick=()=>{
     const el=performance.now()-t0;
     if(el<spin){
       if(el-last>=step){                       // pörgetés, egyre lassulva
         last=el; step=55+Math.pow(el/spin,3)*260;
-        const c=spinList[Math.floor(Math.random()*spinList.length)];
+        const c=CATEGORIES[Math.floor(Math.random()*CATEGORIES.length)];
         ic.textContent=c.icon; nm.textContent=c.name;
       }
     } else if(!box.classList.contains('hit')){

@@ -75,6 +75,7 @@ Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő
   - A tipplista mindig teljes – mind a 9 tétel mindig sorsolásban van.
   - `isTipCat(cat)` / `tipKey(cat)` a segédfüggvények; a `catBag(mcPool, tipPool)` külön zsákot vezet a két típusnak (MC-nél kategóriánként, tippnél `tipg` szerint).
   - Tipp-tételek (9, mind feltöltve ≥40 kérdésre): Magyar történelem (40) · Világtörténelem (40) · Állatok (40) · Növények és kertészet (40) · Fizika-kémia-biológia (40) · Sport (40) · **foldrajz** (magyar + világ, 41) · **feltalalo** (feltalálók + űrkutatás/informatika, 40) · **film** (magyar film-tévé + nemzetközi film, 53).
+  - **Kijelzés (2026-08-09 óta): tippelősnél MINDIG a tétel neve látszik, nem az alkategória** – az űrkutatási tipp „💡 Feltalálók és találmányok", a világföldrajzi „🌍 Földrajz", a filmes „🎬 Filmek" néven fut a sorsolásban és a kérdés-chipben is. Segédek: `TIP_GROUP_INFO`, `tipItemInfo(cat)`, `tipItems()` (a sorsolás-pörgetés tippnél e 9 tétel közt forog, MC-nél a 23 kategória közt).
   - **Következmény:** a `tip:false` kategóriák meglévő tippelős kérdései nem kerülnek elő. Ez tudatos döntés, nem hiba.
 - **AI-szintek (`AI_TIERS`)** – a lobbyban három gomb (`#seg-ai`), a szint a játékoson `p.ai` (0/1/2):
 

@@ -491,29 +491,6 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   ck('új játékban nem térnek vissza a már feltett kérdések', rep.overlap, 0);
   ck('a memória a főmenübe kilépést is túléli (közös készlet)', rep.shared, true);
   ck('a hódítás kérdés-poolja is kerüli a használtakat', rep.cqHit, 0);
-
-  // --- TIPP-TÉTELEK KIJELZÉSE: mindig a 9 sorsolási tétel neve látszik ---
-  console.log('TIPP-TÉTELEK KIJELZÉSE:');
-  const ti = await page.evaluate(() => {
-    const out = { n: tipItems().length, names: tipItems().map(x => x.name).sort() };
-    out.urk  = tipItemInfo(16).name;   // űrkutatási tipp → Feltalálók és találmányok
-    out.vf   = tipItemInfo(8).name;    // világföldrajzi tipp → Földrajz
-    out.film = tipItemInfo(20).name;   // nemzetközi filmes tipp → Filmek
-    out.mt   = tipItemInfo(1).name;    // saját tétel marad
-    // a catdraw üzenet tényleg a tétel nevét viszi
-    __kv.me = { pid: 'H', isHost: true, name: 'T', avatar: '🦊' };
-    __kv.host = makeHost(true);
-    __kv.host.deck = [{ id: 2, cat: 16, type: 'tip', d: 3, q: 'x', a: 1, unit: '', note: '' }];
-    __kv.host.qi = -1; __kv.host.finalFrom = 99; __kv.host.sMcLen = 0;
-    let captured = []; const orig = window.hostBroadcast; window.hostBroadcast = m => captured.push(m);
-    hostNext(); clearTimeout(__kv.host.catT);
-    window.hostBroadcast = orig;
-    out.drawCat = captured.find(m => m.t === 'catdraw').cat.name;
-    return out;
-  });
-  ck('pontosan 9 tippelős sorsolási tétel van', ti.n, 9);
-  ck('űrkutatási tipp tétele: Feltalálók és találmányok', [ti.urk, ti.drawCat], ['Feltalálók és találmányok', 'Feltalálók és találmányok']);
-  ck('földrajz és film tételek összevonva, a saját tétel marad', [ti.vf, ti.film, ti.mt], ['Földrajz', 'Filmek', 'Magyar történelem']);
   if (sf) { console.error('❌ ' + sf + ' hibás ellenőrzés'); process.exitCode = 1; }
 
   console.log(errors.length ? 'HIBÁK:\n' + errors.join('\n') : 'KONZOL: tiszta ✔');
