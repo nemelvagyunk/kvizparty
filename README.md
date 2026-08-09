@@ -10,6 +10,8 @@
 - **Szóló mód:** azonnali játék 1–5 AI-ellenfél ellen, internetkapcsolat nélkül is.
 - **⚔️ Hódítás (2 fő):** térképes párbaj — lásd lent.
 
+A főmenü **📖 Játékszabályok** gombja a játékon belül is elérhető, lenyitható FAQ-ban foglalja össze a játékmenetet, a pontozást, a sorozat-bónuszt, a jokereket, az AI-szinteket és a díjakat.
+
 ## ⚔️ Hódítás mód (2 játékos)
 
 A lobbyban átkapcsolható játékmód, pontosan 2 játékossal (ember vagy AI). A piros vár balra, a kék jobbra; a várak alapból 100 pontot érnek. **Két pálya közül lehet választani:**

@@ -14,26 +14,6 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   await page.goto(URL);
   await page.screenshot({ path: 'shots/01_menu.png' });
 
-  // --- játékszabályok (FAQ) képernyő ---
-  const rules = {};
-  rules.btnOnMenu = await page.evaluate(() =>
-    !!document.querySelector('#s-menu #btn-rules') && document.getElementById('s-menu').classList.contains('on'));
-  await page.click('#btn-rules');
-  rules.screenOn = await page.evaluate(() =>
-    document.getElementById('s-rules').classList.contains('on') && !document.getElementById('s-menu').classList.contains('on'));
-  rules.faqCount = await page.evaluate(() => document.querySelectorAll('#s-rules details').length);
-  rules.hasJokers = await page.evaluate(() => {
-    const t = document.getElementById('s-rules').textContent;
-    return t.indexOf('Felezés') >= 0 && t.indexOf('Dupla vagy semmi') >= 0 &&
-           t.indexOf('Első számjegy') >= 0 && t.indexOf('1,9×') >= 0;
-  });
-  await page.click('#s-rules details:nth-of-type(1) summary');
-  rules.opens = await page.evaluate(() => document.querySelector('#s-rules details').open);
-  await page.screenshot({ path: 'shots/00_rules.png' });
-  await page.click('#btn-rules-back');
-  rules.backToMenu = await page.evaluate(() =>
-    document.getElementById('s-menu').classList.contains('on') && !document.getElementById('s-rules').classList.contains('on'));
-
   // --- egységteszt jellegű ellenőrzés: tippelős pontozás + döntetlen-szabály ---
   const logic = await page.evaluate(() => {
     const out = {};
@@ -300,13 +280,6 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   let sf = 0;
   const ck = (n, got, want) => { const ok = JSON.stringify(got) === JSON.stringify(want); if (!ok) sf++;
     console.log((ok ? '  ✔ ' : '  ✘ ') + n + '  → ' + JSON.stringify(got) + (ok ? '' : ' (várt: ' + JSON.stringify(want) + ')')); };
-  console.log('JÁTÉKSZABÁLYOK (FAQ):');
-  ck('a 📖 gomb a főmenüben van', rules.btnOnMenu, true);
-  ck('kattintásra a szabály-képernyő nyílik meg', rules.screenOn, true);
-  ck('legalább 12 FAQ-tétel van', rules.faqCount >= 12, true);
-  ck('a jokerek és az 1,9× streak-plafon is szerepel benne', rules.hasJokers, true);
-  ck('a tételek lenyithatók', rules.opens, true);
-  ck('a vissza gomb a főmenübe visz', rules.backToMenu, true);
   console.log('SOROZAT-BÓNUSZ:');
   ck('szorzók az 1–12. helyes válaszra (az 1–2. bónusz nélkül, 1,90-es plafon)', logic.multSeq,
      [1, 1, 1.3, 1.5, 1.7, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9]);

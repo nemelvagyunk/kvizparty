@@ -74,22 +74,6 @@ input:focus{border-color:var(--acc);}
 .diffchip{font-size:.8rem; letter-spacing:.05em;}
 .diff1{color:#4ade80;} .diff2{color:#a3e635;} .diff3{color:#fbbf24;} .diff4{color:#fb923c;} .diff5{color:#f87171;}
 .lobby-actions{display:flex; flex-direction:column; gap:10px; margin-top:6px;}
-/* ---- játékszabályok (FAQ) ---- */
-.rules-list{display:flex; flex-direction:column; gap:10px;}
-.rules-list details{background:rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.1); border-radius:14px; overflow:hidden;}
-.rules-list summary{cursor:pointer; list-style:none; padding:13px 16px; font-weight:800; font-size:1rem; display:flex; align-items:center; gap:10px; line-height:1.3;}
-.rules-list summary::-webkit-details-marker{display:none;}
-.rules-list summary::after{content:'▾'; margin-left:auto; color:var(--dim); transition:transform .2s; flex-shrink:0;}
-.rules-list details[open] summary::after{transform:rotate(180deg);}
-.rules-list details[open] summary{color:#fbbf24;}
-.rules-body{padding:0 16px 14px; font-size:.92rem; line-height:1.55;}
-.rules-body p{margin:8px 0;}
-.rules-body b{color:#fbbf24;}
-.rules-body .dim{color:var(--dim);}
-.rtable{width:100%; border-collapse:collapse; margin:8px 0; font-size:.88rem;}
-.rtable th,.rtable td{padding:5px 8px; text-align:center; border-bottom:1px solid rgba(255,255,255,.08);}
-.rtable th{color:var(--dim); font-weight:700; font-size:.8rem;}
-.rtable td:first-child,.rtable th:first-child{text-align:left;}
 /* ---- game ---- */
 #g-top{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;}
 #g-count{font-weight:800; color:var(--dim);}
@@ -324,143 +308,9 @@ input:focus{border-color:var(--acc);}
         <button class="btn" id="btn-join">🔗 Csatlakozás</button>
       </div>
       <button class="btn ghost" id="btn-solo">🤖 Szóló játék AI ellen</button>
-      <button class="btn ghost" id="btn-rules">📖 Játékszabályok</button>
     </div>
   </div>
   <div class="conn-note">Az online játékhoz internet kell: a szobát nyitó játékos kódot kap,<br>a többiek ezzel csatlakoznak – bárhonnan, saját eszközről.</div>
-</div>
-
-<!-- ================= JÁTÉKSZABÁLYOK ================= -->
-<div class="screen" id="s-rules">
-  <div class="logo" style="font-size:1.8rem">📖 Játékszabályok</div>
-  <div class="tagline">Kattints egy kérdésre a válaszért!</div>
-  <div class="card">
-    <div class="rules-list">
-
-      <details>
-        <summary>🎮 Hogyan indul egy játék?</summary>
-        <div class="rules-body">
-          <p>A KvízParty <b>2–6 fős</b> kvízparti. Egy játékos szobát nyit (🏠), és kap egy 4 jegyű kódot – a többiek ezzel csatlakoznak (🔗), mindenki a saját eszközéről. Egyedül is játszhatsz AI-ellenfelek ellen (🤖).</p>
-          <p>A szobát nyitó játékos (a host) állítja be a játékmódot és a kérdésszámot, és ő adhat a meccshez AI-játékosokat is – emberrel és robottal együtt legfeljebb 6 fő lehet.</p>
-          <p class="dim">Ha nagyon ritkán nem jön létre a kapcsolat (szigorú céges/iskolai hálózaton fordulhat elő), mobilnetről vagy telefonos hotspotról szinte mindig működik.</p>
-        </div>
-      </details>
-
-      <details>
-        <summary>🃏 Milyen kérdéstípusok vannak?</summary>
-        <div class="rules-body">
-          <p><b>Kérdés-válasz:</b> négy lehetőség, egy helyes – <b>20 másodperc</b> alatt kell választani.</p>
-          <p><b>Tippelős:</b> egy számot kell megtippelni (évszám, mennyiség…) <b>25 másodperc</b> alatt. A legközelebbi tipp nyer, egyenlőségnél a gyorsabb. A tippet vesszővel is beírhatod, de a megoldás mindig egész szám.</p>
-          <p>Minden kérdés előtt <b>kategória-sorsolás</b> jön: látod, milyen téma, milyen típus és hány pont következik, plusz hogy hányadik kérdésnél jártok és mennyi van hátra a 🎬 fináléig. 10 másodperc múlva indul a kérdés – a host korábban is elindíthatja.</p>
-        </div>
-      </details>
-
-      <details>
-        <summary>🗂️ Hogyan épül fel egy meccs?</summary>
-        <div class="rules-body">
-          <p>A klasszikus meccs blokkokban halad: először a <b>Kérdés-válasz</b> kártyák, aztán a <b>tippelős</b> kérdések, végül a <b>🎬 dupla pontos finálé</b>:</p>
-          <table class="rtable">
-            <tr><th>Kérdésszám</th><th>Kérdés-válasz</th><th>Tippelős</th><th>🎬 Finálé</th></tr>
-            <tr><td>10</td><td>5</td><td>3</td><td>1 + 1 tipp</td></tr>
-            <tr><td>15</td><td>7</td><td>5</td><td>2 + 1 tipp</td></tr>
-            <tr><td>20</td><td>10</td><td>6</td><td>2 + 2 tipp</td></tr>
-            <tr><td>30</td><td>14</td><td>10</td><td>4 + 2 tipp</td></tr>
-          </table>
-          <p>A kérdések <b>23 kategóriából</b> jönnek, sorsolással – minden kategória sorra kerül, mielőtt bármelyik ismétlődne. A tippelős kérdéseknek saját, 9 tételes sorsolása van.</p>
-        </div>
-      </details>
-
-      <details>
-        <summary>💰 Hogyan működik a pontozás?</summary>
-        <div class="rules-body">
-          <p>Minden kérdés a nehézsége szerint ér pontot:</p>
-          <table class="rtable">
-            <tr><th>Nehézség</th><td>★</td><td>★★</td><td>★★★</td><td>★★★★</td><td>★★★★★</td></tr>
-            <tr><th>Pont</th><td>75</td><td>90</td><td>100</td><td>110</td><td>125</td></tr>
-          </table>
-          <p>Kérdés-válasznál <b>minden helyes válaszoló</b> megkapja a kérdés értékét, plusz gyorsasági bónuszt: minél hamarabb válaszolsz, annál többet, legfeljebb <b>+20%</b>-ot.</p>
-        </div>
-      </details>
-
-      <details>
-        <summary>🔥 Mi az a sorozat-bónusz?</summary>
-        <div class="rules-body">
-          <p>Ha a Kérdés-válasz kártyákon egymás után többször helyesen válaszolsz, szorzót kapsz a pontjaidra:</p>
-          <table class="rtable">
-            <tr><th>Egymás utáni helyes</th><td>1.</td><td>2.</td><td>3.</td><td>4.</td><td>5.</td><td>6.+</td></tr>
-            <tr><th>Szorzó</th><td>1×</td><td>1×</td><td><b>1,3×</b></td><td><b>1,5×</b></td><td><b>1,7×</b></td><td><b>1,9×</b></td></tr>
-          </table>
-          <p>Rossz válasz (vagy lecsúszott idő) megszakítja a sorozatot. A <b>tippelős kérdések semlegesek</b>: nem törik meg és nem is növelik. A 🎬 fináléban nincs sorozat-szorzó – ott a dupla érték számít.</p>
-        </div>
-      </details>
-
-      <details>
-        <summary>🎯 Hogyan pontoz a tippelős?</summary>
-        <div class="rules-body">
-          <p>A legjobb tipp viszi a pontot – és minél többen játszotok, annál többet ér a győzelem:</p>
-          <table class="rtable">
-            <tr><th>Játékosok</th><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td></tr>
-            <tr><th>Nyertes szorzója</th><td>1×</td><td>1,25×</td><td>1,5×</td><td>1,75×</td><td>2×</td></tr>
-          </table>
-          <p>Négy vagy több játékosnál a <b>második legjobb tipp</b> is ér pontot: a kérdés alapértékét. A <b>telitalálat +25%</b> bónuszt kap. Holtversenynél a gyorsabb tipp nyer.</p>
-        </div>
-      </details>
-
-      <details>
-        <summary>🎬 Mi a dupla pontos finálé?</summary>
-        <div class="rules-body">
-          <p>A meccs végén minden kérdés <b>dupla pontot</b> ér – a kérdésnél kiírt érték már a duplázott. A fináléban nincs sorozat-szorzó, és <b>joker kártyát sem lehet használni</b> – itt már csak a tudás dönt.</p>
-        </div>
-      </details>
-
-      <details>
-        <summary>✂️🎲 Milyen jokerek járnak a Kérdés-válaszhoz?</summary>
-        <div class="rules-body">
-          <p>Minden játékosnak meccsenként <b>2 joker kártyája</b> van a Kérdés-válasz szakaszra – egy körben csak az egyiket használhatod:</p>
-          <p><b>✂️ Felezés:</b> két rossz válaszlehetőség eltűnik. Ha az utolsó normál Kérdés-válasz kártyáig nem használtad el, ott <b>automatikusan aktiválódik</b> – ez a joker nem veszhet kárba.</p>
-          <p><b>🎲 Dupla vagy semmi:</b> a kérdés alapértékét megduplázza (a sorozat-szorzót nem veszi figyelembe). De vigyázz: rossz válasznál vagy válasz nélkül a kérdés értékét <b>elveszíted</b> – a pontszámod akár mínuszba is fordulhat! Ezt nem kötelező elhasználni.</p>
-          <p class="dim">A jokerek csak a normál Kérdés-válasz blokkban élnek, a tippelős kérdéseken és a fináléban nem.</p>
-        </div>
-      </details>
-
-      <details>
-        <summary>🔢 Milyen jokerek járnak a tippelőshöz?</summary>
-        <div class="rules-body">
-          <p>A tippelős kérdésekhez két segítő kártya jár, de meccsenként <b>csak az egyiket</b> használhatod fel:</p>
-          <p><b>🔢 Első számjegy:</b> megmutatja a megoldás első számjegyét (pl. 1956 → <b>1</b>).</p>
-          <p><b>🔢 Utolsó számjegy:</b> az utolsót (1956 → <b>6</b>).</p>
-          <p>Ha a megoldás egyjegyű, a kártya a teljes megoldást mutatja – de ezt te nem tudhatod biztosan… 😉 A finálé dupla tippjein nem használható.</p>
-        </div>
-      </details>
-
-      <details>
-        <summary>🤖 Milyenek az AI-ellenfelek?</summary>
-        <div class="rules-body">
-          <p>Három szint közül választhatsz: <b>🤖 Robo Róbert</b> (nagyon okos) · <b>⚙️ Masina Misi</b> (közepes) · <b>🤪 Félnótás Fábián</b> (bájosan kapkodó).</p>
-          <p>A robotok szándékosan lassabbak nálad: sosem kapnak gyorsasági bónuszt, és minden holtversenyt elveszítenek az emberrel szemben – a tudásuk ellen kell nyerni, nem a reflexeik ellen.</p>
-        </div>
-      </details>
-
-      <details>
-        <summary>⚔️ Mi az a Hódítás mód?</summary>
-        <div class="rules-body">
-          <p>Két játékos térképes párbaja (ember vagy AI ellen), két választható pályán. Két szakasza van:</p>
-          <p><b>Foglalás:</b> felváltva jelöltök területet, és kérdésekkel szerzitek meg – Kérdés-válasznál mindkét helyes válaszoló foglal, tippelősnél csak a győztes.</p>
-          <p><b>Harc:</b> felváltva támadjátok egymás területeit. Ha mindketten tudjátok a választ, tippelős döntő jön. Sikeres támadásnál a terület gazdát cserél és <b>+25 ponttal</b> erősödik (legfeljebb 150-ig); ha a védő állja a sarat, a vára <b>+50 pontot</b> kap. A várakat nem lehet megtámadni.</p>
-          <p>A végén a vár és a birtokolt területek összértéke dönt.</p>
-        </div>
-      </details>
-
-      <details>
-        <summary>🏆 Milyen díjak vannak a meccs végén?</summary>
-        <div class="rules-body">
-          <p>A klasszikus meccs végén díjátadó vár: <b>⚡ Leggyorsabb helyes válasz</b> · <b>🎯 Leggyorsabb nyerő tipp</b> · <b>🔥 Leghosszabb sorozat</b> · <b>💯 Legtöbb telitalálat</b> – és két kevésbé hízelgő is: <b>🤦 Leggyorsabb rossz válasz</b> és <b>🙈 Legnagyobb melléfogás</b>, a hozzájuk tartozó kérdéssel együtt. 😄</p>
-        </div>
-      </details>
-
-    </div>
-    <button class="btn primary" id="btn-rules-back" style="margin-top:16px">← Vissza a főoldalra</button>
-  </div>
 </div>
 
 <!-- ================= LOBBY ================= -->
@@ -2214,8 +2064,6 @@ function boot(){
   $('btn-create').onclick=createRoom;
   $('btn-join').onclick=joinRoom;
   $('btn-solo').onclick=startSolo;
-  $('btn-rules').onclick=()=>showScreen('rules');
-  $('btn-rules-back').onclick=()=>showScreen('menu');
   /* gyors "búcsúüzenet" lapbezáráskor, hogy a többiek ne várjanak percekig */
   window.addEventListener('pagehide',()=>{
     try{
