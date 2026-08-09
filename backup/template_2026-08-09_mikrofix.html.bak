@@ -1008,13 +1008,13 @@ function hostStart(){
     if(host.players.length!==2){ toast('A Hódítás mód pontosan 2 játékossal megy (ember vagy AI).'); return; }
     const pools=cqBuildPools();
     if(!pools.mc.length||!pools.tip.length){
-      toast('A Hódítás módhoz Kérdés-válasz ÉS tippelős kérdés is kell a kérdésbázisban.',4500); return; }
+      toast('A Hódítás módhoz 4 válaszos ÉS tippelős kérdés is kell – lazíts a szűrőkön!',4500); return; }
     cqStart(); return;
   }
   buildDeck();
-  if(!host.deck.length){ toast('Nincs elég kérdés a kérdésbázisban.'); return; }
+  if(!host.deck.length){ toast('Nincs elég kérdés a választott kategóriákban.'); return; }
   if(host.deck.length<host.settings.count)
-    toast('Csak '+host.deck.length+' kérdés jött össze '+host.settings.count+' helyett – kevés a kérdés a bázisban.',4500);
+    toast('A szűrők miatt csak '+host.deck.length+' kérdés jött össze '+host.settings.count+' helyett.',4500);
   host.players.forEach(p=>{ p.score=0; p.streak=0; p.best=0; });
   /* Jokerek: minden EMBER játékos 1 Felezést + 1 Dupla vagy semmit kap meccsenként (AI nem),
      plusz EGY tipp-jokert, amit Első vagy Utolsó számjegy kártyaként válthat be. */
@@ -2231,9 +2231,8 @@ function streakBlock(m){
   if(r.broke) return '<div class="strk-line broke">💔 Megszakadt a '+r.broke+'-es sorozatod</div>';
   if(r.streak<2) return '';
   const next=streakMult(r.streak+1), maxed=(next<=r.mult&&r.mult>1);
-  const s=Math.min(r.streak,STREAK_MULT.length);   // 7+ sorozatnál az utolsó (1,9×) chip marad kiemelve
   const scale=STREAK_MULT.map((v,i)=>{
-    const n=i+1, cls=(n===s)?'now':(n<s?'on':'');
+    const n=i+1, cls=(n===r.streak)?'now':(n<r.streak?'on':'');
     return '<span class="'+cls+'">'+fmtMult(v)+'</span>';
   }).join('');
   return '<div class="strk-line">🔥 '+r.streak+' helyes válasz egymás után · '+

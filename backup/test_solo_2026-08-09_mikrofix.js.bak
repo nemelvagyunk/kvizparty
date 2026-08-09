@@ -328,18 +328,6 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   ck('hibás válasz nullázza és jelzi a megszakadást', [logic.brokeFlag, logic.brokeStreak], [13, 0]);
   ck('utána elölről indul', logic.restartMult, 1);
   ck('a leghosszabb sorozat megmarad a végeredményhez', logic.bestKept, 13);
-  // a sorozat-skála kiemelése: 7+ szériánál az utolsó (1,9×) chip marad "now"
-  const scl = await page.evaluate(() => {
-    __kv.me = { pid: 'H', isHost: true, name: 'T', avatar: '🦊' };
-    const chips = h => (h.match(/<span class="(now|on|)">/g) || []).map(x => x.slice(13, -2));
-    return {
-      s3: chips(streakBlock({ type: 'mc', final: false, results: [{ pid: 'H', streak: 3, mult: 1.3, broke: 0 }] })),
-      s7: chips(streakBlock({ type: 'mc', final: false, results: [{ pid: 'H', streak: 7, mult: 1.9, broke: 0 }] })),
-      s7max: /a szorzód a csúcson/.test(streakBlock({ type: 'mc', final: false, results: [{ pid: 'H', streak: 7, mult: 1.9, broke: 0 }] })),
-    };
-  });
-  ck('a skálán 3-as sorozatnál a 3. chip a "now"', scl.s3, ['on', 'on', 'now', '', '', '']);
-  ck('7+ sorozatnál az utolsó (1,9×) chip marad kiemelve', [scl.s7, scl.s7max], [['on', 'on', 'on', 'on', 'on', 'now'], true]);
   console.log('DUPLA PONTOS FINÁLÉ:');
   ck('választható kérdésszámok (50 nincs)', logic.qCounts, [10, 15, 20, 30]);
   const plan = { 10: [5, 3, 1, 1], 15: [7, 5, 2, 1], 20: [10, 6, 2, 2], 30: [14, 10, 4, 2] };

@@ -1,0 +1,240 @@
+#!/usr/bin/env node
+/* KvízParty – kérdésbázis-ellenőrző
+   Futtatás a repo gyökeréből:  node tools/verify.js   (vagy: npm run verify)
+
+   Minden új kérdésblokk után érdemes lefuttatni (CLAUDE.md minőségi szabályai).
+
+   ✘ HIBA (exit 1):   formai hiba · szó szerinti duplikátum · „alvó” tipp
+                      (tip:false kategóriában) · érvénytelen kategória/nehézség.
+   ⚠ FIGYELEM (exit 0): lehetséges válasz-szivárgás – kézi átnézésre. Csak az
+                      AZONOS témájú (kategória / tipg-csoport) egyezéseket
+                      listázza tételesen, a kereszt-témájú évszám-egybeeséseket
+                      (pl. 1956: forradalom ↔ IBM-merevlemez) csak összesíti.
+
+   BASELINE: a 2026-08-09-én átnézett és elfogadott egyezések kulcsai – ezekre
+   nem szól újra, így a kimenet tiszta marad, és csak az ÚJ szivárgás látszik.
+   Kapcsolók:  --all   a baseline-ba sorolt egyezéseket is kiírja
+               --keys  az összes aktuális figyelmeztetés kulcsát listázza
+                       (új kérdésblokk átnézése UTÁN ezekből frissítsd a BASELINE-t) */
+'use strict';
+const fs = require('fs');
+const path = require('path');
+
+const qdir = path.join(__dirname, '..', 'src', 'questions');
+const files = fs.readdirSync(qdir).filter(f => /^part.*\.js$/.test(f)).sort();
+const src = files.map(f => fs.readFileSync(path.join(qdir, f), 'utf8')).join('\n');
+const g = {};
+new Function('g', src + '; g.CATEGORIES=CATEGORIES; g.QUESTIONS=QUESTIONS;')(g);
+const C = g.CATEGORIES, Q = g.QUESTIONS;
+
+const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+  .replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+const catOf = id => C.find(x => x.id === id);
+const tipgOf = id => { const c = catOf(id) || {}; return c.tipg || String(id); };
+const sameTopic = (a, b) => a === b || tipgOf(a) === tipgOf(b);
+const short = s => String(s).length > 72 ? String(s).slice(0, 69) + '…' : String(s);
+
+const ALL = process.argv.includes('--all');
+const KEYS = process.argv.includes('--keys');
+/* 2026-08-09-én átnézett, elfogadott egyezések (köztük a CLAUDE.md „ismert
+   maradványai”: Spielberg/Jurassic Park, Balaton, Wembley–Anglia jellegűek).
+   Új kérdésblokk átnézése után a --keys kimenetből bővítsd. */
+const BASELINE = new Set([
+  '0128b817',  // „Puskás Ferenc” (válasz erre: „Ki volt az Aranycsapat csapatkapitánya?”) megjelenik itt: „
+  '01e0a9e6',  // „Kosztolányi Dezső” (válasz erre: „Ki írta az Édes Anna című regényt?”) megjelenik itt: „M
+  '042599d7',  // „Az Amazonas” (válasz erre: „Melyik a világ legbővizűbb folyója?”) megjelenik itt: „Melyik
+  '077e8ce4',  // a(z) 1971 évszám kiolvasható innen: „Mi volt a világ első űrállomásának a neve, amelyet 19
+  '07a093d2',  // „RTL Klub” (válasz erre: „Melyik csatorna sugározta a Mónika show című délutáni talkshow-t
+  '0b9a8a08',  // „Steven Spielberg” (válasz erre: „Ki rendezte az E.T. – A földönkívüli és a Cápa című film
+  '0c177b9d',  // „Bujtor István” (válasz erre: „Ki volt Bud Spencer legendás magyar szinkronhangja?”) megje
+  '14d073b9',  // a(z) 1954 évszám kiolvasható innen: „Ki lett a gólkirály az 1954-es labdarúgó-világbajnoks
+  '1697144d',  // a(z) 1999 évszám kiolvasható innen: „Hány részből állt a Szomszédok teleregény?” → tipp: „
+  '19e02f4c',  // „Julius Caesar” (válasz erre: „Melyik római hadvezér mondta állítólag a Rubicon átlépéseko
+  '1dbec7f9',  // a(z) 1848 évszám kiolvasható innen: „Melyik évben kötötte meg Magyarország a kiegyezést a 
+  '200dd3cb',  // „Szent-Györgyi Albert” (válasz erre: „Melyik magyar tudós izolálta a C-vitamint a szegedi 
+  '20e57cd8',  // a(z) 1999 évszám kiolvasható innen: „Hány éven át volt képernyőn a Heti Hetes?” → tipp: „M
+  '22cfdcb3',  // „A farkas” (válasz erre: „Melyik ragadozó él szigorú rangsorú falkában, és „énekel” éjszak
+  '2911bc7e',  // a(z) 1848 évszám kiolvasható innen: „Melyik lengyel származású tábornok vezette az 1848–49
+  '2a04b181',  // „Barátok közt” (válasz erre: „Melyik magyar sorozat középpontjában áll a Berényi család?”)
+  '2cfb1c39',  // „A Google” (válasz erre: „Melyik cég vásárolta fel a YouTube videómegosztót 2006-ban?”) me
+  '309b4c71',  // a(z) 1986 évszám kiolvasható innen: „Milyen nyelven kezdte meg adását 1986-ban a Danubius 
+  '31ec8a4e',  // „I. Ferenc József” (válasz erre: „Melyik uralkodó felesége volt Erzsébet királyné, akit mi
+  '32c1d808',  // a(z) 1971 évszám kiolvasható innen: „Melyik cég dobta piacra 1971-ben a világ első kereske
+  '36164e8c',  // a(z) 1939 évszám kiolvasható innen: „Melyik évben rendezték meg az első cannes-i filmfeszt
+  '3634dde5',  // a(z) 1939 évszám kiolvasható innen: „Melyik évben rendezték meg az első cannes-i filmfeszt
+  '36989eb1',  // a(z) 1954 évszám kiolvasható innen: „Ki lett a gólkirály az 1954-es labdarúgó-világbajnoks
+  '3d37d7b0',  // „Jedlik Ányos” (válasz erre: „Melyik magyar tudós alkotta meg az első hazai szódavízgyártó
+  '3df3113b',  // „Bartók Béla” (válasz erre: „Ki komponálta az Allegro barbaro című zongoradarabot?”) megje
+  '3ecb0c06',  // „Demjén Ferenc” (válasz erre: „Kinek a slágere az Azért vannak a jóbarátok?”) megjelenik i
+  '3fb15132',  // „Barátok közt” (válasz erre: „Melyik magyar sorozat középpontjában áll a Berényi család?”)
+  '41d64d05',  // a(z) 1000 évszám kiolvasható innen: „A hagyomány szerint melyik évben történt a honfoglalá
+  '42ef669b',  // „I. (Szent) István” (válasz erre: „Ki volt az első magyar király?”) megjelenik itt: „A hag
+  '46dcb3a0',  // a(z) 1997 évszám kiolvasható innen: „Melyik évben indult el az RTL Klub és a TV2?” → tipp:
+  '48be5e9d',  // „a versailles-i béke” (válasz erre: „Melyik békeszerződés zárta le az első világháborút a 
+  '4a467e41',  // „Jurij Gagarin” (válasz erre: „Ki volt az első ember a világűrben?”) megjelenik itt: „Hány
+  '4bb032fc',  // „Kossuth Lajos” (válasz erre: „Ki volt az 1848–49-es szabadságharc idején Magyarország kor
+  '4c0480f7',  // a(z) 1964 évszám kiolvasható innen: „Hányszor nyert olimpiai aranyérmet a magyar labdarúgó
+  '4c5294e5',  // „RTL Klub” (válasz erre: „Melyik csatornán indult el a Való Világ legelső szériája?”) megj
+  '4f601473',  // „Közösségi oldal” (válasz erre: „Milyen szolgáltatás volt a 2000-es évek nagy magyar inter
+  '5155ee0c',  // a(z) 1914 évszám kiolvasható innen: „Melyik városban gyilkolták meg Ferenc Ferdinánd trónö
+  '569c688d',  // „A jegenyenyár” (válasz erre: „Melyik magas, karcsú fa az alföldi utak és tanyák jellegzet
+  '56e17ed3',  // „Julius Caesar” (válasz erre: „Melyik római hadvezér mondta állítólag a Rubicon átlépéseko
+  '5891f43f',  // „Európa és Ázsia” (válasz erre: „Mely kontinensek határán fekszik Isztambul?”) megjelenik 
+  '5a80da0c',  // „Jankovics Marcell” (válasz erre: „Ki volt a Magyar népmesék rajzfilmsorozat sorozatrendez
+  '5caa37b5',  // a(z) 1969 évszám kiolvasható innen: „Ki rendezte A Pál utcai fiúk 1969-es, Oscar-jelölt fi
+  '5cbce857',  // a(z) 2010 évszám kiolvasható innen: „Hány része készült az Üvegtigris című filmsorozatnak?
+  '5dc998ed',  // „Dél-Amerika” (válasz erre: „Melyik kontinensen folyik az Amazonas?”) megjelenik itt: „Hán
+  '5fb75c0d',  // „RTL Klub” (válasz erre: „Melyik csatornán futott a Barátok közt?”) megjelenik itt: „Melyi
+  '5fce3906',  // „Shiba inu” (válasz erre: „Melyik kutyafajta a Doge mém sztárja?”) megjelenik itt: „Hogy h
+  '63f5571b',  // „I. (Szent) István” (válasz erre: „Ki volt az első magyar király?”) megjelenik itt: „Melyi
+  '65143de1',  // „Petőfi Sándor” (válasz erre: „Ki írta A helység kalapácsa című vígeposzt?”) megjelenik it
+  '66c89a05',  // „A hidrogén” (válasz erre: „Melyik a leggyakoribb kémiai elem a világegyetemben?”) megjele
+  '67476947',  // a(z) 1453 évszám kiolvasható innen: „Valójában hány évig tartott a „százéves háború”?” → t
+  '682f5808',  // a(z) 1848 évszám kiolvasható innen: „Ki volt az 1848–49-es szabadságharc idején Magyarorsz
+  '6a7c1708',  // „Jókai Mór” (válasz erre: „Ki írta a Fekete gyémántok című regényt?”) megjelenik itt: „Jók
+  '6ec209b3',  // „A tulipán” (válasz erre: „Melyik virág a holland virágkertészet világhírű jelképe?”) megj
+  '6f1797ef',  // „Bujtor István” (válasz erre: „Ki alakította Ötvös Csöpit a balatoni akció-vígjátékokban?”
+  '70306ee9',  // a(z) 2017 évszám kiolvasható innen: „Ki rendezte a Kincsem című, 2017-es filmet?” → tipp: 
+  '712d86a0',  // „Real Madrid” (válasz erre: „Melyik csapat nyerte a legtöbb BEK/Bajnokok Ligája trófeát?”)
+  '73515064',  // a(z) 1969 évszám kiolvasható innen: „Ki rendezte A Pál utcai fiúk 1969-es, Oscar-jelölt fi
+  '73b4d3b3',  // a(z) 1920 évszám kiolvasható innen: „Hány évig töltötte be Horthy Miklós a kormányzói tisz
+  '73d60592',  // „Roland Garros” (válasz erre: „Melyik tenisztornát játsszák salakpályán?”) megjelenik itt:
+  '784b320e',  // „Nagy-Britannia” (válasz erre: „Melyik ország gyarmata volt India 1947-ig?”) megjelenik it
+  '78fc829b',  // a(z) 1936 évszám kiolvasható innen: „Melyik olimpián nyert négy aranyérmet Jesse Owens?” →
+  '79d0a33a',  // „Nagy Sándor” (válasz erre: „Melyik makedón uralkodó terjesztette ki birodalmát egészen In
+  '7ebb4a8c',  // „A tulipán” (válasz erre: „Melyik virág a holland virágkertészet világhírű jelképe?”) megj
+  '80ff888b',  // „Petőfi Sándor” (válasz erre: „Ki a Nemzeti dal költője?”) megjelenik itt: „Melyik városba
+  '84d8718f',  // a(z) 1848 évszám kiolvasható innen: „Hány évig uralkodott I. Ferenc József?” → tipp: „Mely
+  '8aaa9ba4',  // „Dél-Amerika” (válasz erre: „Melyik kontinensen folyik az Amazonas?”) megjelenik itt: „Hán
+  '8dfb2f3b',  // „Roland Garros” (válasz erre: „Melyik tenisztornát játsszák salakpályán?”) megjelenik itt:
+  '91383692',  // a(z) 1986 évszám kiolvasható innen: „Melyik válogatott ellen szerezte Diego Maradona az "I
+  'a150277a',  // a(z) 1945 évszám kiolvasható innen: „Melyik konferencián osztották fel a szövetségesek az 
+  'a1ae2924',  // „World Wide Web” (válasz erre: „Mit jelent a WWW rövidítés?”) megjelenik itt: „Ki dolgozta
+  'a5eeba60',  // „Puskás Ferenc” (válasz erre: „Ki volt az Aranycsapat csapatkapitánya?”) megjelenik itt: „
+  'b1b83afe',  // a(z) 1849 évszám kiolvasható innen: „Hány honvédtisztet végeztek ki Aradon 1849. október 6
+  'b1f94058',  // „A Google” (válasz erre: „Melyik cég vásárolta fel a YouTube videómegosztót 2006-ban?”) me
+  'b2d83b21',  // „Rövidpályás gyorskorcsolya” (válasz erre: „Melyik sportágban lett olimpiai bajnok Liu Sha
+  'b44ad36d',  // „Batthyány Lajos” (válasz erre: „Ki volt az első felelős magyar kormány miniszterelnöke 18
+  'b5219e42',  // „Petőfi Sándor” (válasz erre: „Ki írta a János vitéz című elbeszélő költeményt?”) megjelen
+  'b6440a9a',  // a(z) 1848 évszám kiolvasható innen: „Ki volt az első felelős magyar kormány miniszterelnök
+  'b82fb162',  // a(z) 1873 évszám kiolvasható innen: „Melyik évben kötötte meg Magyarország a kiegyezést a 
+  'c026dceb',  // „Neumann János” (válasz erre: „Melyik magyar származású tudós nevéhez fűződik a modern szá
+  'c5b17963',  // a(z) 1949 évszám kiolvasható innen: „Ki játszotta a címszerepet az 1949-es Mágnás Miska cí
+  'c99b3509',  // „Nagy-Britannia” (válasz erre: „Melyik ország gyarmata volt India 1947-ig?”) megjelenik it
+  'd0b71c93',  // a(z) 1994 évszám kiolvasható innen: „Milyen kutatásaiért kapott kémiai Nobel-díjat Oláh Gy
+  'd2ab1ebc',  // „Angel-vízesés” (válasz erre: „Melyik a világ legmagasabb vízesése?”) megjelenik itt: „Hán
+  'e04db3ce',  // „Real Madrid” (válasz erre: „Melyik spanyol klubban futballozott Puskás Ferenc 1958-tól?”)
+  'e8e3dec0',  // „Nagy-Britannia” (válasz erre: „Melyik ország gyarmata volt India 1947-ig?”) megjelenik it
+  'eff077ec',  // „A napraforgó” (válasz erre: „Melyik virág fordítja tányérját mindig a nap felé?”) megjele
+  'fd41b4a0',  // „A Neoton Família” (válasz erre: „Melyik együttes slágere a „Santa Maria”?”) megjelenik it
+]);
+const hash = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return h.toString(16).padStart(8, '0'); };
+
+let err = 0, warn = 0, known = 0;
+const E = m => { err++; console.log('  ✘ HIBA: ' + m); };
+const pending = [];   // {key, msg} – a szakasz végén szűrjük a BASELINE-nal
+const W = (key, msg) => pending.push({ key, msg });
+function flushWarns(){
+  for (const p of pending) {
+    if (KEYS) console.log("  '" + p.key + "',  // " + p.msg.slice(0, 90));
+    if (BASELINE.has(p.key) && !ALL) { known++; continue; }
+    warn++; console.log('  ⚠ ' + (BASELINE.has(p.key) ? '(baseline) ' : 'ÚJ: ') + p.msg);
+  }
+  pending.length = 0;
+}
+
+console.log('KvízParty kérdésbázis-ellenőrző · ' + files.join(' + '));
+console.log('Összesen ' + Q.length + ' kérdés (' + Q.filter(q => q.type === 'mc').length + ' mc + '
+  + Q.filter(q => q.type === 'tip').length + ' tip), ' + C.length + ' kategória\n');
+
+/* ---------- 1) formai ellenőrzés ---------- */
+console.log('— formai ellenőrzés —');
+Q.forEach((q, i) => {
+  const tag = '#' + i + ' [' + (catOf(q.cat) ? catOf(q.cat).name : '?') + '] „' + short(q.q) + '”';
+  if (!catOf(q.cat)) E('érvénytelen kategória (' + q.cat + '): ' + tag);
+  if (![1, 2, 3, 4, 5].includes(q.d)) E('érvénytelen nehézség (' + q.d + '): ' + tag);
+  if (!q.q || !String(q.q).trim()) E('üres kérdésszöveg: #' + i);
+  if (q.type === 'mc') {
+    if (!Array.isArray(q.o) || q.o.length !== 4) E('nem 4 opció: ' + tag);
+    else if (new Set(q.o.map(norm)).size !== 4) E('ismétlődő opció: ' + tag);
+    if (q.c !== 0) E('a helyes válasznak az első opciónak kell lennie (c:0): ' + tag);
+  } else if (q.type === 'tip') {
+    if (!Number.isInteger(q.a)) E('a tipp-megoldás nem egész szám (' + q.a + '): ' + tag);
+    if (q.unit === undefined) E('hiányzó unit mező: ' + tag);
+  } else E('ismeretlen típus (' + q.type + '): ' + tag);
+});
+
+/* ---------- 2) duplikátum ---------- */
+console.log('— duplikátum-keresés —');
+{
+  const seen = {};
+  Q.forEach((q, i) => {
+    const k = q.type + ':' + norm(q.q);
+    if (seen[k] != null) E('azonos kérdésszöveg: #' + seen[k] + ' és #' + i + ' „' + short(q.q) + '”');
+    seen[k] = i;
+  });
+}
+
+/* ---------- 3) alvó tippek ---------- */
+console.log('— alvó tippek (tip:false kategóriában) —');
+Q.filter(q => q.type === 'tip' && !(catOf(q.cat) || {}).tip)
+  .forEach(q => E('alvó tipp a(z) ' + (catOf(q.cat) || {}).name + ' kategóriában: „' + short(q.q) + '”'));
+
+/* ---------- 4) évszám-szivárgás (azonos témán belül) ---------- */
+console.log('— évszám-szivárgás —');
+{
+  const tips = Q.filter(q => q.type === 'tip' && !q.unit && q.a >= 800 && q.a <= 2100);
+  let cross = 0;
+  for (const t of tips) {
+    for (const q of Q) {
+      if (q === t) continue;
+      const txt = q.q + ' ' + (q.type === 'mc' ? q.o.join(' ') : '') + ' ' + (q.note || '');
+      if (!new RegExp('\\b' + t.a + '\\b').test(txt)) continue;
+      if (sameTopic(q.cat, t.cat))
+        W(hash('y|' + t.a + '|' + norm(t.q) + '|' + norm(q.q)),
+          'a(z) ' + t.a + ' évszám kiolvasható innen: „' + short(q.q) + '” → tipp: „' + short(t.q) + '”');
+      else cross++;
+    }
+  }
+  flushWarns();
+  console.log('  (kereszt-témájú évszám-egybeesés: ' + cross + ' db – ezek jellemzően ártalmatlanok)');
+}
+
+/* ---------- 5) válasz-szivárgás: mc-válasz másik ÉLŐ kérdés szövegében/note-jában ---------- */
+console.log('— válasz-szivárgás (mc-válaszok más kérdésekben) —');
+{
+  let cross = 0;
+  for (const m of Q.filter(q => q.type === 'mc')) {
+    const ans = norm(m.o[0]);
+    if (ans.length < 8 || ans.split(' ').length < 2) continue;      // rövid/egyszavas: túl zajos lenne
+    for (const q of Q) {
+      if (q === m) continue;
+      if (!norm(q.q + ' ' + (q.note || '')).includes(ans)) continue;
+      if (sameTopic(q.cat, m.cat))
+        W(hash('a|' + ans + '|' + norm(m.q) + '|' + norm(q.q)),
+          '„' + m.o[0] + '” (válasz erre: „' + short(m.q) + '”) megjelenik itt: „' + short(q.q) + '”'
+          + (q.note ? ' / note: „' + short(q.note) + '”' : ''));
+      else cross++;
+    }
+  }
+  flushWarns();
+  console.log('  (kereszt-témájú említés: ' + cross + ' db – kézi átnézés csak akkor kell, ha gyanús)');
+}
+
+/* ---------- 6) kvóta-áttekintés (információ) ---------- */
+console.log('\n— kvóták (információ) —');
+for (const c of C) {
+  const mc = Q.filter(q => q.cat === c.id && q.type === 'mc').length;
+  const tip = Q.filter(q => q.cat === c.id && q.type === 'tip').length;
+  console.log('  ' + String(c.id).padStart(2) + ' ' + (c.name + ' ').padEnd(33, '·')
+    + ' mc:' + String(mc).padStart(3) + (c.tip ? ('  tip:' + String(tip).padStart(3) + '  [' + tipgOf(c.id) + ']') : ''));
+}
+const dd = { mc: [0, 0, 0, 0, 0], tip: [0, 0, 0, 0, 0] };
+Q.forEach(q => { if (dd[q.type]) dd[q.type][(q.d || 3) - 1]++; });
+console.log('  nehézség (d1..d5)  mc: ' + dd.mc.join(' / ') + '   tip: ' + dd.tip.join(' / '));
+
+/* ---------- összegzés ---------- */
+console.log('\n' + (err ? ('❌ ' + err + ' hiba') : '✅ nincs hiba')
+  + (warn ? (' · ⚠ ' + warn + ' ÚJ, átnézendő figyelmeztetés') : ' · nincs új figyelmeztetés')
+  + (known ? (' · ' + known + ' ismert egyezés a baseline-ban') : ''));
+process.exitCode = err ? 1 : 0;
