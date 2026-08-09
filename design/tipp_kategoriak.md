@@ -18,8 +18,8 @@ készült az átálláskor, minden tétel elérte a 40-es célszámot.
 | 8 | 🎬 **Filmek** | 🎬 Magyar film, tévé és sorozatok + 🍿 Nemzetközi filmek | 53 | 40 | ✅ |
 | 9 | ⚽ **Sport** | ⚽ Sport | 40 | 40 | ✅ |
 
-**Összesen:** 374 élő tippelős kérdés. (Ezen felül a `tip:false` kategóriák
-139 „alvó” tippje is a fájlokban maradt – nem kerülnek sorsolásba.)
+**Összesen:** 374 tippelős kérdés – mind élő, mind sorsolásba kerül.
+(Az egykori „alvó” tippeket 2026-08-09-én töröltük a fájlokból.)
 
 ## Szabályok
 

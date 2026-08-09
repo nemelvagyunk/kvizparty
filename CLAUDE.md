@@ -120,7 +120,7 @@ Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő
   - A válasz nélkül lejárt idő **nem** kerül be sem a jó, sem a rossz statisztikába (csak tényleges válasz).
   - A 🙈 díj **relatív** hibában mér (`dist / max(1,|a|)`) – abszolút hibával a nagy számú kérdések (lakosság, távolság) mindig elnyomnák az évszámokat. A kérdés nyertesét nem büntetjük. Ez az egyetlen díj, ami `sub` részletező sort is kap („1 504 nap – a jó válasz 27 nap volt"); a kártya ilyenkor `wsub` osztályt kap.
 
-## Kérdésbázis (1472 kérdés = 959 mc + 513 tip, 23 kategória – KÉSZ)
+## Kérdésbázis (1333 kérdés = 959 mc + 374 tip, 23 kategória – KÉSZ)
 
 - **A kódban a 23 kategóriás lista él** (cat 1–23, a 2026-08-08-i átállás óta; ugyanaznap készült el a 398 új mc is). A part-fájlok: `part1_kat01-05.js` · `part2_kat06-10.js` · `part3_kat11-15.js` · `part4_kat16-19.js` · `part5_kat20-23.js`.
 - **Minden kategória a célszámán áll:** 40 mc/kategória, kivéve Gasztronómia 70 (30 magyar + 40 nemzetközi), Filozófia 25, Komolyzene 25, M. film 59, Sport 60 (utóbbi kettő a cél fölött). Tipp: mind a 9 tétel ≥40.
@@ -128,7 +128,7 @@ Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő
   `{"id":16,"name":"…","icon":"🚀","tip":true,"tipg":"feltalalo"}`
   – `tip` = szabad-e ide tippelős kérdést írni · `tipg` = közös tippsorsolási tétel kulcsa (hiányzik → saját tétel). (`opt` jelző már nincs – a kategória-szűrőt kivezettük.)
 - A 23 kategória: 1 🏰 Magyar történelem · 2 📜 Magyar irodalom · 3 🗺️ Magyarország földrajza · 4 🗣️ Magyar nyelv és szólások · 5 🎎 Magyar néphagyomány · 6 🌶️ Gasztronómia · 7 ⚔️ Világtörténelem · 8 🌍 Világföldrajz · 9 📖 Világirodalom · 10 🖼️ Képzőművészet · 11 🧠 Filozófia · 12 🦁 Állatok · 13 🌿 Növények és kertészet · 14 ⚗️ Fizika, kémia, biológia · 15 💡 Feltalálók és találmányok · 16 🚀 Űrkutatás és informatika · 17 🎬 Magyar film, tévé és sorozatok · 18 🎸 Magyar könnyűzene · 19 🎻 Komolyzene · 20 🍿 Nemzetközi filmek · 21 🎤 Nemzetközi popzene · 22 😂 Mémek és internetkultúra · 23 ⚽ Sport.
-- **Az átállás során eldobva:** a Videójátékok kategória (50), a nemzetközi sorozat-kérdések (13) és 6 duplikátum/szivárgó kérdés. A `tip:false` kategóriák tippjei (139 db) **megmaradtak a fájlokban** – nem kerülnek sorsolásba, de nem vesztek el.
+- **Eldobva:** a Videójátékok kategória (50), a nemzetközi sorozat-kérdések (13), 6 duplikátum/szivárgó kérdés, és **2026-08-09-én a `tip:false` kategóriák 139 „alvó” tippje is** (a felhasználó kérésére – soha nem kerültek sorsolásba). Minden tárolt tipp élő.
 - Nehézség-eloszlás célja kategóriánként (40 kérdésnél): mc [4,8,16,8,4] és tip [4,8,16,8,4].
 - Formátum (`src/questions/part*.js`, a részek összefűzve adnak érvényes JS-t):
   - mc: `{cat, type:'mc', d, q, o:[4 opció], c:0}` — **a helyes válasz MINDIG az első opció** (`c:0`), a játék futásidőben kever.

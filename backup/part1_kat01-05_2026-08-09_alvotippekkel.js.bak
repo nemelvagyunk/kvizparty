@@ -1,6 +1,6 @@
 // KvízParty kérdésbázis – 1/5 darab (a build fűzi össze; kategóriák: 1–5)
 // ============================================================
-// KvízParty – kérdésbázis (1333 kérdés = 959 „1 a 4-ből” + 374 tippelős, 23 kategória)
+// KvízParty – kérdésbázis (1472 kérdés = 959 „1 a 4-ből” + 513 tippelős, 23 kategória)
 // Nehézség (d): 1=nagyon könnyű, 2=könnyű, 3=közepes, 4=nehéz, 5=extra nehéz
 // mc:  {cat, type, d, q, o:[4 opció], c:0 (a helyes mindig az első, a játék kever)}
 // tip: {cat, type, d, q, a:szám, unit, note}
@@ -241,6 +241,27 @@ const QUESTIONS = [
  o:["Kuncz Aladár","Markovits Rodion","Karácsony Benő","Bánffy Miklós"], c:0},
 {cat:2,type:'mc',d:5,q:"Milyen néven emlegetjük a Gesta Hungarorum ismeretlen szerzőjét, „P. mestert”?",
  o:["Anonymus","Kézai Simon","Thuróczy János","Galeotto Marzio"], c:0},
+// – tippelős (20 db) –
+{cat:2,type:'tip',d:1,q:"Hány éves korában halt meg Petőfi Sándor?",a:26,unit:"év",note:"A segesvári csatában tűnt el, holttestét sosem találták meg."},
+{cat:2,type:'tip',d:1,q:"Hányadik században született Jókai Mór?",a:19,unit:"század",note:"1825-ben született Komáromban."},
+{cat:2,type:'tip',d:2,q:"Melyik évben kapta Kertész Imre az irodalmi Nobel-díjat?",a:2002,unit:"",note:"a Sorstalanságért"},
+{cat:2,type:'tip',d:2,q:"Melyik évben halt meg József Attila?",a:1937,unit:"",note:"Balatonszárszón érte a halál."},
+{cat:2,type:'tip',d:2,q:"Melyik évben halt meg Radnóti Miklós?",a:1944,unit:"",note:"Utolsó verseit a bori noteszbe írta."},
+{cat:2,type:'tip',d:2,q:"Melyik évben született Petőfi Sándor?",a:1823,unit:"",note:"Január 1-jén született."},
+{cat:2,type:'tip',d:3,q:"Melyik évben született Arany János?",a:1817,unit:"",note:"Nagyszalontán"},
+{cat:2,type:'tip',d:3,q:"Hány énekből áll Arany János Toldija?",a:12,unit:"ének",note:""},
+{cat:2,type:'tip',d:3,q:"Melyik évben írta Kölcsey Ferenc a Himnuszt?",a:1823,unit:"",note:"január 22-én fejezte be – ez ma a magyar kultúra napja"},
+{cat:2,type:'tip',d:3,q:"Melyik évben indult a Nyugat folyóirat?",a:1908,unit:"",note:"Első főszerkesztője Ignotus volt."},
+{cat:2,type:'tip',d:3,q:"Hány színből áll Az ember tragédiája?",a:15,unit:"szín",note:"Zárósora: \"Mondottam, ember: küzdj és bízva bízzál!\""},
+{cat:2,type:'tip',d:3,q:"Melyik évben halt meg Arany János?",a:1882,unit:"",note:"Utolsó éveiben a Margitszigeten írta az Őszikék verseit."},
+{cat:2,type:'tip',d:3,q:"Melyik évben halt meg Ady Endre?",a:1919,unit:"",note:"Január végén hunyt el Budapesten."},
+{cat:2,type:'tip',d:3,q:"Melyik évben halt meg Kosztolányi Dezső?",a:1936,unit:"",note:"Hosszú betegség után hunyt el Budapesten."},
+{cat:2,type:'tip',d:4,q:"Melyik évben született Móricz Zsigmond?",a:1879,unit:"",note:"A szatmári Tiszacsécsén született."},
+{cat:2,type:'tip',d:4,q:"Melyik évben jelent meg a Vizsolyi Biblia, az első teljes magyar nyelvű nyomtatott bibliafordítás?",a:1590,unit:"",note:"Károli Gáspár fordítása."},
+{cat:2,type:'tip',d:4,q:"Melyik évben született Szabó Magda?",a:1917,unit:"",note:"Debrecenben született."},
+{cat:2,type:'tip',d:4,q:"Melyik évben halt meg Márai Sándor?",a:1989,unit:"",note:"Emigrációban, a kaliforniai San Diegóban hunyt el."},
+{cat:2,type:'tip',d:5,q:"Melyik évben született Csokonai Vitéz Mihály?",a:1773,unit:"",note:"Debrecenben született, és ott is halt meg."},
+{cat:2,type:'tip',d:5,q:"Melyik évben nyomtatták az első Magyarországon készült könyvet, a Budai krónikát?",a:1473,unit:"",note:"Hess András budai nyomdájában készült."},
 
 // ---------- 3. Magyarország földrajza 🗺️ ----------
 // – 1 a 4-ből (40 db) –
@@ -428,6 +449,27 @@ const QUESTIONS = [
  o:["Kemencét","Révátkelőt","Vásárteret","Mocsarat"], c:0},
 {cat:4,type:'mc',d:5,q:"Mit jelentett a régi magyar nyelvben az „orv” szó, amely az orvvadász szavunkban él tovább?",
  o:["Tolvajt, lopva cselekvőt","Erdei embert","Fegyverest","Idegent"], c:0},
+// – tippelős (20 db) –
+{cat:4,type:'tip',d:1,q:"Hány írásjegyből áll a magyar ábécé „cs” betűje?",a:2,unit:"db",note:"A cs kétjegyű betű: a c és az s írásjegyekből áll."},
+{cat:4,type:'tip',d:1,q:"Hány szótagból áll a „kikelet” szó?",a:3,unit:"db",note:"Ki-ke-let; a kikelet a tavasz régies, költői neve."},
+{cat:4,type:'tip',d:2,q:"Hány betűből áll a magyar ábécé?",a:44,unit:"betű",note:"a kétjegyű és háromjegyű betűkkel együtt"},
+{cat:4,type:'tip',d:2,q:"Hány magánhangzó van a magyar ábécében?",a:14,unit:"",note:"a–á, e–é, i–í, o–ó, ö–ő, u–ú, ü–ű"},
+{cat:4,type:'tip',d:2,q:"Hány millió ember beszéli a magyart anyanyelvként?",a:13,unit:"millió fő",note:"kb. 13 millió világszerte"},
+{cat:4,type:'tip',d:2,q:"Hányféle magánhangzót szabad használni az eszperente nyelvi játékban?",a:1,unit:"db",note:"Csak az „e” magánhangzó megengedett."},
+{cat:4,type:'tip',d:3,q:"Melyik évben kelt a tihanyi apátság alapítólevele, a legkorábbi eredetiben fennmaradt magyar szórványemlékünk?",a:1055,unit:"",note:"I. András adta ki; magyar szavakat is őriz, pl. „feheruuaru rea meneh hodu utu rea”."},
+{cat:4,type:'tip',d:3,q:"Melyik évben jelent meg a magyar helyesírási szabályzat jelenleg érvényes, 12. kiadása?",a:2015,unit:"",note:"Ekkor lett például az „ésszerű” helyett „észszerű” a helyes alak."},
+{cat:4,type:'tip',d:3,q:"Hány többjegyű betű van a magyar ábécében?",a:9,unit:"db",note:"cs, dz, dzs, gy, ly, ny, sz, ty, zs — közülük a dzs háromjegyű."},
+{cat:4,type:'tip',d:3,q:"Hány betűhelyből (karakterből) áll a leghosszabb közismert magyar szó: „megszentségteleníthetetlenségeskedéseitekért”?",a:44,unit:"db",note:"Gyakran emlegetett példa a magyar szóképzés lehetőségeire."},
+{cat:4,type:'tip',d:3,q:"November hányadikán ünnepeljük a magyar nyelv napját?",a:13,unit:"",note:"1844. november 13-án fogadták el a magyart államnyelvvé tevő törvényt."},
+{cat:4,type:'tip',d:3,q:"Melyik évtől hivatalos nyelve a magyar az Európai Uniónak?",a:2004,unit:"",note:"Magyarország uniós csatlakozásával vált hivatalos EU-nyelvvé."},
+{cat:4,type:'tip',d:3,q:"Melyik évben ajánlotta fel Széchenyi István birtokainak egyévi jövedelmét a magyar nyelvet művelő tudós társaság megalapítására?",a:1825,unit:"",note:"Ebből született meg a Magyar Tudományos Akadémia elődje."},
+{cat:4,type:'tip',d:3,q:"Február hányadikán van az anyanyelv nemzetközi napja?",a:21,unit:"",note:"Az UNESCO 1999-ben nyilvánította február 21-ét az anyanyelv nemzetközi napjává."},
+{cat:4,type:'tip',d:4,q:"Melyik évben jelent meg az első teljes egészében magyar nyelvű nyomtatott könyv (Sylvester János Újtestamentuma)?",a:1541,unit:"",note:"Sárvár-Újszigeten nyomtatták"},
+{cat:4,type:'tip',d:4,q:"Melyik évben adta ki a Magyar Tudós Társaság az első akadémiai helyesírási szabályzatot?",a:1832,unit:"",note:"Címe: A magyar helyesírás és szóragasztás főbb szabályai."},
+{cat:4,type:'tip',d:4,q:"Melyik évben fedezték fel a Leuveni kódexben az Ómagyar Mária-siralmat, az első ismert magyar nyelvű verset?",a:1922,unit:"",note:"Gragger Róbert azonosította; a kódex 1982-ben került Magyarországra."},
+{cat:4,type:'tip',d:4,q:"Melyik évben indult a Magyar Nyelvőr című nyelvművelő folyóirat?",a:1872,unit:"",note:"Szarvas Gábor alapította, és máig megjelenik."},
+{cat:4,type:'tip',d:5,q:"Melyik évben született Kazinczy Ferenc, a nyelvújítás vezéralakja?",a:1759,unit:"",note:"Születésnapja, október 27. előtt tisztelegve Széphalmon áll a Magyar Nyelv Múzeuma."},
+{cat:4,type:'tip',d:5,q:"Hány kötetben jelent meg a 19. században a Czuczor–Fogarasi-féle „A magyar nyelv szótára”?",a:6,unit:"db",note:"1862 és 1874 között adták ki; máig a legnagyobb ilyen vállalkozások egyike."},
 
 // ---------- 5. Magyar néphagyomány 🎎 ----------
 // – 1 a 4-ből (40 db) –

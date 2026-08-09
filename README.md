@@ -119,7 +119,7 @@ A 🙈 díj **arányos hibát** mér, nem abszolútat — így nem az nyeri, aki
 
 ## Kérdésbázis
 
-**1472 kérdés, 23 kategória**, négy pillérre építve: magyar és nemzetközi általános műveltség, magyar és nemzetközi popkultúra – a családi játszhatóság jegyében. Minden kategória feltöltve (általában 40 kérdés, a Gasztronómia 70, a szándékosan kisebb Filozófia és Komolyzene 25-25), a tippelős kérdések kilenc témaköre mind legalább 40 kérdéssel. A lobbyban nehézségre szűrhetsz.
+**1333 kérdés, 23 kategória**, négy pillérre építve: magyar és nemzetközi általános műveltség, magyar és nemzetközi popkultúra – a családi játszhatóság jegyében. Minden kategória feltöltve (általában 40 kérdés, a Gasztronómia 70, a szándékosan kisebb Filozófia és Komolyzene 25-25), a tippelős kérdések kilenc témaköre mind legalább 40 kérdéssel. A lobbyban nehézségre szűrhetsz.
 
 ## AI-ellenfelek
 

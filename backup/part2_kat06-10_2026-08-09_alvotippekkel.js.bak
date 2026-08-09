@@ -142,6 +142,27 @@
  o:["Egy francia városról","Egy szőlőfajtáról","Egy szerzetesrendről","Egy folyóról"], c:0},
 {cat:6,type:'mc',d:5,q:"Mi az umami?",
  o:["Az ötödik alapíz","Japán halleves","A szusimester címe","Rizsecet"], c:0},
+// – tippelős (20 db) –
+{cat:6,type:'tip',d:1,q:"Hány centiliteres egy hagyományos „feles” pálinka?",a:5,unit:"cl",note:"A neve a fél deciliterre utal."},
+{cat:6,type:'tip',d:1,q:"Augusztus hányadikán ünnepeljük az új kenyér ünnepét?",a:20,unit:"",note:"Az államalapítás ünnepén hagyomány az új búzából sütött kenyér megszegése."},
+{cat:6,type:'tip',d:2,q:"Hány deciliter bor kerül a nagyfröccsbe?",a:2,unit:"dl",note:"A nagyfröccs 2 dl borból és 1 dl szódából áll."},
+{cat:6,type:'tip',d:2,q:"November hányadikán van Márton-nap, amikor a hagyomány szerint libát illik enni?",a:11,unit:"",note:"„Aki Márton napján libát nem eszik, egész éven át éhezik.”"},
+{cat:6,type:'tip',d:2,q:"Hány milliliteres a szabványos borospalack?",a:750,unit:"ml",note:"Ez a világszerte elterjedt 0,75 literes űrtartalom."},
+{cat:6,type:'tip',d:2,q:"Hányféle klasszikus töltelékkel készül hagyományosan a karácsonyi bejgli?",a:2,unit:"féle",note:"Mákos és diós változatban."},
+{cat:6,type:'tip',d:3,q:"Hány féle gyógynövényből készül az Unicum?",a:40,unit:"féle",note:"a pontos recept titkos"},
+{cat:6,type:'tip',d:3,q:"Legfeljebb hány puttonyos lehetett a tokaji aszú a klasszikus skálán?",a:6,unit:"puttonyos",note:""},
+{cat:6,type:'tip',d:3,q:"Melyik évben került piacra Magyarországon a Túró Rudi?",a:1968,unit:"",note:"A pöttyös csomagolás azóta is védjegye."},
+{cat:6,type:'tip',d:3,q:"Melyik évben vették fel a tokaji történelmi borvidéket az UNESCO világörökségi listájára?",a:2002,unit:"",note:"Kultúrtáj kategóriában nyerte el a címet."},
+{cat:6,type:'tip',d:3,q:"Melyik évben nyitotta meg kapuit a budapesti New York kávéház?",a:1894,unit:"",note:"A legenda szerint Molnár Ferenc a Dunába dobta a kulcsát, hogy sose zárjon be."},
+{cat:6,type:'tip',d:3,q:"Melyik évben alapította Törley József pezsgőpincészetét Budafokon?",a:1882,unit:"",note:"A Törley máig a legismertebb magyar pezsgőmárka."},
+{cat:6,type:'tip',d:3,q:"Melyik évben alapították a herendi porcelánmanufaktúrát?",a:1826,unit:"",note:"A herendi porcelán a hungarikumok egyike."},
+{cat:6,type:'tip',d:3,q:"Melyik évben vette át Gundel Károly a városligeti éttermet, a mai Gundel elődjét?",a:1910,unit:"",note:"Korábban Wampetics-vendéglőként működött."},
+{cat:6,type:'tip',d:4,q:"Melyik évben mutatták be a Dobos-tortát a budapesti Országos Kiállításon?",a:1885,unit:"",note:"Dobos C. József cukrászmester alkotása"},
+{cat:6,type:'tip',d:4,q:"Hány liter bor fér egy hagyományos gönci hordóba?",a:136,unit:"liter",note:"a tokaji aszú klasszikus hordója"},
+{cat:6,type:'tip',d:4,q:"Melyik évben aratott díjnyertes sikert a somlói galuska a brüsszeli világkiállításon?",a:1958,unit:"",note:"A desszert a Gundel étterem munkatársainak ötletéből született."},
+{cat:6,type:'tip',d:4,q:"A világ libamájtermelésének körülbelül hány százalékát adja Magyarország?",a:80,unit:"%",note:"A libamáj (hízott lúdmáj) terén Magyarország világelső; a kacsamájat is beszámítva Franciaország vezet"},
+{cat:6,type:'tip',d:5,q:"Melyik évben jelent meg az első magyar nyelvű nyomtatott szakácskönyv, a „Szakáts mesterségnek könyvetskéje”?",a:1695,unit:"",note:"Misztótfalusi Kis Miklós adta ki Kolozsváron."},
+{cat:6,type:'tip',d:5,q:"Legalább hány gramm természetes cukrot kell literenként tartalmaznia a tokaji eszenciának?",a:450,unit:"g",note:"Ezért inkább sűrű, nektárszerű különlegesség, mint hagyományos bor."},
 
 // ---------- 7. Világtörténelem ⚔️ ----------
 // – 1 a 4-ből (40 db) –
@@ -454,6 +475,14 @@
  o:["Stendhal","Balzac","Flaubert","Victor Hugo"], c:0},
 {cat:9,type:'mc',d:5,q:"Melyik orosz író műve a Holt lelkek?",
  o:["Nyikolaj Gogol","Fjodor Dosztojevszkij","Ivan Goncsarov","Alekszandr Osztrovszkij"], c:0},
+// – tippelős (7 db) –
+{cat:9,type:'tip',d:1,q:"Hány kötetből áll a Harry Potter-regénysorozat?",a:7,unit:"kötet",note:"Az utolsó kötet 2007-ben jelent meg."},
+{cat:9,type:'tip',d:2,q:"Hány sorból áll egy klasszikus szonett?",a:14,unit:"sor",note:"A formát Petrarca tette világhírűvé."},
+{cat:9,type:'tip',d:2,q:"Hány fő részből áll Dante Isteni színjátéka?",a:3,unit:"rész",note:"Pokol, Purgatórium, Paradicsom."},
+{cat:9,type:'tip',d:3,q:"Melyik évben született William Shakespeare?",a:1564,unit:"",note:"Stratford-upon-Avonban"},
+{cat:9,type:'tip',d:3,q:"Melyik évben halt meg William Shakespeare?",a:1616,unit:"",note:"A hagyomány szerint április 23-án, épp a születésnapján hunyt el."},
+{cat:9,type:'tip',d:4,q:"Hány szonettet írt Shakespeare?",a:154,unit:"db",note:""},
+{cat:9,type:'tip',d:4,q:"Hány énekből áll Homérosz Odüsszeiája?",a:24,unit:"ének",note:"Az Iliász szintén 24 énekből áll."},
 
 // ---------- 10. Képzőművészet 🖼️ ----------
 // – 1 a 4-ből (40 db) –
@@ -537,3 +566,14 @@
  o:["Marcel Duchamp","Man Ray","Andy Warhol","Joseph Beuys"], c:0},
 {cat:10,type:'mc',d:5,q:"Hogy nevezzük a fény és árnyék erőteljes ellentétére építő festői technikát?",
  o:["Chiaroscuro","Sfumato","Grisaille","Impasto"], c:0},
+// – tippelős (10 db) –
+{cat:10,type:'tip',d:1,q:"Hány apostol szerepel Leonardo da Vinci Az utolsó vacsora című freskóján Jézus mellett?",a:12,unit:"fő",note:"A freskó a milánói Santa Maria delle Grazie kolostor falán látható."},
+{cat:10,type:'tip',d:2,q:"Melyik évben égett le a párizsi Notre-Dame székesegyház tetőszerkezete?",a:2019,unit:"",note:"A huszártorony a lángok között omlott össze."},
+{cat:10,type:'tip',d:3,q:"Melyik évben kezdte el festeni Leonardo a Mona Lisát?",a:1503,unit:"",note:""},
+{cat:10,type:'tip',d:3,q:"Melyik évben halt meg Vincent van Gogh?",a:1890,unit:"",note:"37 évesen"},
+{cat:10,type:'tip',d:3,q:"Melyik évben született Leonardo da Vinci?",a:1452,unit:"",note:"A toszkánai Vinci település közelében született."},
+{cat:10,type:'tip',d:3,q:"Melyik évben halt meg Pablo Picasso?",a:1973,unit:"",note:"91 évet élt."},
+{cat:10,type:'tip',d:3,q:"Melyik évben halt meg Michelangelo?",a:1564,unit:"",note:"Rómában hunyt el, 88 évesen."},
+{cat:10,type:'tip',d:4,q:"Melyik évben nyílt meg múzeumként a párizsi Louvre?",a:1793,unit:"",note:"A francia forradalom idején nyitották meg a nagyközönség előtt."},
+{cat:10,type:'tip',d:4,q:"Melyik évben kezdték építeni a barcelonai Sagrada Famíliát?",a:1882,unit:"",note:"Antoni Gaudí egy évvel később vette át a tervezést."},
+{cat:10,type:'tip',d:5,q:"Melyik évben született Rembrandt?",a:1606,unit:"",note:"Leidenben született, egy molnár fiaként."},

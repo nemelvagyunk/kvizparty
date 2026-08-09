@@ -298,7 +298,7 @@ input:focus{border-color:var(--acc);}
 <!-- ================= FŐMENÜ ================= -->
 <div class="screen on" id="s-menu">
   <div class="logo">🎉 KvízParty</div>
-  <div class="tagline">2–6 fős kvízparti · 23 kategória · 1333 kérdés · 5 nehézségi szint · AI-ellenféllel is</div>
+  <div class="tagline">2–6 fős kvízparti · 23 kategória · 1472 kérdés · 5 nehézségi szint · AI-ellenféllel is</div>
   <div class="card">
     <label>Játékosnév</label>
     <input type="text" id="inp-name" maxlength="14" placeholder="Add meg a neved…">
@@ -372,7 +372,7 @@ input:focus{border-color:var(--acc);}
 "use strict";
 // KvízParty kérdésbázis – 1/5 darab (a build fűzi össze; kategóriák: 1–5)
 // ============================================================
-// KvízParty – kérdésbázis (1333 kérdés = 959 „1 a 4-ből” + 374 tippelős, 23 kategória)
+// KvízParty – kérdésbázis (1472 kérdés = 959 „1 a 4-ből” + 513 tippelős, 23 kategória)
 // Nehézség (d): 1=nagyon könnyű, 2=könnyű, 3=közepes, 4=nehéz, 5=extra nehéz
 // mc:  {cat, type, d, q, o:[4 opció], c:0 (a helyes mindig az első, a játék kever)}
 // tip: {cat, type, d, q, a:szám, unit, note}
@@ -613,6 +613,27 @@ const QUESTIONS = [
  o:["Kuncz Aladár","Markovits Rodion","Karácsony Benő","Bánffy Miklós"], c:0},
 {cat:2,type:'mc',d:5,q:"Milyen néven emlegetjük a Gesta Hungarorum ismeretlen szerzőjét, „P. mestert”?",
  o:["Anonymus","Kézai Simon","Thuróczy János","Galeotto Marzio"], c:0},
+// – tippelős (20 db) –
+{cat:2,type:'tip',d:1,q:"Hány éves korában halt meg Petőfi Sándor?",a:26,unit:"év",note:"A segesvári csatában tűnt el, holttestét sosem találták meg."},
+{cat:2,type:'tip',d:1,q:"Hányadik században született Jókai Mór?",a:19,unit:"század",note:"1825-ben született Komáromban."},
+{cat:2,type:'tip',d:2,q:"Melyik évben kapta Kertész Imre az irodalmi Nobel-díjat?",a:2002,unit:"",note:"a Sorstalanságért"},
+{cat:2,type:'tip',d:2,q:"Melyik évben halt meg József Attila?",a:1937,unit:"",note:"Balatonszárszón érte a halál."},
+{cat:2,type:'tip',d:2,q:"Melyik évben halt meg Radnóti Miklós?",a:1944,unit:"",note:"Utolsó verseit a bori noteszbe írta."},
+{cat:2,type:'tip',d:2,q:"Melyik évben született Petőfi Sándor?",a:1823,unit:"",note:"Január 1-jén született."},
+{cat:2,type:'tip',d:3,q:"Melyik évben született Arany János?",a:1817,unit:"",note:"Nagyszalontán"},
+{cat:2,type:'tip',d:3,q:"Hány énekből áll Arany János Toldija?",a:12,unit:"ének",note:""},
+{cat:2,type:'tip',d:3,q:"Melyik évben írta Kölcsey Ferenc a Himnuszt?",a:1823,unit:"",note:"január 22-én fejezte be – ez ma a magyar kultúra napja"},
+{cat:2,type:'tip',d:3,q:"Melyik évben indult a Nyugat folyóirat?",a:1908,unit:"",note:"Első főszerkesztője Ignotus volt."},
+{cat:2,type:'tip',d:3,q:"Hány színből áll Az ember tragédiája?",a:15,unit:"szín",note:"Zárósora: \"Mondottam, ember: küzdj és bízva bízzál!\""},
+{cat:2,type:'tip',d:3,q:"Melyik évben halt meg Arany János?",a:1882,unit:"",note:"Utolsó éveiben a Margitszigeten írta az Őszikék verseit."},
+{cat:2,type:'tip',d:3,q:"Melyik évben halt meg Ady Endre?",a:1919,unit:"",note:"Január végén hunyt el Budapesten."},
+{cat:2,type:'tip',d:3,q:"Melyik évben halt meg Kosztolányi Dezső?",a:1936,unit:"",note:"Hosszú betegség után hunyt el Budapesten."},
+{cat:2,type:'tip',d:4,q:"Melyik évben született Móricz Zsigmond?",a:1879,unit:"",note:"A szatmári Tiszacsécsén született."},
+{cat:2,type:'tip',d:4,q:"Melyik évben jelent meg a Vizsolyi Biblia, az első teljes magyar nyelvű nyomtatott bibliafordítás?",a:1590,unit:"",note:"Károli Gáspár fordítása."},
+{cat:2,type:'tip',d:4,q:"Melyik évben született Szabó Magda?",a:1917,unit:"",note:"Debrecenben született."},
+{cat:2,type:'tip',d:4,q:"Melyik évben halt meg Márai Sándor?",a:1989,unit:"",note:"Emigrációban, a kaliforniai San Diegóban hunyt el."},
+{cat:2,type:'tip',d:5,q:"Melyik évben született Csokonai Vitéz Mihály?",a:1773,unit:"",note:"Debrecenben született, és ott is halt meg."},
+{cat:2,type:'tip',d:5,q:"Melyik évben nyomtatták az első Magyarországon készült könyvet, a Budai krónikát?",a:1473,unit:"",note:"Hess András budai nyomdájában készült."},
 
 // ---------- 3. Magyarország földrajza 🗺️ ----------
 // – 1 a 4-ből (40 db) –
@@ -800,6 +821,27 @@ const QUESTIONS = [
  o:["Kemencét","Révátkelőt","Vásárteret","Mocsarat"], c:0},
 {cat:4,type:'mc',d:5,q:"Mit jelentett a régi magyar nyelvben az „orv” szó, amely az orvvadász szavunkban él tovább?",
  o:["Tolvajt, lopva cselekvőt","Erdei embert","Fegyverest","Idegent"], c:0},
+// – tippelős (20 db) –
+{cat:4,type:'tip',d:1,q:"Hány írásjegyből áll a magyar ábécé „cs” betűje?",a:2,unit:"db",note:"A cs kétjegyű betű: a c és az s írásjegyekből áll."},
+{cat:4,type:'tip',d:1,q:"Hány szótagból áll a „kikelet” szó?",a:3,unit:"db",note:"Ki-ke-let; a kikelet a tavasz régies, költői neve."},
+{cat:4,type:'tip',d:2,q:"Hány betűből áll a magyar ábécé?",a:44,unit:"betű",note:"a kétjegyű és háromjegyű betűkkel együtt"},
+{cat:4,type:'tip',d:2,q:"Hány magánhangzó van a magyar ábécében?",a:14,unit:"",note:"a–á, e–é, i–í, o–ó, ö–ő, u–ú, ü–ű"},
+{cat:4,type:'tip',d:2,q:"Hány millió ember beszéli a magyart anyanyelvként?",a:13,unit:"millió fő",note:"kb. 13 millió világszerte"},
+{cat:4,type:'tip',d:2,q:"Hányféle magánhangzót szabad használni az eszperente nyelvi játékban?",a:1,unit:"db",note:"Csak az „e” magánhangzó megengedett."},
+{cat:4,type:'tip',d:3,q:"Melyik évben kelt a tihanyi apátság alapítólevele, a legkorábbi eredetiben fennmaradt magyar szórványemlékünk?",a:1055,unit:"",note:"I. András adta ki; magyar szavakat is őriz, pl. „feheruuaru rea meneh hodu utu rea”."},
+{cat:4,type:'tip',d:3,q:"Melyik évben jelent meg a magyar helyesírási szabályzat jelenleg érvényes, 12. kiadása?",a:2015,unit:"",note:"Ekkor lett például az „ésszerű” helyett „észszerű” a helyes alak."},
+{cat:4,type:'tip',d:3,q:"Hány többjegyű betű van a magyar ábécében?",a:9,unit:"db",note:"cs, dz, dzs, gy, ly, ny, sz, ty, zs — közülük a dzs háromjegyű."},
+{cat:4,type:'tip',d:3,q:"Hány betűhelyből (karakterből) áll a leghosszabb közismert magyar szó: „megszentségteleníthetetlenségeskedéseitekért”?",a:44,unit:"db",note:"Gyakran emlegetett példa a magyar szóképzés lehetőségeire."},
+{cat:4,type:'tip',d:3,q:"November hányadikán ünnepeljük a magyar nyelv napját?",a:13,unit:"",note:"1844. november 13-án fogadták el a magyart államnyelvvé tevő törvényt."},
+{cat:4,type:'tip',d:3,q:"Melyik évtől hivatalos nyelve a magyar az Európai Uniónak?",a:2004,unit:"",note:"Magyarország uniós csatlakozásával vált hivatalos EU-nyelvvé."},
+{cat:4,type:'tip',d:3,q:"Melyik évben ajánlotta fel Széchenyi István birtokainak egyévi jövedelmét a magyar nyelvet művelő tudós társaság megalapítására?",a:1825,unit:"",note:"Ebből született meg a Magyar Tudományos Akadémia elődje."},
+{cat:4,type:'tip',d:3,q:"Február hányadikán van az anyanyelv nemzetközi napja?",a:21,unit:"",note:"Az UNESCO 1999-ben nyilvánította február 21-ét az anyanyelv nemzetközi napjává."},
+{cat:4,type:'tip',d:4,q:"Melyik évben jelent meg az első teljes egészében magyar nyelvű nyomtatott könyv (Sylvester János Újtestamentuma)?",a:1541,unit:"",note:"Sárvár-Újszigeten nyomtatták"},
+{cat:4,type:'tip',d:4,q:"Melyik évben adta ki a Magyar Tudós Társaság az első akadémiai helyesírási szabályzatot?",a:1832,unit:"",note:"Címe: A magyar helyesírás és szóragasztás főbb szabályai."},
+{cat:4,type:'tip',d:4,q:"Melyik évben fedezték fel a Leuveni kódexben az Ómagyar Mária-siralmat, az első ismert magyar nyelvű verset?",a:1922,unit:"",note:"Gragger Róbert azonosította; a kódex 1982-ben került Magyarországra."},
+{cat:4,type:'tip',d:4,q:"Melyik évben indult a Magyar Nyelvőr című nyelvművelő folyóirat?",a:1872,unit:"",note:"Szarvas Gábor alapította, és máig megjelenik."},
+{cat:4,type:'tip',d:5,q:"Melyik évben született Kazinczy Ferenc, a nyelvújítás vezéralakja?",a:1759,unit:"",note:"Születésnapja, október 27. előtt tisztelegve Széphalmon áll a Magyar Nyelv Múzeuma."},
+{cat:4,type:'tip',d:5,q:"Hány kötetben jelent meg a 19. században a Czuczor–Fogarasi-féle „A magyar nyelv szótára”?",a:6,unit:"db",note:"1862 és 1874 között adták ki; máig a legnagyobb ilyen vállalkozások egyike."},
 
 // ---------- 5. Magyar néphagyomány 🎎 ----------
 // – 1 a 4-ből (40 db) –
@@ -1027,6 +1069,27 @@ const QUESTIONS = [
  o:["Egy francia városról","Egy szőlőfajtáról","Egy szerzetesrendről","Egy folyóról"], c:0},
 {cat:6,type:'mc',d:5,q:"Mi az umami?",
  o:["Az ötödik alapíz","Japán halleves","A szusimester címe","Rizsecet"], c:0},
+// – tippelős (20 db) –
+{cat:6,type:'tip',d:1,q:"Hány centiliteres egy hagyományos „feles” pálinka?",a:5,unit:"cl",note:"A neve a fél deciliterre utal."},
+{cat:6,type:'tip',d:1,q:"Augusztus hányadikán ünnepeljük az új kenyér ünnepét?",a:20,unit:"",note:"Az államalapítás ünnepén hagyomány az új búzából sütött kenyér megszegése."},
+{cat:6,type:'tip',d:2,q:"Hány deciliter bor kerül a nagyfröccsbe?",a:2,unit:"dl",note:"A nagyfröccs 2 dl borból és 1 dl szódából áll."},
+{cat:6,type:'tip',d:2,q:"November hányadikán van Márton-nap, amikor a hagyomány szerint libát illik enni?",a:11,unit:"",note:"„Aki Márton napján libát nem eszik, egész éven át éhezik.”"},
+{cat:6,type:'tip',d:2,q:"Hány milliliteres a szabványos borospalack?",a:750,unit:"ml",note:"Ez a világszerte elterjedt 0,75 literes űrtartalom."},
+{cat:6,type:'tip',d:2,q:"Hányféle klasszikus töltelékkel készül hagyományosan a karácsonyi bejgli?",a:2,unit:"féle",note:"Mákos és diós változatban."},
+{cat:6,type:'tip',d:3,q:"Hány féle gyógynövényből készül az Unicum?",a:40,unit:"féle",note:"a pontos recept titkos"},
+{cat:6,type:'tip',d:3,q:"Legfeljebb hány puttonyos lehetett a tokaji aszú a klasszikus skálán?",a:6,unit:"puttonyos",note:""},
+{cat:6,type:'tip',d:3,q:"Melyik évben került piacra Magyarországon a Túró Rudi?",a:1968,unit:"",note:"A pöttyös csomagolás azóta is védjegye."},
+{cat:6,type:'tip',d:3,q:"Melyik évben vették fel a tokaji történelmi borvidéket az UNESCO világörökségi listájára?",a:2002,unit:"",note:"Kultúrtáj kategóriában nyerte el a címet."},
+{cat:6,type:'tip',d:3,q:"Melyik évben nyitotta meg kapuit a budapesti New York kávéház?",a:1894,unit:"",note:"A legenda szerint Molnár Ferenc a Dunába dobta a kulcsát, hogy sose zárjon be."},
+{cat:6,type:'tip',d:3,q:"Melyik évben alapította Törley József pezsgőpincészetét Budafokon?",a:1882,unit:"",note:"A Törley máig a legismertebb magyar pezsgőmárka."},
+{cat:6,type:'tip',d:3,q:"Melyik évben alapították a herendi porcelánmanufaktúrát?",a:1826,unit:"",note:"A herendi porcelán a hungarikumok egyike."},
+{cat:6,type:'tip',d:3,q:"Melyik évben vette át Gundel Károly a városligeti éttermet, a mai Gundel elődjét?",a:1910,unit:"",note:"Korábban Wampetics-vendéglőként működött."},
+{cat:6,type:'tip',d:4,q:"Melyik évben mutatták be a Dobos-tortát a budapesti Országos Kiállításon?",a:1885,unit:"",note:"Dobos C. József cukrászmester alkotása"},
+{cat:6,type:'tip',d:4,q:"Hány liter bor fér egy hagyományos gönci hordóba?",a:136,unit:"liter",note:"a tokaji aszú klasszikus hordója"},
+{cat:6,type:'tip',d:4,q:"Melyik évben aratott díjnyertes sikert a somlói galuska a brüsszeli világkiállításon?",a:1958,unit:"",note:"A desszert a Gundel étterem munkatársainak ötletéből született."},
+{cat:6,type:'tip',d:4,q:"A világ libamájtermelésének körülbelül hány százalékát adja Magyarország?",a:80,unit:"%",note:"A libamáj (hízott lúdmáj) terén Magyarország világelső; a kacsamájat is beszámítva Franciaország vezet"},
+{cat:6,type:'tip',d:5,q:"Melyik évben jelent meg az első magyar nyelvű nyomtatott szakácskönyv, a „Szakáts mesterségnek könyvetskéje”?",a:1695,unit:"",note:"Misztótfalusi Kis Miklós adta ki Kolozsváron."},
+{cat:6,type:'tip',d:5,q:"Legalább hány gramm természetes cukrot kell literenként tartalmaznia a tokaji eszenciának?",a:450,unit:"g",note:"Ezért inkább sűrű, nektárszerű különlegesség, mint hagyományos bor."},
 
 // ---------- 7. Világtörténelem ⚔️ ----------
 // – 1 a 4-ből (40 db) –
@@ -1339,6 +1402,14 @@ const QUESTIONS = [
  o:["Stendhal","Balzac","Flaubert","Victor Hugo"], c:0},
 {cat:9,type:'mc',d:5,q:"Melyik orosz író műve a Holt lelkek?",
  o:["Nyikolaj Gogol","Fjodor Dosztojevszkij","Ivan Goncsarov","Alekszandr Osztrovszkij"], c:0},
+// – tippelős (7 db) –
+{cat:9,type:'tip',d:1,q:"Hány kötetből áll a Harry Potter-regénysorozat?",a:7,unit:"kötet",note:"Az utolsó kötet 2007-ben jelent meg."},
+{cat:9,type:'tip',d:2,q:"Hány sorból áll egy klasszikus szonett?",a:14,unit:"sor",note:"A formát Petrarca tette világhírűvé."},
+{cat:9,type:'tip',d:2,q:"Hány fő részből áll Dante Isteni színjátéka?",a:3,unit:"rész",note:"Pokol, Purgatórium, Paradicsom."},
+{cat:9,type:'tip',d:3,q:"Melyik évben született William Shakespeare?",a:1564,unit:"",note:"Stratford-upon-Avonban"},
+{cat:9,type:'tip',d:3,q:"Melyik évben halt meg William Shakespeare?",a:1616,unit:"",note:"A hagyomány szerint április 23-án, épp a születésnapján hunyt el."},
+{cat:9,type:'tip',d:4,q:"Hány szonettet írt Shakespeare?",a:154,unit:"db",note:""},
+{cat:9,type:'tip',d:4,q:"Hány énekből áll Homérosz Odüsszeiája?",a:24,unit:"ének",note:"Az Iliász szintén 24 énekből áll."},
 
 // ---------- 10. Képzőművészet 🖼️ ----------
 // – 1 a 4-ből (40 db) –
@@ -1422,6 +1493,17 @@ const QUESTIONS = [
  o:["Marcel Duchamp","Man Ray","Andy Warhol","Joseph Beuys"], c:0},
 {cat:10,type:'mc',d:5,q:"Hogy nevezzük a fény és árnyék erőteljes ellentétére építő festői technikát?",
  o:["Chiaroscuro","Sfumato","Grisaille","Impasto"], c:0},
+// – tippelős (10 db) –
+{cat:10,type:'tip',d:1,q:"Hány apostol szerepel Leonardo da Vinci Az utolsó vacsora című freskóján Jézus mellett?",a:12,unit:"fő",note:"A freskó a milánói Santa Maria delle Grazie kolostor falán látható."},
+{cat:10,type:'tip',d:2,q:"Melyik évben égett le a párizsi Notre-Dame székesegyház tetőszerkezete?",a:2019,unit:"",note:"A huszártorony a lángok között omlott össze."},
+{cat:10,type:'tip',d:3,q:"Melyik évben kezdte el festeni Leonardo a Mona Lisát?",a:1503,unit:"",note:""},
+{cat:10,type:'tip',d:3,q:"Melyik évben halt meg Vincent van Gogh?",a:1890,unit:"",note:"37 évesen"},
+{cat:10,type:'tip',d:3,q:"Melyik évben született Leonardo da Vinci?",a:1452,unit:"",note:"A toszkánai Vinci település közelében született."},
+{cat:10,type:'tip',d:3,q:"Melyik évben halt meg Pablo Picasso?",a:1973,unit:"",note:"91 évet élt."},
+{cat:10,type:'tip',d:3,q:"Melyik évben halt meg Michelangelo?",a:1564,unit:"",note:"Rómában hunyt el, 88 évesen."},
+{cat:10,type:'tip',d:4,q:"Melyik évben nyílt meg múzeumként a párizsi Louvre?",a:1793,unit:"",note:"A francia forradalom idején nyitották meg a nagyközönség előtt."},
+{cat:10,type:'tip',d:4,q:"Melyik évben kezdték építeni a barcelonai Sagrada Famíliát?",a:1882,unit:"",note:"Antoni Gaudí egy évvel később vette át a tervezést."},
+{cat:10,type:'tip',d:5,q:"Melyik évben született Rembrandt?",a:1606,unit:"",note:"Leidenben született, egy molnár fiaként."},
 // KvízParty kérdésbázis – 3/5 darab (kategóriák: 11–15)
 
 // ---------- 11. Filozófia 🧠 ----------
@@ -2301,6 +2383,26 @@ const QUESTIONS = [
  o:["Bonanza Banzai","Napoleon Boulevard","Első Emelet","Rapülők"], c:0},
 {cat:18,type:'mc',d:5,q:"Melyik gitárost nevezték a „magyar Jimi Hendrixnek”?",
  o:["Radics Bélát","Tátrai Tibort","Szűcs Antal Gábort","Som Lajost"], c:0},
+// – tippelős (19 db) –
+{cat:18,type:'tip',d:1,q:"Hány tagja van a Bon-Bon együttesnek?",a:2,unit:"tag",note:"A duót Szolnoki Péter és Török Tamás alkotja."},
+{cat:18,type:'tip',d:1,q:"Hány tagú volt az Illés együttes klasszikus felállása?",a:5,unit:"tag",note:"Illés Lajos, Szörényi Levente, Szörényi Szabolcs, Bródy János és Pásztory Zoltán."},
+{cat:18,type:'tip',d:2,q:"Melyik évben hunyt el Bódi László „Cipő”, a Republic énekese?",a:2013,unit:"",note:"A zenekar frontembere 47 évesen távozott."},
+{cat:18,type:'tip',d:2,q:"Hány tagja van a Tankcsapdának?",a:3,unit:"tag",note:"A debreceni zenekar megalakulása óta trióként működik."},
+{cat:18,type:'tip',d:2,q:"Melyik évben hunyt el Kóbor János, az Omega énekese?",a:2021,unit:"",note:"78 éves korában érte a halál."},
+{cat:18,type:'tip',d:2,q:"Melyik évben hunyt el Balázs Fecó, a Korál énekese?",a:2020,unit:"",note:"A „Homok a szélben” előadója a koronavírus-járvány áldozata lett."},
+{cat:18,type:'tip',d:3,q:"Melyik évben rendezték meg az első Sziget Fesztivált (akkor még Diáksziget néven)?",a:1993,unit:"",note:""},
+{cat:18,type:'tip',d:3,q:"Melyik évben mutatták be az István, a király rockoperát?",a:1983,unit:"",note:"Az ősbemutatót a városligeti Királydombon tartották."},
+{cat:18,type:'tip',d:3,q:"Melyik évben rendezték meg az első Táncdalfesztivált?",a:1966,unit:"",note:"A tévés dalverseny egy csapásra sztárokat teremtett."},
+{cat:18,type:'tip',d:3,q:"Melyik évben alakult meg a Locomotiv GT?",a:1971,unit:"",note:"Presser Gábor, Frenreisz Károly, Barta Tamás és Laux József alapította."},
+{cat:18,type:'tip',d:3,q:"Melyik évben rendezték meg az első Balaton Sound fesztivált?",a:2007,unit:"",note:"A zamárdi fesztivál az elektronikus zene hazai fellegvára lett."},
+{cat:18,type:'tip',d:3,q:"Melyik évben hunyt el Cserháti Zsuzsa?",a:2003,unit:"",note:"Az „Édes kisfiam” énekesnője 55 évesen távozott."},
+{cat:18,type:'tip',d:3,q:"Melyik évben mutatták be A padlás című musicalt a Vígszínházban?",a:1988,unit:"",note:"Presser Gábor és Sztevanovity Dusán közös műve máig műsoron van."},
+{cat:18,type:'tip',d:3,q:"Melyik évben hunyt el Zámbó Jimmy?",a:2001,unit:"",note:"A Király mindössze 42 évesen, tragikus körülmények között hunyt el."},
+{cat:18,type:'tip',d:4,q:"Melyik évben alakult meg az Omega együttes?",a:1962,unit:"",note:""},
+{cat:18,type:'tip',d:4,q:"Hány évesen hunyt el Máté Péter?",a:37,unit:"évesen",note:"1947–1984"},
+{cat:18,type:'tip',d:4,q:"Melyik évben szerepelt először Magyarország az Eurovíziós Dalfesztivál döntőjében?",a:1994,unit:"",note:"Friderika a „Kinek mondjam el vétkeimet?” című dallal a 4. helyen végzett."},
+{cat:18,type:'tip',d:5,q:"Melyik évben adott legendás koncertet a Queen a budapesti Népstadionban?",a:1986,unit:"",note:"Freddie Mercury a „Tavaszi szél vizet áraszt” című népdalt is elénekelte."},
+{cat:18,type:'tip',d:5,q:"Melyik évben mutatták be az Ezek a fiatalok című zenés filmet?",a:1967,unit:"",note:"A filmben az Illés, Koncz Zsuzsa és Zalatnay Sarolta is szerepelt."},
 
 // ---------- 19. Komolyzene 🎻 ----------
 // – 1 a 4-ből (25 db) –
@@ -2354,6 +2456,10 @@ const QUESTIONS = [
  o:["Sába királynője","Az aranyember","A mosoly országa","Hunyadi László"], c:0},
 {cat:19,type:'mc',d:5,q:"Melyik zeneszerző szimfóniáját emlegetjük „Befejezetlenként”?",
  o:["Schubertét","Beethovenét","Mahlerét","Brucknerét"], c:0},
+// – tippelős (3 db) –
+{cat:19,type:'tip',d:2,q:"Hány szimfóniát fejezett be Beethoven?",a:9,unit:"db",note:"Az utolsó zárótétele az Örömóda."},
+{cat:19,type:'tip',d:3,q:"Melyik évben született Wolfgang Amadeus Mozart?",a:1756,unit:"",note:"Salzburgban született, január 27-én."},
+{cat:19,type:'tip',d:4,q:"Melyik évben született Liszt Ferenc?",a:1811,unit:"",note:"Doborjánban"},
 // KvízParty kérdésbázis – 5/5 darab (kategóriák: 20–23)
 
 // ---------- 20. Nemzetközi filmek 🍿 ----------
@@ -2536,6 +2642,27 @@ const QUESTIONS = [
  o:["Reginald Kenneth Dwight","Richard Anthony Hopkins","Raymond George Davies","Ronald Peter Whitfield"], c:0},
 {cat:21,type:'mc',d:5,q:"Mi volt Freddie Mercury születési neve?",
  o:["Farrokh Bulsara","Reza Pahlavi","Ahmed Zanzibari","Faruk Mercur"], c:0},
+// – tippelős (20 db) –
+{cat:21,type:'tip',d:1,q:"Hány tagja volt a Beatlesnek a klasszikus felállásban?",a:4,unit:"tag",note:"John, Paul, George és Ringo."},
+{cat:21,type:'tip',d:1,q:"Hány tagja volt a Spice Girls lánycsapatnak?",a:5,unit:"tag",note:"Posh, Scary, Sporty, Baby és Ginger Spice."},
+{cat:21,type:'tip',d:2,q:"Melyik évben rendezték meg a legendás Woodstock fesztivált?",a:1969,unit:"",note:""},
+{cat:21,type:'tip',d:2,q:"Melyik évben hunyt el Michael Jackson?",a:2009,unit:"",note:"A This Is It koncertsorozatára készült, amikor 50 évesen elhunyt."},
+{cat:21,type:'tip',d:2,q:"Melyik évben gyilkolták meg John Lennont New Yorkban?",a:1980,unit:"",note:"A Dakota-ház előtt érte a végzetes lövés december 8-án."},
+{cat:21,type:'tip',d:2,q:"Melyik évben hunyt el Amy Winehouse?",a:2011,unit:"",note:"A „Back to Black” énekesnője mindössze 27 éves volt."},
+{cat:21,type:'tip',d:3,q:"Melyik évben hunyt el Freddie Mercury?",a:1991,unit:"",note:""},
+{cat:21,type:'tip',d:3,q:"Hány évesen halt meg Elvis Presley?",a:42,unit:"évesen",note:"1935–1977"},
+{cat:21,type:'tip',d:3,q:"Melyik évben nyerte meg az ABBA az Eurovíziót a Waterloo-val?",a:1974,unit:"",note:""},
+{cat:21,type:'tip',d:3,q:"Melyik évben rendezték meg a Live Aid segélykoncertet?",a:1985,unit:"",note:"Londonban és Philadelphiában egyszerre zajlott a gigakoncert."},
+{cat:21,type:'tip',d:3,q:"Hány évesen hunyt el Kurt Cobain, a Nirvana frontembere?",a:27,unit:"év",note:"A hírhedt „27-esek klubjának” tagja lett."},
+{cat:21,type:'tip',d:3,q:"Melyik évben hunyt el Bob Marley?",a:1981,unit:"",note:"A reggae királya mindössze 36 évet élt."},
+{cat:21,type:'tip',d:3,q:"Melyik évben alakult meg a Rolling Stones?",a:1962,unit:"",note:"Első koncertjüket a londoni Marquee Clubban adták."},
+{cat:21,type:'tip',d:3,q:"Melyik évben hunyt el Jimi Hendrix?",a:1970,unit:"",note:"A gitárvirtuóz Londonban vesztette életét."},
+{cat:21,type:'tip',d:4,q:"Melyik évben nyerte meg Céline Dion az Eurovíziós Dalfesztivált Svájc színeiben?",a:1988,unit:"",note:"A „Ne partez pas sans moi” című dallal győzött."},
+{cat:21,type:'tip',d:4,q:"Melyik évben jelent meg a Guns N’ Roses „Appetite for Destruction” című albuma?",a:1987,unit:"",note:"Minden idők egyik legsikeresebb debütáló albuma lett."},
+{cat:21,type:'tip',d:4,q:"Melyik évben alakult meg a Metallica?",a:1981,unit:"",note:"Los Angelesben alapította Lars Ulrich és James Hetfield."},
+{cat:21,type:'tip',d:4,q:"Melyik évben jelent meg Eminem „The Slim Shady LP” című nagylemeze?",a:1999,unit:"",note:"Ez az album hozta meg számára a világhírt."},
+{cat:21,type:'tip',d:5,q:"Melyik évben született Cher?",a:1946,unit:"",note:"A „Believe” című slágerével 52 évesen is listavezető volt."},
+{cat:21,type:'tip',d:5,q:"Hány hétig vezette a Billboard Hot 100-at Lil Nas X „Old Town Road” című dala 2019-ben?",a:19,unit:"hét",note:"Ezzel megdöntötte a lista addigi rekordját."},
 
 // ---------- 22. Mémek és internetkultúra 😂 ----------
 // – 1 a 4-ből (40 db) –
@@ -2619,6 +2746,27 @@ const QUESTIONS = [
  o:["MS Paint","Photoshop","GIMP","Flash"], c:0},
 {cat:22,type:'mc',d:5,q:"Ki alapította a Wikipédiát Larry Sangerrel közösen?",
  o:["Jimmy Wales","Steve Wozniak","Tim O'Reilly","Aaron Swartz"], c:0},
+// – tippelős (20 db) –
+{cat:22,type:'tip',d:1,q:"Hány óra elteltével tűnik el automatikusan egy sztori a közösségi oldalakon?",a:24,unit:"óra",note:"A formátumot a Snapchat vezette be elsőként."},
+{cat:22,type:'tip',d:1,q:"Hány W betű szerepel a webcímek elején álló www rövidítésben?",a:3,unit:"db",note:"World Wide Web, azaz világháló."},
+{cat:22,type:'tip',d:2,q:"Melyik évben töltötték fel az első YouTube-videót (Me at the zoo)?",a:2005,unit:"",note:""},
+{cat:22,type:'tip',d:2,q:"Melyik évben jelent meg a Gangnam Style?",a:2012,unit:"",note:"az első videó, amely elérte az 1 milliárd megtekintést"},
+{cat:22,type:'tip',d:2,q:"Melyik évben indult el a Facebook?",a:2004,unit:"",note:"eredetileg csak harvardi diákoknak"},
+{cat:22,type:'tip',d:2,q:"Hány éves kortól engedélyezett a regisztráció a legtöbb nagy közösségi oldalon?",a:13,unit:"év",note:"A korhatár egy amerikai gyermekvédelmi törvényre vezethető vissza."},
+{cat:22,type:'tip',d:3,q:"Hány másodperc lehetett maximum egy Vine-videó?",a:6,unit:"mp",note:""},
+{cat:22,type:'tip',d:3,q:"Melyik évben indult el a Wikipédia?",a:2001,unit:"",note:"A magyar nyelvű változat 2003-ban követte az angolt."},
+{cat:22,type:'tip',d:3,q:"Melyik évben indult el a Reddit?",a:2005,unit:"",note:"Mára az internet egyik legnagyobb fórumközössége, a mémek egyik fő forrása"},
+{cat:22,type:'tip',d:3,q:"Eredetileg legfeljebb hány karakter hosszú lehetett egy tweet a Twitteren?",a:140,unit:"karakter",note:"A limitet 2017-ben emelték a duplájára."},
+{cat:22,type:'tip',d:3,q:"Melyik évben osztotta meg az internetet „a ruha” (#TheDress), amelyet ki kék-feketének, ki fehér-aranynak látott?",a:2015,unit:"",note:"A ruha a valóságban kék-fekete volt."},
+{cat:22,type:'tip',d:3,q:"Melyik évben indult el az Instagram?",a:2010,unit:"",note:"Az első verzió csak iPhone-ra jelent meg."},
+{cat:22,type:'tip',d:3,q:"Melyik évben jelent meg a WhatsApp üzenetküldő alkalmazás?",a:2009,unit:"",note:"Két korábbi Yahoo-alkalmazott fejlesztette."},
+{cat:22,type:'tip',d:3,q:"Melyik évben indult el a Twitch videójáték-közvetítő platform?",a:2011,unit:"",note:"A Justin.tv játékokra szakosodott ágából nőtt ki."},
+{cat:22,type:'tip',d:4,q:"Melyik évben szűnt meg végleg az iWiW?",a:2014,unit:"",note:"A Facebook térhódítása pecsételte meg a sorsát."},
+{cat:22,type:'tip',d:4,q:"Melyik évben vásárolta fel a Google a YouTube-ot?",a:2006,unit:"",note:"Az ár 1,65 milliárd dollár volt."},
+{cat:22,type:'tip',d:4,q:"Melyik évben indult el a Skype internetes telefonálószolgáltatás?",a:2003,unit:"",note:"Észt fejlesztők munkája nyomán született."},
+{cat:22,type:'tip',d:4,q:"Melyik évben indult el az eBay online aukciós oldal?",a:1995,unit:"",note:"Az egyik első eladott tárgy egy törött lézermutató volt."},
+{cat:22,type:'tip',d:5,q:"Melyik évben javasolta Scott Fahlman professzor a :-) hangulatjel használatát egy egyetemi üzenőfalon?",a:1982,unit:"",note:"A Carnegie Mellon Egyetem fórumán született az első smiley."},
+{cat:22,type:'tip',d:5,q:"Melyik évben küldték el a történelem első e-mailjét?",a:1971,unit:"",note:"Ray Tomlinson küldte, és ő emelte be a címekbe a @ jelet."},
 
 // ---------- 23. Sport ⚽ ----------
 // – 1 a 4-ből (60 db) –

@@ -298,7 +298,7 @@ input:focus{border-color:var(--acc);}
 <!-- ================= FŐMENÜ ================= -->
 <div class="screen on" id="s-menu">
   <div class="logo">🎉 KvízParty</div>
-  <div class="tagline">2–6 fős kvízparti · 23 kategória · 1333 kérdés · 5 nehézségi szint · AI-ellenféllel is</div>
+  <div class="tagline">2–6 fős kvízparti · 23 kategória · 1472 kérdés · 5 nehézségi szint · AI-ellenféllel is</div>
   <div class="card">
     <label>Játékosnév</label>
     <input type="text" id="inp-name" maxlength="14" placeholder="Add meg a neved…">

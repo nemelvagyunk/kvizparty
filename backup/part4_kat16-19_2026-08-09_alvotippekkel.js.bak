@@ -345,6 +345,26 @@
  o:["Bonanza Banzai","Napoleon Boulevard","Első Emelet","Rapülők"], c:0},
 {cat:18,type:'mc',d:5,q:"Melyik gitárost nevezték a „magyar Jimi Hendrixnek”?",
  o:["Radics Bélát","Tátrai Tibort","Szűcs Antal Gábort","Som Lajost"], c:0},
+// – tippelős (19 db) –
+{cat:18,type:'tip',d:1,q:"Hány tagja van a Bon-Bon együttesnek?",a:2,unit:"tag",note:"A duót Szolnoki Péter és Török Tamás alkotja."},
+{cat:18,type:'tip',d:1,q:"Hány tagú volt az Illés együttes klasszikus felállása?",a:5,unit:"tag",note:"Illés Lajos, Szörényi Levente, Szörényi Szabolcs, Bródy János és Pásztory Zoltán."},
+{cat:18,type:'tip',d:2,q:"Melyik évben hunyt el Bódi László „Cipő”, a Republic énekese?",a:2013,unit:"",note:"A zenekar frontembere 47 évesen távozott."},
+{cat:18,type:'tip',d:2,q:"Hány tagja van a Tankcsapdának?",a:3,unit:"tag",note:"A debreceni zenekar megalakulása óta trióként működik."},
+{cat:18,type:'tip',d:2,q:"Melyik évben hunyt el Kóbor János, az Omega énekese?",a:2021,unit:"",note:"78 éves korában érte a halál."},
+{cat:18,type:'tip',d:2,q:"Melyik évben hunyt el Balázs Fecó, a Korál énekese?",a:2020,unit:"",note:"A „Homok a szélben” előadója a koronavírus-járvány áldozata lett."},
+{cat:18,type:'tip',d:3,q:"Melyik évben rendezték meg az első Sziget Fesztivált (akkor még Diáksziget néven)?",a:1993,unit:"",note:""},
+{cat:18,type:'tip',d:3,q:"Melyik évben mutatták be az István, a király rockoperát?",a:1983,unit:"",note:"Az ősbemutatót a városligeti Királydombon tartották."},
+{cat:18,type:'tip',d:3,q:"Melyik évben rendezték meg az első Táncdalfesztivált?",a:1966,unit:"",note:"A tévés dalverseny egy csapásra sztárokat teremtett."},
+{cat:18,type:'tip',d:3,q:"Melyik évben alakult meg a Locomotiv GT?",a:1971,unit:"",note:"Presser Gábor, Frenreisz Károly, Barta Tamás és Laux József alapította."},
+{cat:18,type:'tip',d:3,q:"Melyik évben rendezték meg az első Balaton Sound fesztivált?",a:2007,unit:"",note:"A zamárdi fesztivál az elektronikus zene hazai fellegvára lett."},
+{cat:18,type:'tip',d:3,q:"Melyik évben hunyt el Cserháti Zsuzsa?",a:2003,unit:"",note:"Az „Édes kisfiam” énekesnője 55 évesen távozott."},
+{cat:18,type:'tip',d:3,q:"Melyik évben mutatták be A padlás című musicalt a Vígszínházban?",a:1988,unit:"",note:"Presser Gábor és Sztevanovity Dusán közös műve máig műsoron van."},
+{cat:18,type:'tip',d:3,q:"Melyik évben hunyt el Zámbó Jimmy?",a:2001,unit:"",note:"A Király mindössze 42 évesen, tragikus körülmények között hunyt el."},
+{cat:18,type:'tip',d:4,q:"Melyik évben alakult meg az Omega együttes?",a:1962,unit:"",note:""},
+{cat:18,type:'tip',d:4,q:"Hány évesen hunyt el Máté Péter?",a:37,unit:"évesen",note:"1947–1984"},
+{cat:18,type:'tip',d:4,q:"Melyik évben szerepelt először Magyarország az Eurovíziós Dalfesztivál döntőjében?",a:1994,unit:"",note:"Friderika a „Kinek mondjam el vétkeimet?” című dallal a 4. helyen végzett."},
+{cat:18,type:'tip',d:5,q:"Melyik évben adott legendás koncertet a Queen a budapesti Népstadionban?",a:1986,unit:"",note:"Freddie Mercury a „Tavaszi szél vizet áraszt” című népdalt is elénekelte."},
+{cat:18,type:'tip',d:5,q:"Melyik évben mutatták be az Ezek a fiatalok című zenés filmet?",a:1967,unit:"",note:"A filmben az Illés, Koncz Zsuzsa és Zalatnay Sarolta is szerepelt."},
 
 // ---------- 19. Komolyzene 🎻 ----------
 // – 1 a 4-ből (25 db) –
@@ -398,3 +418,7 @@
  o:["Sába királynője","Az aranyember","A mosoly országa","Hunyadi László"], c:0},
 {cat:19,type:'mc',d:5,q:"Melyik zeneszerző szimfóniáját emlegetjük „Befejezetlenként”?",
  o:["Schubertét","Beethovenét","Mahlerét","Brucknerét"], c:0},
+// – tippelős (3 db) –
+{cat:19,type:'tip',d:2,q:"Hány szimfóniát fejezett be Beethoven?",a:9,unit:"db",note:"Az utolsó zárótétele az Örömóda."},
+{cat:19,type:'tip',d:3,q:"Melyik évben született Wolfgang Amadeus Mozart?",a:1756,unit:"",note:"Salzburgban született, január 27-én."},
+{cat:19,type:'tip',d:4,q:"Melyik évben született Liszt Ferenc?",a:1811,unit:"",note:"Doborjánban"},
