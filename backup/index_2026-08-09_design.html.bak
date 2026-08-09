@@ -33,8 +33,6 @@ input[type=text],input[type=number]{
   background:rgba(0,0,0,.25); color:var(--txt); outline:none;
 }
 input:focus{border-color:var(--acc);}
-input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none; margin:0;}
-input[type=number]{-moz-appearance:textfield;}
 .avatars{display:flex; flex-wrap:wrap; gap:8px; margin:8px 0 4px;}
 .avatars button{font-size:1.5rem; padding:6px 9px; border-radius:12px; border:2px solid transparent; background:rgba(0,0,0,.22); cursor:pointer;}
 .avatars button.sel{border-color:var(--acc); background:rgba(139,92,246,.25);}
@@ -97,11 +95,7 @@ input[type=number]{-moz-appearance:textfield;}
 #g-count{font-weight:800; color:var(--dim);}
 .chip{background:rgba(0,0,0,.3); border:1px solid rgba(255,255,255,.12); padding:6px 12px; border-radius:999px; font-size:.9rem; font-weight:700;}
 #g-timer-num{font-weight:900; font-size:1.25rem; min-width:44px; text-align:right;}
-#g-timer-num.urgent{color:#f87171; animation:urgNum .9s ease-in-out infinite;}
-@keyframes urgNum{0%,100%{transform:scale(1)}50%{transform:scale(1.25); color:#ef4444;}}
 #g-timerbar{height:10px; border-radius:99px; background:rgba(0,0,0,.35); overflow:hidden; margin-bottom:16px;}
-#g-timerbar.urgent{animation:urgBar .9s ease-in-out infinite;}
-@keyframes urgBar{0%,100%{box-shadow:0 0 4px rgba(239,68,68,.2)}50%{box-shadow:0 0 16px rgba(239,68,68,.6)}}
 #g-timerfill{height:100%; width:100%; border-radius:99px; background:linear-gradient(90deg,#22c55e,#fbbf24,#ef4444); transition:none;}
 #g-final{display:none; text-align:center; font-weight:900; letter-spacing:.1em; font-size:.82rem;
   padding:8px 12px; border-radius:12px; margin:0 0 12px;
@@ -133,12 +127,10 @@ input[type=number]{-moz-appearance:textfield;}
 #g-question{font-size:1.35rem; font-weight:800; line-height:1.35; margin:6px 0 18px; min-height:60px;}
 .mcgrid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
 @media (max-width:480px){ .mcgrid{grid-template-columns:1fr;} }
-.mcbtn{position:relative; border:none; border-radius:14px; padding:18px 14px; font-size:1.05rem; font-weight:700; color:#fff; cursor:pointer; text-align:left; line-height:1.3; min-height:clamp(64px,13vh,120px); transition:transform .06s, filter .2s, opacity .3s;}
+.mcbtn{position:relative; border:none; border-radius:14px; padding:18px 14px; font-size:1.05rem; font-weight:700; color:#fff; cursor:pointer; text-align:left; line-height:1.3; min-height:64px; transition:transform .06s, filter .2s, opacity .3s;}
 .mcbtn:active{transform:scale(.97);}
 .mcbtn .shape{margin-right:8px;}
-.mcbtn.c0{background:var(--r1);} .mcbtn.c1{background:var(--r2);} .mcbtn.c3{background:var(--r4);}
-/* a sárga gombon sötét szöveg – fehérrel ~2:1 kontraszt volt, ez így olvasható */
-.mcbtn.c2{background:#eab308; color:#2d2308;}
+.mcbtn.c0{background:var(--r1);} .mcbtn.c1{background:var(--r2);} .mcbtn.c2{background:var(--r3);} .mcbtn.c3{background:var(--r4);}
 .mcbtn.dis{pointer-events:none;}
 .mcbtn.faded{opacity:.25;}
 .mcbtn.sel{outline:3px solid #fff; outline-offset:2px;}
@@ -152,15 +144,6 @@ input[type=number]{-moz-appearance:textfield;}
 .tiprow .btn{width:auto; padding:13px 22px;}
 .tipprize{text-align:center; font-size:.88rem; color:var(--dim); font-weight:600; margin-bottom:2px;}
 .tipprize b{color:#fbbf24; font-weight:900;}
-/* a válaszgombok magassága a képernyőhöz igazodik; mobil 1 oszlopban kisebb lépték */
-@media (max-width:480px){ .mcbtn{min-height:clamp(56px,8.5vh,96px);} }
-/* nagy képernyőn a játéktér kitölti a helyet: szélesebb konténer, nagyobb betű */
-@media (min-width:900px){
-  #s-game{max-width:900px;}
-  #g-question{font-size:1.8rem; min-height:76px;}
-  .mcbtn{font-size:1.18rem;}
-  .tiprow input{font-size:1.7rem;}
-}
 .rrow.second{background:rgba(148,163,184,.16); border:1px solid rgba(203,213,225,.3);}
 .sentmsg{text-align:center; font-weight:800; color:#a7f3d0; font-size:1.1rem; margin-top:8px;}
 #g-status{display:flex; gap:8px; flex-wrap:wrap; margin-top:18px; justify-content:center;}
@@ -202,9 +185,6 @@ input[type=number]{-moz-appearance:textfield;}
 .jokbtn:hover{filter:brightness(1.25);}
 .jokbtn:disabled{opacity:.32; cursor:not-allowed; filter:none;}
 .jokmsg{text-align:center; font-weight:800; color:#fde68a; font-size:.9rem; margin-top:8px;}
-/* egyszeri figyelemfelhívó pulzálás, amikor a joker-sáv először jelenik meg a meccsben */
-.jokbar.intro .jokbtn{animation:jokIntro 1.3s ease .35s 2;}
-@keyframes jokIntro{0%,100%{transform:none; box-shadow:none}50%{transform:scale(1.07); box-shadow:0 0 14px rgba(251,191,36,.5)}}
 .rrow .strk{font-size:.78rem; font-weight:800; color:#fbbf24; white-space:nowrap;}
 .sc .fl{color:#fb923c; font-weight:800; font-size:.8em; margin-left:2px;}
 .strk-line{text-align:center; font-weight:800; font-size:.92rem; margin-top:10px; color:#fbbf24;}
@@ -223,15 +203,11 @@ input[type=number]{-moz-appearance:textfield;}
 .podium{display:flex; align-items:flex-end; justify-content:center; gap:14px; margin:24px 0 20px;}
 .pod{display:flex; flex-direction:column; align-items:center; gap:6px;}
 .pod .em{font-size:2.6rem;}
-.pod .nm{font-weight:800; max-width:140px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.pod .nm{font-weight:800; max-width:110px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .pod .scr{color:#fbbf24; font-weight:900;}
 .pod .base{width:86px; border-radius:12px 12px 0 0; background:linear-gradient(180deg,rgba(255,255,255,.25),rgba(255,255,255,.06)); display:flex; align-items:flex-start; justify-content:center; font-size:1.6rem; font-weight:900; padding-top:6px;}
 .pod.p1 .base{height:110px; background:linear-gradient(180deg,#fbbf24aa,rgba(255,255,255,.06));}
 .pod.p2 .base{height:80px;} .pod.p3 .base{height:58px;}
-/* a dobogó oszlopai sorban nőnek fel: 3. → 2. → 1. */
-.pod .base{animation:podRise .55s ease backwards; transform-origin:bottom;}
-.pod.p3 .base{animation-delay:0s;} .pod.p2 .base{animation-delay:.22s;} .pod.p1 .base{animation-delay:.44s;}
-@keyframes podRise{from{transform:scaleY(0)}to{transform:scaleY(1)}}
 .endlist{margin-top:8px;}
 .end-actions{display:flex; flex-direction:column; gap:10px; margin-top:20px;}
 .awards{margin-top:18px; display:flex; flex-direction:column; gap:7px;}
@@ -3106,7 +3082,6 @@ function showScreen(name){ document.querySelectorAll('.screen').forEach(s=>s.cla
 /* ---------------- globális állapot ---------------- */
 let me = {pid:null, name:'', avatar:AVATARS[0], isHost:false};
 let myJok = {fifty:true, double:true, tip:true};   // a saját joker-készletem (a host validál)
-let jokIntro = true;   // a joker-sáv egyszeri figyelemfelhívó pulzálása meccsenként
 let net = {mode:null, peer:null, conn:null, conns:{}, code:null};  // mode: host | guest | solo
 let host = null;          // csak hostnál / szólónál
 let lastPlayers = [];     // legutóbb ismert játékoslista (render alap)
@@ -3138,12 +3113,6 @@ function resetAll(){
   showScreen('menu');
 }
 function stopTimers(){ cancelAnimationFrame(view.raf); clearInterval(view.cdT); view.cdT=null; }
-/* az utolsó 5 másodperc vizuális jelzése (piros pulzáló szám + izzó sáv) */
-function timerUrgency(rem){
-  const on=rem>0&&rem<=5000;
-  $('g-timer-num').classList.toggle('urgent',on);
-  $('g-timerbar').classList.toggle('urgent',on);
-}
 function clearHostTimers(){
   if(!host) return;
   clearTimeout(host.qDeadlineT); clearTimeout(host.autoNextT); clearTimeout(host.catT);
@@ -4004,7 +3973,7 @@ function handleMsg(m){
     case 'kicked': toast('A host kitett a szobából.'); resetAll(); break;
     case 'hostbye': toast('A host bezárta a szobát.'); resetAll(); break;
     case 'lobby': lastPlayers=m.players; cqState=null; $('cq-wrap').classList.remove('on');
-                  myJok={fifty:true,double:true,tip:true}; jokIntro=true;   // új meccs → új joker-készlet
+                  myJok={fifty:true,double:true,tip:true};   // új meccs → új joker-készlet
                   renderLobby(m); showScreen('lobby'); break;
     case 'jokerack': jokerApply(m); break;
     case 'cq': cqOnState(m.st); break;
@@ -4054,7 +4023,7 @@ function renderLobby(m){
       '</div>')+
       '<div class="setrow"><span class="lab">AI hozzáadása</span><span class="seg" id="seg-ai">'+
         AI_TIERS.map((t,i)=>'<button data-ai="'+i+'" title="'+esc(t.name)+' – közepes kérdésen '+
-          Math.round(t.p[2]*100)+'% eséllyel tudja a választ">+ '+t.avatar+' '+t.short+'</button>').join('')+
+          Math.round(t.p[2]*100)+'% eséllyel tudja a választ">'+t.avatar+' '+t.short+'</button>').join('')+
       '</span></div></div>';
     $('lobby-actions').innerHTML =
 
@@ -4094,7 +4063,7 @@ function renderCatDraw(m){
   const gd=$('g-diff');
   gd.className='chip diffchip diff'+(m.d||3);
   gd.textContent='★'.repeat(m.d||3)+' · '+m.val+' p';
-  $('g-timer-num').textContent=''; $('g-timerfill').style.width='100%'; timerUrgency(0);
+  $('g-timer-num').textContent=''; $('g-timerfill').style.width='100%';
   const gf=$('g-final');
   gf.className=m.final?'on':'';
   gf.textContent=m.final?('🎬 DUPLA PONTOS FINÁLÉ · az utolsó '+(m.finalLen||'')+' kérdés kétszer annyit ér'):'';
@@ -4175,7 +4144,7 @@ function renderQuestion(m){
   if(m.type==='mc'){
     /* joker-sáv: csak a sima MC-blokkban, és csak ha van még kártyám */
     const jokBar=(m.jok&&(myJok.fifty||myJok.double))
-      ? '<div class="jokbar'+(jokIntro?' intro':'')+'">'+
+      ? '<div class="jokbar">'+
         '<button class="jokbtn" id="jok-fifty"'+(myJok.fifty?'':' disabled')+'>✂️ Felezés</button>'+
         '<button class="jokbtn" id="jok-double"'+(myJok.double?'':' disabled')+'>🎲 Dupla vagy semmi</button>'+
         '</div>'
@@ -4198,7 +4167,7 @@ function renderQuestion(m){
       : '';
     /* tipp-joker sáv: a két számjegy-kártyából meccsenként csak egy váltható be */
     const jokBar=(m.jok&&myJok.tip)
-      ? '<div class="jokbar'+(jokIntro?' intro':'')+'">'+
+      ? '<div class="jokbar">'+
         '<button class="jokbtn" id="jok-first">🔢 Első számjegy</button>'+
         '<button class="jokbtn" id="jok-last">🔢 Utolsó számjegy</button>'+
         '</div>'
@@ -4220,7 +4189,6 @@ function renderQuestion(m){
     $('tip-inp').addEventListener('keydown',e=>{ if(e.key==='Enter') submitTip(); });
     setTimeout(()=>{ try{$('tip-inp').focus();}catch(e){} },50);
   }
-  if($('g-answers').querySelector('.jokbar')) jokIntro=false;   // az intro-pulzus csak egyszer fut le
   $('g-status').innerHTML=(m.players||[]).map(p=>
     '<div class="stav" data-pid="'+esc(p.pid)+'"><span class="em">'+p.avatar+'</span><span class="nm">'+esc(p.name)+'</span></div>').join('');
   const deadline=view.qStart+m.dur;
@@ -4229,7 +4197,6 @@ function renderQuestion(m){
     const f=Math.max(0,rem/m.dur);
     $('g-timerfill').style.width=(f*100)+'%';
     $('g-timer-num').textContent=Math.max(0,Math.ceil(rem/1000))+'s';
-    timerUrgency(rem);
     if(rem<=0){ lockAnswers(view.answered?null:'Lejárt az idő! ⏰'); return; }
     view.raf=requestAnimationFrame(tick);
   };
@@ -4312,9 +4279,8 @@ function cqHexPts(cx,cy,r){
   }
   return p;
 }
-/* 3 élet a vár alatt. A logika még NINCS bekötve, ezért a rombuszok CSAK akkor
-   rajzolódnak ki, ha a host `cq` állapota tényleg küld `lives` mezőt – addig a
-   térkép és a fejléc pips nélkül jelenik meg (ne ígérjen a UI olyat, ami nincs). */
+/* 3 élet a vár alatt. A funkció még NINCS bekötve: mindkét fél végig 3 életen áll,
+   a rombuszok egyelőre díszítés – ha lesz élet-logika, csak a `lives` értéket kell átadni. */
 function cqPips(cx,cy,team,lives){
   const S=13, G=33; let s='';
   for(let k=0;k<3;k++){
@@ -4330,7 +4296,7 @@ function cqSvg(domId){
   const st=cqState, my=cqMyTeam(), M=cqM(), P=M.pos, R=M.r+3, CC=M.cc;
   const sel=(st.sub==='pick'&&st.turn===my)?(st.sel||[]):[];
   const vb=M.vb.split(' ').map(Number);
-  const lives=st.lives;   // pips csak akkor, ha van tényleges élet-adat
+  const lives=st.lives||{1:3,2:3};
 
   let s='<svg class="cqsvg" id="'+(domId||'cq-svg')+'" viewBox="'+M.vb+'" xmlns="http://www.w3.org/2000/svg">'+
     '<defs>'+
@@ -4366,7 +4332,7 @@ function cqSvg(domId){
   for(const t of [1,2]){
     g+='<polygon class="cas t'+t+'" points="'+cqHexPts(CC[t][0],CC[t][1],36)+'"/>'+
        '<polygon class="casin t'+t+'" points="'+cqHexPts(CC[t][0],CC[t][1],27)+'"/>'+
-       (lives?cqPips(CC[t][0],CC[t][1]+62,t,lives[t]):'');
+       cqPips(CC[t][0],CC[t][1]+62,t,lives[t]);
   }
   for(let i=0;i<M.n;i++) if(st.owner[i])
     g+='<polygon class="nd t'+st.owner[i]+'" points="'+cqHexPts(P[i][0],P[i][1],R)+'"/>';
@@ -4421,22 +4387,19 @@ function cqBindClicks(){
 function cqRenderMap(){
   if(!cqState) return;
   const st=cqState, my=cqMyTeam();
-  const lives=st.lives;   // pips csak akkor, ha van tényleges élet-adat
+  const lives=st.lives||{1:3,2:3};
   const tm=t=>{
     const p=cqTeamPl(t), act=(st.sub==='pick'&&st.turn===t)||(st.phase==='war'&&st.atkTeam===t&&st.sub!=='pick');
-    let pips='';
-    if(lives){
-      pips='<span class="pips">';
-      for(let k=0;k<3;k++) pips+='<span class="pip"'+(k<lives[t]?'':' style="background:none;box-shadow:none;border-color:#34405e"')+'></span>';
-      pips+='</span>';
-    }
+    let pips='<span class="pips">';
+    for(let k=0;k<3;k++) pips+='<span class="pip"'+(k<lives[t]?'':' style="background:none;box-shadow:none;border-color:#34405e"')+'></span>';
+    pips+='</span>';
     return '<span class="cq-team t'+t+(act?' act':'')+'">'+p.avatar+
            '<span class="nmx">'+esc(p.name)+(t===my?' (te)':'')+'</span>'+pips+
            '<span class="tot">'+st.tot[t]+'</span></span>';
   };
-  const ph = st.phase==='grab' ? ('FÁZIS 1 // FOGLALÁS · '+st.free+' szabad')
-           : st.phase==='war'  ? ('FÁZIS 2 // HARC · '+st.attacks[1]+' ◈ '+st.attacks[2])
-           : 'KÜLDETÉS TELJESÍTVE';
+  const ph = st.phase==='grab' ? ('PHASE 1 // FOGLALÁS · '+st.free+' szabad')
+           : st.phase==='war'  ? ('PHASE 2 // HARC · '+st.attacks[1]+' ◈ '+st.attacks[2])
+           : 'MISSION COMPLETE';
   $('cq-banner').innerHTML='<span class="cq-phase">'+ph+'</span>'+tm(1)+tm(2);
   $('cq-map').innerHTML=cqSvg();
   $('cq-log').innerHTML=st.log?esc(st.log):'';
@@ -4453,7 +4416,7 @@ function cqRenderPickUI(){
     $('g-question').textContent = st.log || 'Egy pillanat…';
     $('g-answers').innerHTML='<div class="cq-hint wait"><span class="spinner"></span>Készülj…</div>';
     $('g-status').innerHTML=''; $('g-reveal').innerHTML='';
-    stopTimers(); $('g-timerfill').style.width='100%'; $('g-timer-num').textContent=''; timerUrgency(0);
+    stopTimers(); $('g-timerfill').style.width='100%'; $('g-timer-num').textContent='';
     return;
   }
   const who=cqTeamPl(st.turn);
@@ -4473,7 +4436,6 @@ function cqBar(ms){
     const rem=ms-(performance.now()-t0), f=Math.max(0,rem/ms);
     $('g-timerfill').style.width=(f*100)+'%';
     $('g-timer-num').textContent=rem>0?(Math.ceil(rem/1000)+'s'):'';
-    timerUrgency(rem);
     if(rem<=0) return;
     view.raf=requestAnimationFrame(tick);
   };
@@ -4490,7 +4452,7 @@ function cqOnState(st){
 function cqRenderReveal(m){
   stopTimers(); view.locked=true;
   cancelAnimationFrame(view.raf);
-  $('g-timerfill').style.width='0%'; $('g-timer-num').textContent=''; timerUrgency(0); $('g-status').innerHTML='';
+  $('g-timerfill').style.width='0%'; $('g-timer-num').textContent=''; $('g-status').innerHTML='';
   if(m.type==='mc'){
     document.querySelectorAll('.mcbtn').forEach((b,i)=>{
       b.classList.add('dis');
@@ -4542,7 +4504,6 @@ function cqRenderEnd(m){
       '<button class="btn ghost" id="btn-exit">🚪 Kilépés a főmenübe</button>';
   if(me.isHost) $('btn-rematch').onclick=hostRematch;
   $('btn-exit').onclick=resetAll;
-  if(win) confettiBurst();     // döntetlennél nincs konfetti
 }
 
 /* Saját sorozat visszajelzése a 4 válaszos kérdések után (klasszikus mód).
@@ -4568,7 +4529,7 @@ function streakBlock(m){
 function renderReveal(m){
   stopTimers(); view.locked=true;
   cancelAnimationFrame(view.raf);
-  $('g-timerfill').style.width='0%'; $('g-timer-num').textContent=''; timerUrgency(0);
+  $('g-timerfill').style.width='0%'; $('g-timer-num').textContent='';
   $('g-status').innerHTML='';
   if(m.type==='mc'){
     document.querySelectorAll('.mcbtn').forEach((b,i)=>{
@@ -4638,40 +4599,6 @@ function renderReveal(m){
   },250);
 }
 
-/* ---- konfetti a végeredményhez (canvas, könyvtár nélkül, ~3,4 mp) ---- */
-let confettiCv=null;
-function confettiBurst(){
-  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if(confettiCv){ try{confettiCv.remove();}catch(e){} confettiCv=null; }
-  const cv=document.createElement('canvas'); confettiCv=cv;
-  cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:98;';
-  cv.width=innerWidth; cv.height=innerHeight;
-  document.body.appendChild(cv);
-  const ctx=cv.getContext('2d');
-  const COLS=['#fbbf24','#f472b6','#8b5cf6','#22c55e','#00e5ff','#ff2e63','#fde68a'];
-  const P=[];
-  for(let i=0;i<140;i++) P.push({
-    x:Math.random()*cv.width, y:-20-Math.random()*cv.height*0.5,
-    w:5+Math.random()*6, h:8+Math.random()*8,
-    vy:1.6+Math.random()*2.6, vx:-1+Math.random()*2,
-    rot:Math.random()*Math.PI, vr:-0.12+Math.random()*0.24,
-    c:COLS[i%COLS.length], sw:Math.random()*Math.PI*2});
-  const t0=performance.now();
-  (function fall(){
-    if(confettiCv!==cv){ cv.remove(); return; }
-    const el=performance.now()-t0;
-    ctx.clearRect(0,0,cv.width,cv.height);
-    ctx.globalAlpha=Math.max(0,Math.min(1,(3400-el)/700));
-    for(const p of P){
-      p.y+=p.vy; p.x+=p.vx+Math.sin(p.sw+=0.06)*0.8; p.rot+=p.vr;
-      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
-      ctx.fillStyle=p.c; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
-    }
-    if(el<3400) requestAnimationFrame(fall);
-    else { cv.remove(); confettiCv=null; }
-  })();
-}
-
 /* ---------------- render: végeredmény ---------------- */
 function renderEnd(m){
   stopTimers();
@@ -4702,7 +4629,6 @@ function renderEnd(m){
       '<button class="btn ghost" id="btn-exit">🚪 Kilépés a főmenübe</button>';
   if(me.isHost) $('btn-rematch').onclick=hostRematch;
   $('btn-exit').onclick=resetAll;
-  confettiBurst();
 }
 
 /* ---------------- indítás ---------------- */
