@@ -186,7 +186,7 @@ input:focus{border-color:var(--acc);}
 .jokbtn:disabled{opacity:.32; cursor:not-allowed; filter:none;}
 .jokmsg{text-align:center; font-weight:800; color:#fde68a; font-size:.9rem; margin-top:8px;}
 .rrow .strk{font-size:.78rem; font-weight:800; color:#fbbf24; white-space:nowrap;}
-.sc .fl{color:#fb923c; font-weight:800; font-size:.8em; margin-left:2px;}
+.sc .fl{color:#fbbf24; font-weight:900; margin-left:2px;}
 .strk-line{text-align:center; font-weight:800; font-size:.92rem; margin-top:10px; color:#fbbf24;}
 .strk-line.broke{color:#fca5a5;}
 .strk-scale{display:flex; gap:3px; justify-content:center; flex-wrap:wrap; margin-top:7px;}
@@ -196,7 +196,7 @@ input:focus{border-color:var(--acc);}
 .strk-scale span.now{background:#fbbf24; color:#3b2a05;}
 .standings{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; justify-content:center;}
 .sc{display:flex; align-items:center; gap:6px; background:rgba(0,0,0,.35); padding:6px 11px; border-radius:999px; font-weight:800; font-size:.9rem; border:1px solid rgba(255,255,255,.1);}
-.sc .s{color:#fbbf24; font-size:1.12em; font-weight:900;}
+.sc .s{color:#fbbf24;}
 .nextzone{display:flex; align-items:center; justify-content:center; gap:14px; margin-top:16px; flex-wrap:wrap;}
 .countdown{color:var(--dim); font-weight:700;}
 /* end */
@@ -2146,7 +2146,7 @@ function renderReveal(m){
   }).join('');
   const standings=m.players.slice().sort((a,b)=>b.score-a.score).map((p,i)=>{
     const med=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-    const fl=(!m.final&&p.streak>=2)?'<span class="fl">'+p.streak+'🔥</span>':'';   // a fináléban nincs sorozat-jelzés; szám ELÖL, hogy ne folyjon egybe a pontszámmal
+    const fl=(!m.final&&p.streak>=2)?'<span class="fl">🔥'+p.streak+'</span>':'';   // a fináléban nincs sorozat-jelzés
     return '<span class="sc">'+med+p.avatar+' '+esc(p.name)+fl+' <span class="s">'+p.score+'</span></span>';
   }).join('');
   const correctLine = m.type==='mc'
@@ -2193,7 +2193,7 @@ function renderEnd(m){
   $('end-list').innerHTML=r.map((p,i)=>
     '<div class="rrow'+(p.pid===me.pid?' me':'')+'"><span class="av">'+p.avatar+'</span>'+
     '<span class="nm">'+(i+1)+'. '+esc(p.name)+(p.isAI?' 🤖':'')+'</span>'+
-    ((p.best||0)>=2?'<span class="strk">'+p.best+'🔥</span>':'')+
+    ((p.best||0)>=2?'<span class="strk">🔥'+p.best+'</span>':'')+
     '<span class="pts">'+p.score+' pont</span></div>').join('')+
     (awards?'<div class="awards"><div class="hd">📊 A meccs díjai</div>'+awards+'</div>':'');
   $('end-actions').innerHTML= me.isHost
