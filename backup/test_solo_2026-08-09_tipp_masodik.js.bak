@@ -229,7 +229,7 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
       __kv.host.players = mkP(n);
       __kv.host.qFinal = false;
       __kv.host.qTipMult = tipMultNow();
-      __kv.host.qSecond  = tipSecondNow();
+      __kv.host.qSecond  = activePlayers() >= TIP_SECOND_FROM;
       captured = []; __kv.host.phase = 'q'; __kv.host.qDur = 25000;
       __kv.host.qData = { type: 'tip', d: 3, a: 100, unit: '', note: '' };   // 3★ = 100 pont
       // P0 a legközelebbi (101), P1 a második (103), a többiek távolabb
@@ -242,7 +242,7 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
     }
     // telitalálat a skálázott értékre jön (+25%), 6 játékosnál: 200 * 1,25 = 250
     __kv.host.players = mkP(6);
-    __kv.host.qFinal = false; __kv.host.qTipMult = tipMultNow(); __kv.host.qSecond = tipSecondNow();
+    __kv.host.qFinal = false; __kv.host.qTipMult = tipMultNow(); __kv.host.qSecond = true;
     captured = []; __kv.host.phase = 'q'; __kv.host.qDur = 25000;
     __kv.host.qData = { type: 'tip', d: 3, a: 100, unit: '', note: '' };
     { const ans = { P0: { value: 100, ms: 900 } }; for (let i = 1; i < 6; i++) ans['P' + i] = { value: 100 + i * 5, ms: 1000 + i * 50 }; __kv.host.answers = ans; }
@@ -250,23 +250,14 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
     out.tipExact6 = captured.find(m => m.t === 'reveal').results.find(r => r.win).pts;
     // dupla pontos finálé: minden érték kétszerese (4 játékos: 150 -> 300, második 100 -> 200)
     __kv.host.players = mkP(4);
-    __kv.host.qFinal = true; __kv.host.qTipMult = tipMultNow(); __kv.host.qSecond = tipSecondNow();
+    __kv.host.qFinal = true; __kv.host.qTipMult = tipMultNow(); __kv.host.qSecond = true;
     captured = []; __kv.host.phase = 'q'; __kv.host.qDur = 25000;
     __kv.host.qData = { type: 'tip', d: 3, a: 100, unit: '', note: '' };
     { const ans = {}; for (let i = 0; i < 4; i++) ans['P' + i] = { value: 101 + i * 2, ms: 1000 + i * 100 }; __kv.host.answers = ans; }
     finishQuestion(); clearTimeout(__kv.host.autoNextT);
     { const rr = captured.find(m => m.t === 'reveal').results;
       out.tipFinal4 = [rr.find(r => r.win).pts, rr.find(r => r.second).pts]; }
-    // 3 fős finálé: a második a duplázott érték 40%-át kapja = a normál érték 0,8-szerese (100 -> 80)
-    __kv.host.players = mkP(3);
-    __kv.host.qFinal = true; __kv.host.qTipMult = tipMultNow(); __kv.host.qSecond = tipSecondNow();
-    captured = []; __kv.host.phase = 'q'; __kv.host.qDur = 25000;
-    __kv.host.qData = { type: 'tip', d: 3, a: 100, unit: '', note: '' };
-    { const ans = {}; for (let i = 0; i < 3; i++) ans['P' + i] = { value: 101 + i * 2, ms: 1000 + i * 100 }; __kv.host.answers = ans; }
-    finishQuestion(); clearTimeout(__kv.host.autoNextT);
-    { const rr = captured.find(m => m.t === 'reveal').results;
-      out.tipFinal3 = [rr.find(r => r.win).pts, rr.find(r => r.second).pts]; }
-    __kv.host.qFinal = false; __kv.host.qTipMult = 1; __kv.host.qSecond = 0;
+    __kv.host.qFinal = false; __kv.host.qTipMult = 1; __kv.host.qSecond = false;
 
     // 7) VÉGI STATISZTIKÁK – díjak
     __kv.host.qFinal = false; __kv.host.stats = {}; __kv.host.qTipMult = 1; __kv.host.qSecond = false;
@@ -354,10 +345,9 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   ck('a tippelős saját, rövidebb listája is egyenletes (szórás < 20%)', logic.tipFair.spread < 20, true);
   console.log('TIPPELŐS ÉRTÉK A MEZŐNY MÉRETE SZERINT (3★ = 100 pont):');
   ck('nyertes értéke 2–6 játékosnál', logic.tipScale, { 2: 100, 3: 125, 4: 150, 5: 175, 6: 200 });
-  ck('második legjobb tipp (3 főnél 40%, 4 játékostól a teljes kérdésérték)', logic.tipSecond, { 2: 0, 3: 40, 4: 100, 5: 100, 6: 100 });
+  ck('második legjobb tipp (csak 4 játékostól, normál kérdésérték)', logic.tipSecond, { 2: 0, 3: 0, 4: 100, 5: 100, 6: 100 });
   ck('telitalálat a skálázott értékre jön (6 fő: 200 + 25% = 250)', logic.tipExact6, 250);
   ck('dupla pontos fináléban minden érték kétszeres (4 fő: 300 / 200)', logic.tipFinal4, [300, 200]);
-  ck('3 fős finálé: a második a normál érték 0,8-szeresét kapja (250 / 80)', logic.tipFinal3, [250, 80]);
   console.log('VÉGI DÍJAK:');
   const aw = Object.fromEntries(logic.awards.map(a => [a.t, a.who + ' / ' + a.v]));
   logic.awards.forEach(a => console.log('    ' + a.t + ' → ' + a.who + ' (' + a.v + ')'));

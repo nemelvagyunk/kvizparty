@@ -402,7 +402,7 @@ input:focus{border-color:var(--acc);}
             <tr><th>Játékosok</th><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td></tr>
             <tr><th>Nyertes szorzója</th><td>1×</td><td>1,25×</td><td>1,5×</td><td>1,75×</td><td>2×</td></tr>
           </table>
-          <p>A <b>második legjobb tipp</b> is érhet pontot: 3 játékosnál a kérdés alapértékének <b>40%-át</b>, négy vagy több játékosnál a <b>teljes alapértéket</b> (a 🎬 fináléban ezek is duplázódnak). A <b>telitalálat +25%</b> bónuszt kap. Holtversenynél a gyorsabb tipp nyer.</p>
+          <p>Négy vagy több játékosnál a <b>második legjobb tipp</b> is ér pontot: a kérdés alapértékét. A <b>telitalálat +25%</b> bónuszt kap. Holtversenynél a gyorsabb tipp nyer.</p>
         </div>
       </details>
 
@@ -2954,14 +2954,11 @@ const MC_SPEED_BONUS = 0.20;   // "1 a 4-ből": max +20% gyorsasági bónusz
 const TIP_EXACT_BONUS = 0.25;  // tippelős: telitalálat +25%
 /* Tippelős kérdésérték a mezőny méretétől függően (klasszikus mód):
    minél többen tippelnek, annál nehezebb a legközelebbinek lenni, ezért többet is ér.
-   A MÁSODIK legjobb tipp is pontot kaphat: 3 játékosnál a normál kérdésérték 40%-át,
-   4 játékostól a teljes normál kérdésértéket. A fináléban V már duplázott, ezért ott
-   a második 3 főnél a normál érték 0,8-szeresét, 4 főtől a kétszeresét kapja. */
+   4 játékostól a MÁSODIK legjobb tipp is pontot kap: pontosan a normál kérdésértéket. */
 const TIP_PLAYER_MULT = {2:1.00, 3:1.25, 4:1.50, 5:1.75, 6:2.00};
-const TIP_SECOND_MULT = {2:0, 3:0.40, 4:1.00, 5:1.00, 6:1.00};
+const TIP_SECOND_FROM = 4;
 function activePlayers(){ return host.players.filter(p=>p.isAI||p.connected!==false).length; }
 function tipMultNow(){ return TIP_PLAYER_MULT[Math.max(2,Math.min(6,activePlayers()))]; }
-function tipSecondNow(){ return TIP_SECOND_MULT[Math.max(2,Math.min(6,activePlayers()))]; }
 /* Sorozat-bónusz (CSAK a klasszikus módban, CSAK a „4 válaszos” kérdéseken).
    Az n-edik egymás utáni helyes válasz szorzója; az első KÉT találatnak nincs
    bónusza, a szorzó a 3.-tól indul, és a 6. után nem nő tovább (plafon 1,90×).
@@ -3347,7 +3344,7 @@ function hostNext(){
   host.phase='catdraw';
   host.qFinal = host.qi >= (host.finalFrom!=null?host.finalFrom:Infinity);
   const bV=QVAL[(q.d||3)-1]*(host.qFinal?2:1);
-  host.qTipMult=tipMultNow(); host.qSecond=tipSecondNow();
+  host.qTipMult=tipMultNow(); host.qSecond=activePlayers()>=TIP_SECOND_FROM;
   /* haladás-infók a sorsolás-képernyőhöz: hátralévők a fináléig + a blokk maradéka */
   const FF=(host.finalFrom!=null&&host.finalFrom<=host.deck.length)?host.finalFrom:host.deck.length;
   const rest=host.qFinal?[]:host.deck.slice(host.qi, FF);
@@ -3358,7 +3355,7 @@ function hostNext(){
     mcLeft:rest.filter(x=>x.type==='mc').length,
     tipLeft:rest.filter(x=>x.type==='tip').length,
     val: q.type==='tip' ? Math.round(bV*host.qTipMult) : bV,
-    val2:(q.type==='tip') ? Math.round(bV*host.qSecond) : 0, players:playersMin()});
+    val2:(q.type==='tip'&&host.qSecond) ? bV : 0, players:playersMin()});
   host.catT=setTimeout(hostAsk, CAT_SPIN_MS+CAT_COUNT_MS);
 }
 function hostAsk(){
@@ -3375,7 +3372,7 @@ function hostAsk(){
              type:q.type, d:q.d, q:q.q, dur, players:playersMin(), last:host.qi===host.deck.length-1,
              final:host.qFinal, finalLen:finalLen(host.deck.length),
              val: q.type==='tip' ? Math.round(baseV*host.qTipMult) : baseV,
-             val2: (q.type==='tip') ? Math.round(baseV*host.qSecond) : 0};
+             val2: (q.type==='tip'&&host.qSecond) ? baseV : 0};
   if(q.type==='mc'){ const order=shuffle([0,1,2,3]); msg.options=order.map(i=>q.o[i]); host.qCorrectIndex=order.indexOf(0); host.qOptions=msg.options; }
   else msg.unit=q.unit||'';
   /* joker a SIMA blokkokban: MC-nél Felezés/Dupla, tippnél a számjegy-kártyák (fináléban semmi) */
@@ -3575,7 +3572,7 @@ function finishQuestion(){
       }
       let pts=0;
       if(isW){ pts=Vwin+(win.dist===0?Math.round(Vwin*TIP_EXACT_BONUS):0); p.score+=pts; }
-      else if(isS){ pts=Math.round(V*host.qSecond); p.score+=pts; }  // 2. legjobb tipp: 3 főnél 40%, 4 főtől a teljes érték
+      else if(isS){ pts=V; p.score+=pts; }             // a második legjobb tipp a normál kérdésértéket kapja
       results.push({pid:p.pid, val:c?c.val:null, ms:c?c.ms:null, dist:c?c.dist:null, pts, win:isW, second:isS,
                     base:pts, mult:1, streak:p.streak||0, jok:(host.qJok&&host.qJok[p.pid])||0});
     }
