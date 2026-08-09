@@ -2961,13 +2961,12 @@ const TIP_SECOND_FROM = 4;
 function activePlayers(){ return host.players.filter(p=>p.isAI||p.connected!==false).length; }
 function tipMultNow(){ return TIP_PLAYER_MULT[Math.max(2,Math.min(6,activePlayers()))]; }
 /* Sorozat-bónusz (CSAK a klasszikus módban, CSAK a „4 válaszos” kérdéseken).
-   Az n-edik egymás utáni helyes válasz szorzója; az első KÉT találatnak nincs
-   bónusza, a szorzó a 3.-tól indul, és a 6. után nem nő tovább (plafon 1,90×).
+   Az n-edik egymás utáni helyes válasz szorzója; a 6. után nem nő tovább (plafon 1,90×).
    A tippelős kérdés semleges: nem folytatja és nem is töri meg a sorozatot,
    és a rajta szerzett pont nem kap szorzót.
    A DUPLA PONTOS FINÁLÉ szintén sorozat-semleges: ott csak a dupla érték él,
    a sorozat se nem épül, se nem szakad, és a szorzó sem érvényesül. */
-const STREAK_MULT = [1.00, 1.00, 1.30, 1.50, 1.70, 1.90];
+const STREAK_MULT = [1.00, 1.10, 1.30, 1.50, 1.70, 1.90];
 /* A pakli felépítése és SORRENDJE (csak klasszikus mód).
    Előbb az összes sima „4 válaszos” kérdés egymás után – így a sorozat jól követhető –,
    utána a sima tippelősök, végül a DUPLA PONTOS blokk (előbb MC, aztán tipp).
@@ -4425,21 +4424,21 @@ function cqRenderEnd(m){
 }
 
 /* Saját sorozat visszajelzése a 4 válaszos kérdések után (klasszikus mód).
-   Csak 2+ hosszú sorozatnál jelenik meg; a fináléban egyáltalán nem. */
+   A fináléban nincs sorozat, ezért ott nem jelenik meg. */
 function streakBlock(m){
   if(m.type!=='mc'||m.final) return '';
   const r=(m.results||[]).find(x=>x.pid===me.pid);
   if(!r) return '';
   if(r.broke) return '<div class="strk-line broke">💔 Megszakadt a '+r.broke+'-es sorozatod</div>';
-  if(r.streak<2) return '';
-  const next=streakMult(r.streak+1), maxed=(next<=r.mult&&r.mult>1);
+  if(!r.streak) return '';
+  const next=streakMult(r.streak+1), maxed=(next<=r.mult);
   const scale=STREAK_MULT.map((v,i)=>{
     const n=i+1, cls=(n===r.streak)?'now':(n<r.streak?'on':'');
     return '<span class="'+cls+'">'+fmtMult(v)+'</span>';
   }).join('');
-  return '<div class="strk-line">🔥 '+r.streak+' helyes válasz egymás után · '+
+  return '<div class="strk-line">🔥 '+r.streak+' helyes egymás után · '+
     (maxed ? 'a szorzód a csúcson: '+fmtMult(r.mult)
-           : 'a következő helyes válasz '+fmtMult(next)+' szorzót ér')+
+           : 'a következő helyes válasz '+fmtMult(next)+'-es')+
     '</div><div class="strk-scale">'+scale+'</div>';
 }
 
@@ -4489,7 +4488,7 @@ function renderReveal(m){
   }).join('');
   const standings=m.players.slice().sort((a,b)=>b.score-a.score).map((p,i)=>{
     const med=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-    const fl=(!m.final&&p.streak>=2)?'<span class="fl">🔥'+p.streak+'</span>':'';   // a fináléban nincs sorozat-jelzés
+    const fl=(p.streak>=2)?'<span class="fl">🔥'+p.streak+'</span>':'';
     return '<span class="sc">'+med+p.avatar+' '+esc(p.name)+fl+' <span class="s">'+p.score+'</span></span>';
   }).join('');
   const correctLine = m.type==='mc'

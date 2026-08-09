@@ -79,9 +79,18 @@ Az egymás utáni helyes válaszok egyre többet érnek:
 
 | Hányadik helyes egymás után | 1. | 2. | 3. | 4. | 5. | 6.+ |
 |---|---|---|---|---|---|---|
-| Szorzó | 1,0× | 1,1× | 1,3× | 1,5× | 1,7× | **1,9×** |
+| Szorzó | 1,0× | 1,0× | 1,3× | 1,5× | 1,7× | **1,9×** |
 
-A szorzó a teljes pontra vonatkozik (alapérték + gyorsasági bónusz), és a 6. találat után nem nő tovább. **A sorozat csak a sima „1 a 4-ből" kérdéseken épül és szakad meg** — a tippelős kérdés semleges: nem folytatja, nem töri meg, és nem kap szorzót. **A dupla pontos fináléban a sorozat „befagy":** ott se nem épül, se nem szakadhat meg, és a szorzó sem érvényesül — a finálé tétje maga a dupla érték. Az eredményhirdetésnél látod a sorozatodat és a következő szorzót, a végeredménynél pedig a meccs leghosszabb sorozatát.
+Az első két találat még nem kap bónuszt — a szorzó a harmadik egymás utáni helyes választól indul, és a 6. találat után nem nő tovább. A szorzó a teljes pontra vonatkozik (alapérték + gyorsasági bónusz). A sorozat-jelzés két találattól jelenik meg az eredményhirdetésnél. **A sorozat csak a sima „1 a 4-ből" kérdéseken épül és szakad meg** — a tippelős kérdés semleges: nem folytatja, nem töri meg, és nem kap szorzót. **A dupla pontos fináléban a sorozat „befagy":** ott se nem épül, se nem szakadhat meg, és a szorzó sem érvényesül — a finálé tétje maga a dupla érték. Az eredményhirdetésnél látod a sorozatodat és a következő szorzót, a végeredménynél pedig a meccs leghosszabb sorozatát.
+
+### 🃏 Jokerek (klasszikus mód)
+
+Minden játékos **két jokerrel** indul meccsenként (az AI-ellenfelek eggyel sem). Mindkettő csak a sima „1 a 4-ből" kérdéseknél vethető be, a válaszod elküldése előtt, és egy körben csak az egyik:
+
+- **✂️ Felezés** – két rossz válasz eltűnik, kettő közül választhatsz. Ha az utolsó sima „1 a 4-ből" kérdésig nem használod el, ott **automatikusan aktiválódik** – ez a kártya sosem vész kárba.
+- **🎲 Dupla vagy semmi** – ha eltalálod, a kérdés **alapértékének dupláját** kapod (sorozat-szorzó és gyorsasági bónusz nélkül); ha elrontod vagy nem válaszolsz, **ugyanennyit levonunk** – a pontszámod akár mínuszba is fordulhat. Ezt a kártyát senki nem aktiválja helyetted: ha nem mered bevetni, elvész.
+
+Az eredményhirdetésnél mindenki látja, ki melyik jokerrel játszott (✂️/🎲).
 
 ### 🎬 A meccs felépítése (klasszikus mód)
 

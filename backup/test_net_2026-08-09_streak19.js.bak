@@ -7,21 +7,10 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast&srv=12
 
 async function answerLoop(page, who, tipValue, cheat) {
   let answered = 0;
-  let jokerUsed = false;
   for (let i = 0; i < 400; i++) {
     if (await page.$('#s-end.on')) return answered;
     const mc = await page.$('.mcbtn:not(.dis)');
     if (mc) {
-      // a vendég az első adandó alkalommal aktiválja a Dupla vagy semmit (joker-protokoll próbája)
-      if (!cheat && !jokerUsed) {
-        const jb = await page.$('#jok-double:not([disabled])');
-        if (jb) {
-          await jb.click().catch(() => {});
-          await page.waitForTimeout(400);
-          const jm = await page.$eval('#jokmsg', e => e.textContent).catch(() => '');
-          if (jm && jm.indexOf('Dupla') >= 0) { jokerUsed = true; console.log('VENDÉG JOKER: dupla vagy semmi visszaigazolva ✔'); }
-        }
-      }
       if (cheat) {
         // host: mindig a helyes gombra kattint (teszt-hook alapján)
         const ci = await page.evaluate(() => window.__kv.host ? window.__kv.host.qCorrectIndex : 0);

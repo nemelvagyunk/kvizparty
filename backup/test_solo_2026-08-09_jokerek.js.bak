@@ -281,11 +281,11 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   const ck = (n, got, want) => { const ok = JSON.stringify(got) === JSON.stringify(want); if (!ok) sf++;
     console.log((ok ? '  ✔ ' : '  ✘ ') + n + '  → ' + JSON.stringify(got) + (ok ? '' : ' (várt: ' + JSON.stringify(want) + ')')); };
   console.log('SOROZAT-BÓNUSZ:');
-  ck('szorzók az 1–12. helyes válaszra (az 1–2. bónusz nélkül, 1,90-es plafon)', logic.multSeq,
-     [1, 1, 1.3, 1.5, 1.7, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9]);
+  ck('szorzók az 1–12. helyes válaszra (1,90-nél plafon)', logic.multSeq,
+     [1, 1.1, 1.3, 1.5, 1.7, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9]);
   ck('pontok ugyanezekre (100 alapérték, gyorsbónusz nélkül)', logic.ptsSeq,
-     [100, 100, 130, 150, 170, 190, 190, 190, 190, 190, 190, 190]);
-  ck('összpont = a szorzók összege × 100 (19,80 × 100)', logic.streakScore, 1980);
+     [100, 110, 130, 150, 170, 190, 190, 190, 190, 190, 190, 190]);
+  ck('összpont = a szorzók összege × 100 (19,90 × 100)', logic.streakScore, 1990);
   ck('tippelős nem töri meg a sorozatot', logic.tipKeepsStreak, 12);
   ck('tippelős pontja nem kap szorzót', logic.tipMult, 1);
   ck('a tippelős után a sorozat folytatódik', [logic.afterTipStreak, logic.afterTipMult], [13, 1.9]);

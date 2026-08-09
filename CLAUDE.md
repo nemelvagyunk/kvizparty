@@ -14,7 +14,7 @@
 ## Jelenlegi állapot (röviden)
 
 **Éles, tesztelt és kész** (120+ ellenőrzés zöld + mindkét hálózati teszt):
-Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő Büntetéssel · sorozat-bónusz · dupla pontos finálé · fix pakli-terv (10/15/20/30) · kategória-sorsolás + 10 mp visszaszámlálás · tipp-érték skálázás a létszámmal · végi díjátadó · külön tipp-zsák a 9 tippelős tétellel · **teljes 23 kategóriás kérdésbázis (2026-08-08): minden kategória elérte a célszámát** · **kategória-szűrő nélküli, letisztult lobby (a szűrő 2026-08-09-én kivezetve)**.
+Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő Büntetéssel · sorozat-bónusz · dupla pontos finálé · fix pakli-terv (10/15/20/30) · kategória-sorsolás + 10 mp visszaszámlálás · tipp-érték skálázás a létszámmal · végi díjátadó · külön tipp-zsák a 9 tippelős tétellel · **teljes 23 kategóriás kérdésbázis (2026-08-08): minden kategória elérte a célszámát** · **kategória-szűrő nélküli, letisztult lobby (a szűrő 2026-08-09-én kivezetve)** · **haladás-infók a sorsolásnál** · **1,9× sorozat-plafon, finálé-semleges sorozat** · **🃏 jokerek: Felezés + Dupla vagy semmi**.
 
 **A kérdésbázis-terv LEZÁRVA** – nincs nyitott írási feladat. A felhasználó döntései az utolsó körből: Komolyzene fele magyar / fele nemzetközi (megvalósítva ~12/13 arányban) · a Gasztronómia nemzetközi része vegyes (konyhák, ételek és alapanyagok).
 
@@ -41,7 +41,8 @@ Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő
   `TIP_SECOND_FROM`=4. A telitalálat **+25%** (`TIP_EXACT_BONUS`) a **skálázott** nyertes-értékre jön (6 fő, 3★: 200 + 25% = 250). A második helyezett fixen a normál kérdésértéket kapja, telitalálat-bónusz nélkül. A dupla pontos fináléban `V` már duplázott, tehát minden érték automatikusan kétszereződik (4 fő: 300 / 200).
   - „Aktív játékos" = `activePlayers()` (AI + kapcsolódott emberek), 2–6 közé klampolva. A szorzót a `hostNext()` rögzíti (`host.qTipMult`, `host.qSecond`), hogy a kiírt és a kiosztott érték biztosan egyezzen akkor is, ha közben kilép valaki.
   - A `question` üzenet `val` (nyertes) és `val2` (2. hely, 0 ha nincs) mezőt kap; a kliens a tipp-mező fölött írja ki. A `reveal` sorokban új `second` mező (🥈 + halvány kiemelés).
-- **Sorozat-bónusz (`STREAK_MULT`) – CSAK a klasszikus módban:** `[1.00, 1.10, 1.30, 1.50, 1.70, 1.90]`, az n-edik egymás utáni helyes válasz szorzója; a 6. után **plafon 1,90×** (2026-08-09-ig 2,50× volt). `streakMult(n)` klampol.
+- **Sorozat-bónusz (`STREAK_MULT`) – CSAK a klasszikus módban:** `[1.00, 1.00, 1.30, 1.50, 1.70, 1.90]`, az n-edik egymás utáni helyes válasz szorzója. **Az első KÉT találatnak nincs bónusza, a szorzó a 3.-tól indul (1,3×), a 6. után plafon 1,90×.** `streakMult(n)` klampol.
+  - **Kijelzés:** a sorozat-sáv (`streakBlock`) csak **2+ hosszú sorozatnál** jelenik meg („🔥 2 helyes válasz egymás után · a következő helyes válasz 1,3× szorzót ér"); 1 találatnál semmi. A fináléban sem a sáv, sem a standings-chipek 🔥 jelzése nem látszik.
   - A sorozat **kizárólag a SIMA 4 válaszos kérdéseken épül és szakad meg**. A **tippelős semleges**: nem folytatja, nem töri meg, és a rajta szerzett pont **nem kap szorzót** (`mult:1`).
   - **A dupla pontos finálé is sorozat-semleges (2026-08-09 óta):** a fináléban a sorozat „befagy" – se nem épül, se nem szakad, és a szorzó sem érvényesül (`mult:1`, `broke:0`). A jutalom ott maga a dupla érték. A `reveal` üzenet `final` mezőt kap; a kliens `streakBlock()`-ja fináléban nem jelenik meg.
   - A szorzó a teljes MC-pontra megy (alapérték + gyorsasági bónusz), kerekítve: `Math.round(base*mult)`.
@@ -87,6 +88,17 @@ Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő
   Azonos szintből a második AI sorszámot kap („Masina Misi 2").
 - **AI-időzítés – „Robot Idő Büntetés":** `AI_THINK` (1–2 mp) múlva **ténylegesen** válaszol, hogy sose kelljen rá várni; a `collectAnswer`-nek viszont `think + AI_LAG` (5–25 mp) időt ad át, a kérdés hosszára vágva. **Következmény:** az AI gyakorlatilag soha nem kap gyorsasági bónuszt és minden holtversenyt elveszít az emberrel szemben – ez szándékos.
 - `scheduleAI(p,q,dur)` és `aiTip(q,tier)` a szintet a `p.ai` alapján kapja (`aiTier(p)`).
+
+## 🃏 Jokerek (csak klasszikus mód, 2026-08-09)
+
+- **Minden EMBER játékos 2 kártyát kap meccsenként: 1 ✂️ Felezés + 1 🎲 Dupla vagy semmi.** Az AI nem kap jokert (a Robot Idő Büntetés analógiájára az ember előnye).
+- **Csak a SIMA „1 a 4-ből" blokkban aktiválható** (`host.qi < host.sMcLen`): tippelősön, a fináléban és hódításban nem. Csak a saját válasz elküldése ELŐTT, és **körönként legfeljebb EGY joker** (a felezés után nincs dupla ugyanabban a körben – és fordítva sem).
+- **✂️ Felezés:** két rossz opció eltűnik (privát üzenetben, csak az aktiválónak). **Ha az utolsó sima MC-ig nem használta el a játékos, ott automatikusan aktiválódik** – a Felezés tehát sosem vész el. Emiatt az utolsó sima körben a dupla már nem választható (a felezés foglalja a kört).
+- **🎲 Dupla vagy semmi:** helyes válasz → **fixen 2× alapérték** (`2*V`, se gyorsasági bónusz, se sorozat-szorzó); rossz VAGY elmaradt válasz → **−alapérték** (a pontszám negatívba mehet). NEM aktiválódik automatikusan – ez az egyetlen kártya, ami kihasználatlanul elveszhet. A sorozat a duplás körben is normálisan épül/szakad, csak a pontozás nem veszi figyelembe.
+- **Protokoll:** vendég→host `{t:'joker', kind:'fifty'|'double', qi}`; host→érintett privát `{t:'jokerack', kind, qi, remove:[i,j]?, auto?}` az új `sendTo(pid,msg)` helperrel (a host saját magának `handleMsg`-en át). A `question` üzenet `jok:true` mezője jelzi, hogy a joker-sáv megjelenhet. Host-oldali validáció: `hostJoker(pid,kind)`; a két törlendő opciót a `jokerRemovePair()` adja (soha nem a helyeset).
+- **Host-állapot:** `host.jokers[pid]={fifty,double}` (a `hostStart()` tölti fel, csak nem-AI), `host.qJok[pid]` (a körben használt joker, `hostAsk()` nullázza), `host.sMcLen` (a `buildDeck()` állítja).
+- **Kliens:** `myJok` készlet (a `lobby` üzenet nullázza – rematch is), `.jokbar`/`.jokbtn`/`.jokmsg` elemek, a `jokerApply()` kezeli az ack-ot. A `reveal` soraiban `jok` mező → ✂️/🎲 ikon mindenkinek látszik; negatív pont piros (`.pts.neg`).
+- **Tesztek:** 8 joker-ellenőrzés a `test_solo.js`-ben (pontozás, tiltások, auto-felezés) + a vendég dupla-aktiválása a `test_net.js`-ben.
 
 ## Végi statisztikák – „A meccs díjai" (csak klasszikus mód)
 

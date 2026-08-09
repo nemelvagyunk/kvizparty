@@ -281,11 +281,11 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   const ck = (n, got, want) => { const ok = JSON.stringify(got) === JSON.stringify(want); if (!ok) sf++;
     console.log((ok ? '  ✔ ' : '  ✘ ') + n + '  → ' + JSON.stringify(got) + (ok ? '' : ' (várt: ' + JSON.stringify(want) + ')')); };
   console.log('SOROZAT-BÓNUSZ:');
-  ck('szorzók az 1–12. helyes válaszra (az 1–2. bónusz nélkül, 1,90-es plafon)', logic.multSeq,
-     [1, 1, 1.3, 1.5, 1.7, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9]);
+  ck('szorzók az 1–12. helyes válaszra (1,90-nél plafon)', logic.multSeq,
+     [1, 1.1, 1.3, 1.5, 1.7, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9, 1.9]);
   ck('pontok ugyanezekre (100 alapérték, gyorsbónusz nélkül)', logic.ptsSeq,
-     [100, 100, 130, 150, 170, 190, 190, 190, 190, 190, 190, 190]);
-  ck('összpont = a szorzók összege × 100 (19,80 × 100)', logic.streakScore, 1980);
+     [100, 110, 130, 150, 170, 190, 190, 190, 190, 190, 190, 190]);
+  ck('összpont = a szorzók összege × 100 (19,90 × 100)', logic.streakScore, 1990);
   ck('tippelős nem töri meg a sorozatot', logic.tipKeepsStreak, 12);
   ck('tippelős pontja nem kap szorzót', logic.tipMult, 1);
   ck('a tippelős után a sorozat folytatódik', [logic.afterTipStreak, logic.afterTipMult], [13, 1.9]);
@@ -398,77 +398,6 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   const chips = await page.$$eval('#seg-opt button', els => els.length).catch(() => 0);
   ck('a lobbyban nincs téma-kapcsoló', chips, 0);
   ck('a settings nem tartalmaz cats mezőt', await page.evaluate(() => 'cats' in __kv.host.settings), false);
-
-  // --- JOKEREK: felezés + dupla vagy semmi (host-oldali logika) ---
-  console.log('JOKEREK:');
-  const jok = await page.evaluate(() => {
-    const out = {};
-    __kv.me = { pid: 'H', isHost: true, name: 'T', avatar: '🦊' };
-    __kv.host = makeHost(true);
-    const mk = pid => ({ pid, name: pid, avatar: '🐼', connected: true, score: 0, streak: 0, best: 0 });
-    __kv.host.players = [mk('A'), mk('B')];
-    const orig = window.hostBroadcast;
-    let captured = []; window.hostBroadcast = m => captured.push(m);
-    __kv.host.sMcLen = 5; __kv.host.finalFrom = 8;
-    const mcQ = () => { __kv.host.phase = 'q'; __kv.host.qDur = 20000; __kv.host.qFinal = false; __kv.host.qi = 0;
-      __kv.host.qData = { type: 'mc', d: 3, q: 'x', o: ['jó', 'r1', 'r2', 'r3'], c: 0, note: '' };
-      __kv.host.qCorrectIndex = 2; __kv.host.qJok = {}; __kv.host.answers = {}; };
-    // 1) dupla + helyes: fixen 2×V, a sorozat-szorzót nem nézi (de a sorozat épül)
-    __kv.host.jokers = { A: { fifty: true, double: true }, B: { fifty: true, double: true } };
-    mcQ(); hostJoker('A', 'double');
-    out.spent = [__kv.host.qJok.A, __kv.host.jokers.A.double];               // ['double', false]
-    __kv.host.players.find(p => p.pid === 'A').streak = 4;                   // 1,7× lenne, de nem számít
-    __kv.host.answers = { A: { value: 2, ms: 1000 }, B: { value: 2, ms: 20000 } };
-    captured = []; finishQuestion(); clearTimeout(__kv.host.autoNextT);
-    let rv = captured.find(m => m.t === 'reveal');
-    out.dblWin = [rv.results.find(r => r.pid === 'A').pts, rv.results.find(r => r.pid === 'A').jok,
-                  rv.results.find(r => r.pid === 'A').streak];               // [200,'double',5]
-    // 2) dupla + rossz: −V, a pontszám negatívba fordulhat
-    const A = __kv.host.players.find(p => p.pid === 'A'); A.score = 0; A.streak = 0;
-    __kv.host.jokers.A.double = true;
-    mcQ(); hostJoker('A', 'double');
-    __kv.host.answers = { A: { value: 0, ms: 5000 }, B: { value: 2, ms: 20000 } };
-    captured = []; finishQuestion(); clearTimeout(__kv.host.autoNextT);
-    rv = captured.find(m => m.t === 'reveal');
-    out.dblLose = [rv.results.find(r => r.pid === 'A').pts, A.score];        // [-100, -100]
-    // 3) elmaradt válasz aktív duplával szintén −V
-    A.score = 0; __kv.host.jokers.A.double = true;
-    mcQ(); hostJoker('A', 'double');
-    __kv.host.answers = { B: { value: 2, ms: 20000 } };
-    captured = []; finishQuestion(); clearTimeout(__kv.host.autoNextT);
-    out.dblTimeout = A.score;                                                // -100
-    // 4) felezés után ugyanabban a körben nincs dupla; a felezés 2 külön rossz opciót ad
-    __kv.host.jokers.A = { fifty: true, double: true };
-    mcQ(); hostJoker('A', 'fifty'); hostJoker('A', 'double');
-    const rm = jokerRemovePair();
-    out.fifty = [__kv.host.qJok.A, __kv.host.jokers.A.double,
-                 rm.length, rm.indexOf(__kv.host.qCorrectIndex) < 0, rm[0] !== rm[1]];  // ['fifty',true,2,true,true]
-    // 5) fináléban és a tipp-blokk után nem aktiválható
-    __kv.host.jokers.A = { fifty: true, double: true };
-    mcQ(); __kv.host.qFinal = true; hostJoker('A', 'double');
-    out.finalBlocked = !__kv.host.qJok.A;
-    mcQ(); __kv.host.qi = 6; hostJoker('A', 'double');                       // sMcLen=5 → a 7. kérdés már nem sima MC
-    out.pastBlocked = !__kv.host.qJok.A;
-    // 6) auto-felezés az utolsó sima MC-n (csak akinek megvan; AI kimarad)
-    __kv.host.players.push({ pid: 'AI1', name: 'R', avatar: '🤖', isAI: true, ai: 0, connected: true, score: 0 });
-    __kv.host.deck = [{ id: 1, cat: 1, type: 'mc', d: 3, q: 'x', o: ['jó', 'r1', 'r2', 'r3'], c: 0 }];
-    __kv.host.qi = 0; __kv.host.sMcLen = 1; __kv.host.finalFrom = 99; __kv.host.qFinal = false; __kv.host.phase = 'catdraw';
-    __kv.host.jokers = { A: { fifty: true, double: true }, B: { fifty: false, double: true } };
-    captured = []; hostAsk(); clearTimeout(__kv.host.qDeadlineT);
-    (__kv.host.aiTimers || []).forEach(clearTimeout);
-    out.auto = [__kv.host.jokers.A.fifty, __kv.host.qJok.A || 0, __kv.host.qJok.B || 0, __kv.host.qJok.AI1 || 0,
-                captured.find(m => m.t === 'question').jok];                 // [false,'fifty',0,0,true]
-    window.hostBroadcast = orig;
-    return out;
-  });
-  ck('a joker elhasználódik és bejegyződik a körre', jok.spent, ['double', false]);
-  ck('dupla + helyes: fixen 2×érték, sorozat-szorzó nélkül (a sorozat attól épül)', jok.dblWin, [200, 'double', 5]);
-  ck('dupla + rossz: −érték, a pontszám negatívba mehet', jok.dblLose, [-100, -100]);
-  ck('dupla + elmaradt válasz: szintén −érték', jok.dblTimeout, -100);
-  ck('felezés után nincs dupla a körben; a felezés 2 külön rossz opciót jelöl', jok.fifty, ['fifty', true, 2, true, true]);
-  ck('fináléban nem aktiválható joker', jok.finalBlocked, true);
-  ck('a sima MC-blokk után nem aktiválható joker', jok.pastBlocked, true);
-  ck('az utolsó sima MC-n automatikusan élesedik a megmaradt Felezés (AI-nak nincs)', jok.auto, [false, 'fifty', 0, 0, true]);
   if (sf) { console.error('❌ ' + sf + ' hibás ellenőrzés'); process.exitCode = 1; }
 
   console.log(errors.length ? 'HIBÁK:\n' + errors.join('\n') : 'KONZOL: tiszta ✔');
