@@ -202,7 +202,8 @@ input:focus{border-color:var(--acc);}
   border-radius:13px; padding:9px 13px;}
 .aw .ic{grid-row:1 / span 2; font-size:1.5rem; line-height:1;}
 .aw.wsub .ic{grid-row:1 / span 3;}
-.aw .sb{grid-column:2 / span 2; font-size:.75rem; color:var(--dim); margin-top:2px; line-height:1.4;}
+.aw .sb{grid-column:2 / span 2; font-size:.75rem; color:var(--dim); margin-top:2px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .aw .ti{grid-column:2 / span 2; font-size:.75rem; font-weight:700; color:var(--dim); line-height:1.3;}
 .aw .wh{font-weight:800; font-size:.96rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .aw .vl{font-weight:900; color:#fbbf24; white-space:nowrap; font-size:.95rem;}
@@ -3223,7 +3224,7 @@ function hostAsk(){
              final:host.qFinal, finalLen:finalLen(host.deck.length),
              val: q.type==='tip' ? Math.round(baseV*host.qTipMult) : baseV,
              val2: (q.type==='tip'&&host.qSecond) ? baseV : 0};
-  if(q.type==='mc'){ const order=shuffle([0,1,2,3]); msg.options=order.map(i=>q.o[i]); host.qCorrectIndex=order.indexOf(0); host.qOptions=msg.options; }
+  if(q.type==='mc'){ const order=shuffle([0,1,2,3]); msg.options=order.map(i=>q.o[i]); host.qCorrectIndex=order.indexOf(0); }
   else msg.unit=q.unit||'';
   /* joker a SIMA blokkokban: MC-nél Felezés/Dupla, tippnél a számjegy-kártyák (fináléban semmi) */
   msg.jok = !host.qFinal && (q.type==='mc' ? host.qi < (host.sMcLen||0) : true);
@@ -3315,20 +3316,7 @@ function buildAwards(){
   add('🎯','Leggyorsabb nyerő tipp',               s=>s.okTip, false, sec);
   add('🔥','Leghosszabb sorozat',        (s,p)=>p.best||null,   true,  v=>v+' egymás után', 2);
   add('💯','Legtöbb telitalálat',        s=>s.exact||null,      true,  v=>v+' db', 1);
-  /* 🤦 leggyorsabb rossz válasz – a kérdés és az elhibázott válasz is látszik */
-  { let fast=null, fWho=[];
-    for(const p of host.players){
-      const s=S[p.pid]||{}; if(s.badMc==null) continue;
-      if(fast===null || s.badMc<fast){ fast=s.badMc; fWho=[p.pid]; }
-      else if(s.badMc===fast) fWho.push(p.pid);
-    }
-    if(fast!==null){
-      const bq=(S[fWho[0]]||{}).badQ||null;
-      out.push({icon:'🤦', title:'Leggyorsabb rossz válasz · Kérdés-válasz', value:sec(fast),
-        sub:bq?('„'+bq.q+'” — válasza: '+bq.wrong+' (a jó: '+bq.correct+')'):null,
-        names:fWho.map(x=>P(x).name), avatars:fWho.map(x=>P(x).avatar)});
-    }
-  }
+  add('🤦','Leggyorsabb rossz válasz · Kérdés-válasz', s=>s.badMc,  false, sec);
   /* 🙈 legnagyobb melléfogás – külön, mert részletező sort is kap */
   let worst=null, wWho=[];
   for(const p of host.players){
@@ -3340,7 +3328,7 @@ function buildAwards(){
     const u=worst.unit?(' '+worst.unit):'';
     out.push({icon:'🙈', title:'Legnagyobb melléfogás · tippelős',
       value:(worst.rel>=10 ? Math.round(worst.rel)+'× mellé' : Math.round(worst.rel*100)+'% mellé'),
-      sub:(worst.q?'„'+worst.q+'” — ':'')+'tippje '+fmtNum(worst.g)+u+', a jó válasz '+fmtNum(worst.a)+u+' volt',
+      sub:fmtNum(worst.g)+u+' – a jó válasz '+fmtNum(worst.a)+u+' volt',
       names:wWho.map(x=>P(x).name), avatars:wWho.map(x=>P(x).avatar)});
   }
   return out;
@@ -3368,16 +3356,7 @@ function finishQuestion(){
         p.streak = ok ? prev+1 : 0;
         p.best = Math.max(p.best||0, p.streak);
       }
-      if(val!=null){
-        const st=statOf(p.pid);
-        if(ok) st.okMc=statMin(st.okMc,ms);
-        else {
-          /* a leggyorsabb rossz válaszhoz a kérdést és az elrontott választ is eltesszük */
-          if(st.badMc==null||ms<st.badMc)
-            st.badQ={q:q.q, wrong:(host.qOptions&&host.qOptions[val])||'?', correct:q.o[0]};
-          st.badMc=statMin(st.badMc,ms);
-        }
-      }
+      if(val!=null){ const st=statOf(p.pid); if(ok) st.okMc=statMin(st.okMc,ms); else st.badMc=statMin(st.badMc,ms); }
       if(ok){
         if(jok==='double'){                           // 🎲 dupla vagy semmi: fixen 2×alapérték, se sorozat-, se gyorsbónusz
           base=2*V; mult=1; pts=2*V;
@@ -3417,7 +3396,7 @@ function finishQuestion(){
           /* Melléfogás RELATÍV hibában – különben a nagy számú kérdések (lakosság, távolság)
              mindig elnyomnák az évszámokat. A kérdés nyertesét nem büntetjük. */
           const rel=c.dist/Math.max(1,Math.abs(q.a));
-          if(!st.miss || rel>st.miss.rel) st.miss={rel, a:q.a, g:c.val, unit:q.unit||'', q:q.q};
+          if(!st.miss || rel>st.miss.rel) st.miss={rel, a:q.a, g:c.val, unit:q.unit||''};
         }
       }
       let pts=0;

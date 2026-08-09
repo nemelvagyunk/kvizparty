@@ -249,12 +249,12 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
     const mcQ = (ans) => {
       captured = []; __kv.host.phase = 'q'; __kv.host.qDur = 20000;
       __kv.host.qData = { type: 'mc', d: 3, q: 'x', o: ['jó', 'r1', 'r2', 'r3'], c: 0, note: '' };
-      __kv.host.qCorrectIndex = 2; __kv.host.qOptions = ['r1', 'r2', 'jó', 'r3']; __kv.host.answers = ans;
+      __kv.host.qCorrectIndex = 2; __kv.host.answers = ans;
       finishQuestion(); clearTimeout(__kv.host.autoNextT);
     };
     const tipQ = (a, ans) => {
       captured = []; __kv.host.phase = 'q'; __kv.host.qDur = 25000;
-      __kv.host.qData = { type: 'tip', d: 3, q: 'Tipp-' + a + '?', a, unit: '', note: '' };
+      __kv.host.qData = { type: 'tip', d: 3, a, unit: '', note: '' };
       __kv.host.answers = ans;
       finishQuestion(); clearTimeout(__kv.host.autoNextT);
     };
@@ -326,13 +326,11 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   logic.awards.forEach(a => console.log('    ' + a.t + ' → ' + a.who + ' (' + a.v + ')'));
   ck('leggyorsabb helyes Kérdés-válasz', aw['Leggyorsabb helyes válasz · Kérdés-válasz'], 'Anna / 1,2 mp');
   ck('leggyorsabb rossz Kérdés-válasz', aw['Leggyorsabb rossz válasz · Kérdés-válasz'], 'Cili / 0,4 mp');
-  ck('a leggyorsabb rossz válasznál a kérdés és az elrontott válasz is látszik',
-     logic.awards.find(a => a.t.indexOf('rossz válasz') >= 0).sub, '„x” — válasza: r1 (a jó: jó)');
   ck('leggyorsabb nyerő tipp', aw['Leggyorsabb nyerő tipp'], 'Bea / 2,0 mp');
   ck('legnagyobb melléfogás relatív hibában (Cili: 50 helyett 900 = 17×)',
      aw['Legnagyobb melléfogás · tippelős'], 'Cili / 17× mellé');
-  ck('a nagy számú kérdés 200 000-es abszolút hibája NEM viszi el a díjat, és a kérdés is látszik',
-     logic.awards.find(a => a.t.indexOf('melléfogás') >= 0).sub, '„Tipp-50?” — tippje 900, a jó válasz 50 volt');
+  ck('a nagy számú kérdés 200 000-es abszolút hibája NEM viszi el a díjat',
+     logic.awards.find(a => a.t.indexOf('melléfogás') >= 0).sub, '900 – a jó válasz 50 volt');
   ck('leghosszabb sorozat', aw['Leghosszabb sorozat'], 'Anna / 2 egymás után');
   ck('legtöbb telitalálat (Bea kétszer is pontosan eltalálta)',
      aw['Legtöbb telitalálat'], 'Bea / 2 db');

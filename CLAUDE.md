@@ -120,7 +120,8 @@ Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő
 - **Fontos részletek:**
   - A telitalálat (`dist===0`) akkor is számít, ha a játékos a holtversenyt elvesztette.
   - A válasz nélkül lejárt idő **nem** kerül be sem a jó, sem a rossz statisztikába (csak tényleges válasz).
-  - A 🙈 díj **relatív** hibában mér (`dist / max(1,|a|)`) – abszolút hibával a nagy számú kérdések (lakosság, távolság) mindig elnyomnák az évszámokat. A kérdés nyertesét nem büntetjük. Ez az egyetlen díj, ami `sub` részletező sort is kap („1 504 nap – a jó válasz 27 nap volt"); a kártya ilyenkor `wsub` osztályt kap.
+  - A 🙈 díj **relatív** hibában mér (`dist / max(1,|a|)`) – abszolút hibával a nagy számú kérdések (lakosság, távolság) mindig elnyomnák az évszámokat. A kérdés nyertesét nem büntetjük.
+  - **`sub` részletező sor (2026-08-09 óta a KÉRDÉSSEL együtt):** a 🙈 díjnál „„<kérdés>” — tippje X, a jó válasz Y volt" (a `st.miss` a `q` szöveget is tárolja), a 🤦 díjnál „„<kérdés>” — válasza: <rossz opció> (a jó: <helyes>)" (a `st.badQ` tárolja; az elrontott opció szövegéhez a `hostAsk()` elteszi a megkevert opciókat `host.qOptions`-ba). Holtversenynél az első birtokos kérdése látszik. A `.aw .sb` CSS tördelhető (nincs ellipsis).
 
 ## Kérdésbázis (1333 kérdés = 959 mc + 374 tip, 23 kategória – KÉSZ)
 
