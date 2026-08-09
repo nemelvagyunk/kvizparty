@@ -28,7 +28,7 @@ Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő
 
 ## Játékszabályok és pontozás
 
-- Két kérdéstípus: **„1 a 4-ből”** (mc) és **tippelős** (tip; számot tippel mindenki, a legközelebbi nyer, **egyenlőségnél a gyorsabb**).
+- Két kérdéstípus: **„1 a 4-ből”** (mc) és **tippelős** (tip; számot tippel mindenki, a legközelebbi nyer, **egyenlőségnél a gyorsabb**). **A felhasználói felületen az mc típus neve MINDENHOL „Kérdés-válasz"** (2026-08-09 óta: lobby-terv, sorsolás, díjak) – az „1 a 4-ből" csak belső/fejlesztői elnevezés.
 - Kérdésérték nehézség szerint (`QVAL`): **1★=75, 2★=90, 3★=100, 4★=110, 5★=125 pont.**
 - MC: minden helyes válaszoló megkapja az értéket + gyorsasági bónusz max. **+20%** (`MC_SPEED_BONUS`).
 - **Tippelős érték a mezőny méretével skálázva (`TIP_PLAYER_MULT`) – csak klasszikus mód:**

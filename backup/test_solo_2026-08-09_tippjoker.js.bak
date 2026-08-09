@@ -324,8 +324,8 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   console.log('VÉGI DÍJAK:');
   const aw = Object.fromEntries(logic.awards.map(a => [a.t, a.who + ' / ' + a.v]));
   logic.awards.forEach(a => console.log('    ' + a.t + ' → ' + a.who + ' (' + a.v + ')'));
-  ck('leggyorsabb helyes Kérdés-válasz', aw['Leggyorsabb helyes válasz · Kérdés-válasz'], 'Anna / 1,2 mp');
-  ck('leggyorsabb rossz Kérdés-válasz', aw['Leggyorsabb rossz válasz · Kérdés-válasz'], 'Cili / 0,4 mp');
+  ck('leggyorsabb helyes 1 a 4-ből', aw['Leggyorsabb helyes válasz · 1 a 4-ből'], 'Anna / 1,2 mp');
+  ck('leggyorsabb rossz 1 a 4-ből', aw['Leggyorsabb rossz válasz · 1 a 4-ből'], 'Cili / 0,4 mp');
   ck('leggyorsabb nyerő tipp', aw['Leggyorsabb nyerő tipp'], 'Bea / 2,0 mp');
   ck('legnagyobb melléfogás relatív hibában (Cili: 50 helyett 900 = 17×)',
      aw['Legnagyobb melléfogás · tippelős'], 'Cili / 17× mellé');

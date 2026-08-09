@@ -43,7 +43,7 @@ A meccs végén a pontszám = **a saját várérték + az összes birtokolt ter�
 
 ## 🎲 Kategória-sorsolás
 
-A klasszikus módban minden kérdés előtt kisorsoljuk a kategóriát: a kijelzőn végigpörögnek a kategóriák, megáll a soron következőn, majd 10 másodperces visszaszámlálás indul, hogy mindenki fel tudjon készülni. Közben látod, hogy „1 a 4-ből" vagy tippelős kérdés jön-e, és mennyit ér. A host a **Mehet, ne várjunk** gombbal átugorhatja a visszaszámlálást.
+A klasszikus módban minden kérdés előtt kisorsoljuk a kategóriát: a kijelzőn végigpörögnek a kategóriák, megáll a soron következőn, majd 10 másodperces visszaszámlálás indul, hogy mindenki fel tudjon készülni. Közben látod, hogy Kérdés-válasz vagy tippelős kérdés jön-e, és mennyit ér. A host a **Mehet, ne várjunk** gombbal átugorhatja a visszaszámlálást.
 
 A sorsolás nem véletlenszerű húzás a kérdéshalmazból: **minden kategória sorra kerül, mielőtt bármelyik megismétlődne.** Így egy 100 kérdéses kategória sem jön gyakrabban, mint egy 50 kérdéses.
 
@@ -53,7 +53,7 @@ Minden kategória mindig játékban van – nincs témaszűrő, a lobby szándé
 
 ## Kérdéstípusok és pontozás
 
-| | „1 a 4-ből” | Tippelős |
+| | Kérdés-válasz | Tippelős |
 |---|---|---|
 | Feladat | 4 opcióból a helyes kiválasztása | szám/évszám tippelése |
 | Ki kap pontot? | minden helyes válaszoló | a legközelebbi tipp (4 fő felett a második is) |
@@ -81,15 +81,15 @@ Az egymás utáni helyes válaszok egyre többet érnek:
 |---|---|---|---|---|---|---|
 | Szorzó | 1,0× | 1,0× | 1,3× | 1,5× | 1,7× | **1,9×** |
 
-Az első két találat még nem kap bónuszt — a szorzó a harmadik egymás utáni helyes választól indul, és a 6. találat után nem nő tovább. A szorzó a teljes pontra vonatkozik (alapérték + gyorsasági bónusz). A sorozat-jelzés két találattól jelenik meg az eredményhirdetésnél. **A sorozat csak a sima „1 a 4-ből" kérdéseken épül és szakad meg** — a tippelős kérdés semleges: nem folytatja, nem töri meg, és nem kap szorzót. **A dupla pontos fináléban a sorozat „befagy":** ott se nem épül, se nem szakadhat meg, és a szorzó sem érvényesül — a finálé tétje maga a dupla érték. Az eredményhirdetésnél látod a sorozatodat és a következő szorzót, a végeredménynél pedig a meccs leghosszabb sorozatát.
+Az első két találat még nem kap bónuszt — a szorzó a harmadik egymás utáni helyes választól indul, és a 6. találat után nem nő tovább. A szorzó a teljes pontra vonatkozik (alapérték + gyorsasági bónusz). A sorozat-jelzés két találattól jelenik meg az eredményhirdetésnél. **A sorozat csak a sima Kérdés-válasz kérdéseken épül és szakad meg** — a tippelős kérdés semleges: nem folytatja, nem töri meg, és nem kap szorzót. **A dupla pontos fináléban a sorozat „befagy":** ott se nem épül, se nem szakadhat meg, és a szorzó sem érvényesül — a finálé tétje maga a dupla érték. Az eredményhirdetésnél látod a sorozatodat és a következő szorzót, a végeredménynél pedig a meccs leghosszabb sorozatát.
 
 ### 🃏 Jokerek (klasszikus mód)
 
 Minden játékos jokerekkel indul (az AI-ellenfelek egy szál nélkül). Mind csak a sima (nem finálé) kérdéseknél vethető be, a válaszod elküldése előtt, és egy körben csak egy:
 
-**A „1 a 4-ből" kérdésekhez** két kártyád van:
+**A Kérdés-válasz kérdésekhez** két kártyád van:
 
-- **✂️ Felezés** – két rossz válasz eltűnik, kettő közül választhatsz. Ha az utolsó sima „1 a 4-ből" kérdésig nem használod el, ott **automatikusan aktiválódik** – ez a kártya sosem vész kárba.
+- **✂️ Felezés** – két rossz válasz eltűnik, kettő közül választhatsz. Ha az utolsó sima Kérdés-válasz kérdésig nem használod el, ott **automatikusan aktiválódik** – ez a kártya sosem vész kárba.
 - **🎲 Dupla vagy semmi** – ha eltalálod, a kérdés **alapértékének dupláját** kapod (sorozat-szorzó és gyorsasági bónusz nélkül); ha elrontod vagy nem válaszolsz, **ugyanennyit levonunk** – a pontszámod akár mínuszba is fordulhat. Ezt a kártyát senki nem aktiválja helyetted: ha nem mered bevetni, elvész.
 
 **A tippelős kérdésekhez** két kártyád van, de **a kettőből meccsenként csak egyet válthatsz be**:
@@ -101,9 +101,9 @@ Az eredményhirdetésnél mindenki látja, ki melyik jokerrel játszott (✂️/
 
 ### 🎬 A meccs felépítése (klasszikus mód)
 
-A kérdések nem véletlenszerű sorrendben jönnek, hanem blokkokban: **előbb az összes „1 a 4-ből", utána a tippelősök, végül a dupla pontos finálé.**
+A kérdések nem véletlenszerű sorrendben jönnek, hanem blokkokban: **előbb az összes Kérdés-válasz, utána a tippelősök, végül a dupla pontos finálé.**
 
-| Kérdésszám | 1 a 4-ből | Tippelős | 🎬 Dupla 1 a 4-ből | 🎬 Dupla tippelős |
+| Kérdésszám | Kérdés-válasz | Tippelős | 🎬 Dupla Kérdés-válasz | 🎬 Dupla tippelős |
 |---|---|---|---|---|
 | **10** | 5 | 3 | 1 | 1 |
 | **15** | 7 | 5 | 2 | 1 |
@@ -120,7 +120,7 @@ A végeredmény alatt hat díj jelenik meg (mindegyik csak akkor, ha van kire ki
 
 ⚡ leggyorsabb helyes válasz · 🎯 leggyorsabb nyerő tipp · 🔥 leghosszabb sorozat · 💯 legtöbb telitalálat · 🤦 leggyorsabb rossz válasz · 🙈 legnagyobb melléfogás tippelősön
 
-A gyorsasági díjak a „1 a 4-ből" és a tippelős kérdésekre külön mennek, és holtverseny esetén több név is szerepelhet.
+A gyorsasági díjak a Kérdés-válasz és a tippelős kérdésekre külön mennek, és holtverseny esetén több név is szerepelhet.
 
 A 🙈 díj **arányos hibát** mér, nem abszolútat — így nem az nyeri, aki egy milliós nagyságrendű kérdésnél tévedett százezret, hanem aki tényleg nagyot: *„1 504 nap – a jó válasz 27 nap volt"*.
 

@@ -3312,11 +3312,11 @@ function buildAwards(){
     if(best!==null) out.push({icon, title, value:fmt(best),
       names:who.map(x=>P(x).name), avatars:who.map(x=>P(x).avatar)});
   };
-  add('⚡','Leggyorsabb helyes válasz · Kérdés-válasz', s=>s.okMc,  false, sec);
+  add('⚡','Leggyorsabb helyes válasz · 1 a 4-ből', s=>s.okMc,  false, sec);
   add('🎯','Leggyorsabb nyerő tipp',               s=>s.okTip, false, sec);
   add('🔥','Leghosszabb sorozat',        (s,p)=>p.best||null,   true,  v=>v+' egymás után', 2);
   add('💯','Legtöbb telitalálat',        s=>s.exact||null,      true,  v=>v+' db', 1);
-  add('🤦','Leggyorsabb rossz válasz · Kérdés-válasz', s=>s.badMc,  false, sec);
+  add('🤦','Leggyorsabb rossz válasz · 1 a 4-ből', s=>s.badMc,  false, sec);
   /* 🙈 legnagyobb melléfogás – külön, mert részletező sort is kap */
   let worst=null, wWho=[];
   for(const p of host.players){
@@ -3840,8 +3840,8 @@ function renderLobby(m){
         Q_COUNTS.map(v=>'<button data-c="'+v+'" class="'+(m.settings.count===v?'sel':'')+'">'+v+'</button>').join('')+
       '</span></div>'+
       '<div class="hint" style="text-align:left;margin:0 0 4px">'+
-        qPlan(m.settings.count).mc+' × Kérdés-válasz → '+qPlan(m.settings.count).tip+' × tippelős → '+
-        '🎬 <b>'+qPlan(m.settings.count).fmc+' dupla Kérdés-válasz + '+qPlan(m.settings.count).ftip+' dupla tippelős</b>'+
+        qPlan(m.settings.count).mc+' × 1 a 4-ből → '+qPlan(m.settings.count).tip+' × tippelős → '+
+        '🎬 <b>'+qPlan(m.settings.count).fmc+' dupla 1 a 4-ből + '+qPlan(m.settings.count).ftip+' dupla tippelős</b>'+
       '</div>')+
       '<div class="setrow"><span class="lab">AI hozzáadása</span><span class="seg" id="seg-ai">'+
         AI_TIERS.map((t,i)=>'<button data-ai="'+i+'" title="'+esc(t.name)+' – közepes kérdésen '+
