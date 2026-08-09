@@ -140,7 +140,7 @@ Három szint közül választhatsz, akárhány kombinációban (max. 6 játékos
 | ⚙️ **Masina Misi** | 45% | Érezhetően gyengébb, a nehezeken már bizonytalan |
 | 🤪 **Félnótás Fábián** | 30% | Még a könnyűeken is bukdácsol, nehéz kérdésen már csak tippel |
 
-Mindhárom találati esélye a kérdés nehézségével csökken, és a butább AI a tippelős kérdéseknél is pontatlanabb.
+Mindhárom találati esélye a kérdés nehézségével csökken, és a butább AI a tippelős kérdéseknél is pontatlanabb. Tippelősben ráadásul mindhárman emberien hibáznak: időnként jó nagyot mellélőnek – Misi a tippjei bő negyedénél, Fábián majdnem felénél követ el komoly baklövést.
 
 **Robot Idő Büntetés:** az AI 1–2 másodpercen belül válaszol, hogy a játék pörögjön és sose kelljen rá várni — cserébe a pontozásnál 5–25 másodperces büntetést kap. Így a gyorsasági bónuszt és a holtversenyeket gyakorlatilag mindig az ember viszi.
 

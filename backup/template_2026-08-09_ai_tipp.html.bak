@@ -437,7 +437,7 @@ input:focus{border-color:var(--acc);}
         <summary>🤖 Milyenek az AI-ellenfelek?</summary>
         <div class="rules-body">
           <p>Három szint közül választhatsz: <b>🤖 Robo Róbert</b> (nagyon okos) · <b>⚙️ Masina Misi</b> (közepes) · <b>🤪 Félnótás Fábián</b> (bájosan kapkodó).</p>
-          <p>A robotok szándékosan lassabbak nálad: sosem kapnak gyorsasági bónuszt, és minden holtversenyt elveszítenek az emberrel szemben – a tudásuk ellen kell nyerni, nem a reflexeik ellen. Tippelősben ők is emberien hibáznak: időnként jó nagyot mellélőnek.</p>
+          <p>A robotok szándékosan lassabbak nálad: sosem kapnak gyorsasági bónuszt, és minden holtversenyt elveszítenek az emberrel szemben – a tudásuk ellen kell nyerni, nem a reflexeik ellen.</p>
         </div>
       </details>
 
@@ -567,17 +567,14 @@ function fmtMult(m){ return m.toFixed(2).replace('.',',').replace(/,?0+$/,'')+'�
 /* ---- AI-szintek ----------------------------------------------------------
    p[]  : találati esély a „4 válaszos” kérdésre nehézségenként (d1..d5)
    spr  : a tippelős szórás szorzója (minél nagyobb, annál pontatlanabb a tipp)
-   blund: „baklövés” esélye a tippelősnél – ilyenkor az AI durván mellélő
-          (mennyiségnél 0,2–4-szeres érték, évszámnál 40–220 év), mert az
-          embernek is vannak ekkora tévesztései.
    A vak tippelés esélye 25%, ezért Fábián a nehéz kérdéseken már alig jobb annál. */
 const AI_TIERS = [
   { key:'robi',   short:'Robi',   name:'Robo Róbert',      avatar:'🤖',
-    p:[0.85,0.72,0.60,0.45,0.32], spr:1.15, blund:0.08 },
+    p:[0.85,0.72,0.60,0.45,0.32], spr:1.00 },
   { key:'misi',   short:'Misi',   name:'Masina Misi',      avatar:'⚙️',
-    p:[0.72,0.58,0.45,0.34,0.27], spr:2.20, blund:0.28 },
+    p:[0.72,0.58,0.45,0.34,0.27], spr:1.60 },
   { key:'fabian', short:'Fábián', name:'Félnótás Fábián',  avatar:'🤪',
-    p:[0.55,0.42,0.30,0.27,0.25], spr:3.00, blund:0.45 },
+    p:[0.55,0.42,0.30,0.27,0.25], spr:2.40 },
 ];
 /* Az AI azonnal válaszol (nem kell rá várni), de kap egy „Robot Idő Büntetést”:
    a pontozásnál/holtversenynél ennyi időt számolunk fel neki. */
@@ -1527,15 +1524,14 @@ function aiTip(q,tier){
   const a=q.a; let g;
   const m=AI_SPREAD[(q.d||3)-1]*((tier&&tier.spr)||1);
   const yearLike=a>=800&&a<=2100&&(!q.unit);
-  const blunder=Math.random()<((tier&&tier.blund)||0);   // „baklövés”: nagy mellélövés, mint az embereknél
   if(yearLike){
-    if(blunder) g=Math.round(a+(Math.random()<0.5?-1:1)*(40+Math.random()*180));
-    else { const sigma=(10+Math.random()*30)*m; g=Math.round(a+gauss()*sigma); }
+    const sigma=(6+Math.random()*22)*m;
+    g=Math.round(a+gauss()*sigma);
     if(a>1800) g=Math.min(g,2026);
     g=Math.max(1,g);
   } else {
-    if(blunder){ const f=(Math.random()<0.5)?(0.2+Math.random()*0.4):(1.8+Math.random()*2.2); g=Math.round(a*f); }
-    else { const rel=(0.12+Math.random()*0.40)*m; g=Math.round(a*(1+gauss()*rel)); }
+    const rel=(0.08+Math.random()*0.25)*m;
+    g=Math.round(a*(1+gauss()*rel));
     if(g===a&&Math.random()<0.5) g+=(Math.random()<0.5?-1:1)*Math.max(1,Math.round(a*0.05));
     g=Math.max(0,g);
   }

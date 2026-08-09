@@ -81,14 +81,15 @@ Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő
   - **Következmény:** a `tip:false` kategóriák meglévő tippelős kérdései nem kerülnek elő. Ez tudatos döntés, nem hiba.
 - **AI-szintek (`AI_TIERS`)** – a lobbyban három gomb (`#seg-ai`), a szint a játékoson `p.ai` (0/1/2):
 
-  | | MC-találat d1..d5 | 3★-on | tippszórás (`spr`) |
-  |---|---|---|---|
-  | 🤖 Robo Róbert | 0.85 0.72 0.60 0.45 0.32 | 60% | 1.00 |
-  | ⚙️ Masina Misi | 0.72 0.58 0.45 0.34 0.27 | 45% | 1.60 |
-  | 🤪 Félnótás Fábián | 0.55 0.42 0.30 0.27 0.25 | 30% | 2.40 |
+  | | MC-találat d1..d5 | 3★-on | tippszórás (`spr`) | baklövés (`blund`) |
+  |---|---|---|---|---|
+  | 🤖 Robo Róbert | 0.85 0.72 0.60 0.45 0.32 | 60% | 1.15 | 8% |
+  | ⚙️ Masina Misi | 0.72 0.58 0.45 0.34 0.27 | 45% | 2.20 | 28% |
+  | 🤪 Félnótás Fábián | 0.55 0.42 0.30 0.27 0.25 | 30% | 3.00 | 45% |
 
   A vak tipp esélye 25%, ezért egyik görbe sem megy ez alá. A tippszórás = `AI_SPREAD[d-1] * tier.spr`.
   Azonos szintből a második AI sorszámot kap („Masina Misi 2").
+  - **A tippelős 2026-08-09-én jelentősen elrontva (felhasználói kérés: az AI ne tippeljen „lézerpontosan").** Az `aiTip()` két rétegű: (1) az alap gauss-szórás megnőtt (évszám: σ=(10+rand·30)·m, mennyiség: rel=(0,12+rand·0,40)·m), és (2) `blund` eséllyel **baklövés** jön – mennyiségnél 0,2–0,6× vagy 1,8–4× érték (40–300% hiba), évszámnál ±40–220 év, csonkolva 2026-ra. `test_ai.js` méri: Misi átlagos hibája ≥40%, és a tippjei ≥15%-ánál ≥50%-ot mellélő.
 - **AI-időzítés – „Robot Idő Büntetés":** `AI_THINK` (1–2 mp) múlva **ténylegesen** válaszol, hogy sose kelljen rá várni; a `collectAnswer`-nek viszont `think + AI_LAG` (5–25 mp) időt ad át, a kérdés hosszára vágva. **Következmény:** az AI gyakorlatilag soha nem kap gyorsasági bónuszt és minden holtversenyt elveszít az emberrel szemben – ez szándékos.
 - `scheduleAI(p,q,dur)` és `aiTip(q,tier)` a szintet a `p.ai` alapján kapja (`aiTier(p)`).
 

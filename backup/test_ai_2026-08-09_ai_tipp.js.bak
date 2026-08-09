@@ -24,7 +24,6 @@ function check(name, ok, detail) {
     names: AI_TIERS.map(t => t.name),
     d3: AI_TIERS.map(t => t.p[2]),
     spr: AI_TIERS.map(t => t.spr),
-    blund: AI_TIERS.map(t => t.blund),
     monotonPerTier: AI_TIERS.every(t => t.p.every((v, i) => i === 0 || v <= t.p[i - 1])),
     aboveChance: AI_TIERS.every(t => t.p.every(v => v >= 0.25)),
     think: AI_THINK, lag: AI_LAG,
@@ -35,7 +34,6 @@ function check(name, ok, detail) {
   check('minden szint görbéje nehézséggel csökken', cfg.monotonPerTier);
   check('egyik szint sem rosszabb a vak tippnél (25%)', cfg.aboveChance);
   check('a butább AI pontatlanabbul tippel', cfg.spr[0] < cfg.spr[1] && cfg.spr[1] < cfg.spr[2], JSON.stringify(cfg.spr));
-  check('a butább AI többször követ el baklövést', cfg.blund[0] < cfg.blund[1] && cfg.blund[1] < cfg.blund[2], JSON.stringify(cfg.blund));
   check('gondolkodási idő 1–2 mp', JSON.stringify(cfg.think) === '[1000,2000]', JSON.stringify(cfg.think));
   check('Robot Idő Büntetés 5–25 mp', JSON.stringify(cfg.lag) === '[5000,25000]', JSON.stringify(cfg.lag));
 
@@ -66,15 +64,11 @@ function check(name, ok, detail) {
         };
       }
     }
-    /* tippelős pontosság: átlagos abszolút hiba + nagy mellélövések (≥50%) aránya szintenként */
-    out.tip = []; out.tipBig = [];
-    AI_TIERS.forEach(t => {
-      let e = 0, big = 0; const a = 1000;
-      for (let i = 0; i < 4000; i++) {
-        const d = Math.abs(aiTip({ type: 'tip', d: 3, a, unit: 'db' }, t) - a);
-        e += d; if (d >= a * 0.5) big++;
-      }
-      out.tip.push(Math.round(e / 4000)); out.tipBig.push(Math.round(100 * big / 4000));
+    /* tippelős pontosság: átlagos abszolút hiba szintenként */
+    out.tip = AI_TIERS.map(t => {
+      let e = 0; const a = 1000;
+      for (let i = 0; i < 4000; i++) e += Math.abs(aiTip({ type: 'tip', d: 3, a, unit: 'db' }, t) - a);
+      return Math.round(e / 4000);
     });
     window.__kv.host = null;
     return out;
@@ -102,9 +96,6 @@ function check(name, ok, detail) {
   console.log('— tippelős pontosság (átlagos hiba, a=1000) —');
   check('Robi pontosabb Misinél, Misi Fábiánnál', res.tip[0] < res.tip[1] && res.tip[1] < res.tip[2],
         'Robi ' + res.tip[0] + ' · Misi ' + res.tip[1] + ' · Fábián ' + res.tip[2]);
-  check('Misi átlagos hibája legalább 40% (nem tippel már „lézerpontosan”)', res.tip[1] >= 400, res.tip[1] + ' átlagos hiba');
-  check('Misi a tippek legalább 15%-ánál nagyot (≥50%) mellélő', res.tipBig[1] >= 15,
-        'nagy mellélövés: Robi ' + res.tipBig[0] + '% · Misi ' + res.tipBig[1] + '% · Fábián ' + res.tipBig[2] + '%');
 
   /* ---- 3) lobby: a három gomb tényleg három különböző AI-t ad hozzá ---- */
   console.log('— lobby —');
