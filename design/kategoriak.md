@@ -8,41 +8,38 @@ A tippelős kérdéseknek saját listájuk van: lásd `tipp_kategoriak.md`.
 **✅ KÉSZ (2026-08-08): az átállás ÉS a kérdésírás is megtörtént** – minden kategória
 elérte a célszámát. A tábla a végleges állapotot rögzíti.
 
-| # | Kategória | Kész | Cél | Kihagyható | Megjegyzés |
-|---|---|---|---|---|---|
-| 1 | 🏰 Magyar történelem | 40 | 40 |  |  |
-| 2 | 📜 Magyar irodalom | 40 | 40 |  |  |
-| 3 | 🗺️ Magyarország földrajza | 40 | 40 |  |  |
-| 4 | 🗣️ Magyar nyelv és szólások | 40 | 40 |  |  |
-| 5 | 🎎 Magyar néphagyomány | 40 | 40 |  |  |
-| 6 | 🌶️ Gasztronómia | 70 | 70 |  | 30 magyar + 40 nemzetközi (vegyes: konyhák, ételek, alapanyagok) |
-| 7 | ⚔️ Világtörténelem | 40 | 40 |  |  |
-| 8 | 🌍 Világföldrajz | 40 | 40 |  |  |
-| 9 | 📖 Világirodalom | 40 | 40 |  |  |
-| 10 | 🖼️ Képzőművészet | 40 | 40 |  |  |
-| 11 | 🧠 Filozófia | 25 | 25 | ✅ | nehéz téma, szándékosan kisebb |
-| 12 | 🦁 Állatok | 40 | 40 |  |  |
-| 13 | 🌿 Növények és kertészet | 40 | 40 |  |  |
-| 14 | ⚗️ Fizika, kémia, biológia | 40 | 40 |  |  |
-| 15 | 💡 Feltalálók és találmányok | 40 | 40 |  |  |
-| 16 | 🚀 Űrkutatás és informatika | 40 | 40 | ✅ |  |
-| 17 | 🎬 Magyar film, tévé és sorozatok | 59 | 40 |  | cél fölött, nem bővítendő |
-| 18 | 🎸 Magyar könnyűzene | 40 | 40 |  |  |
-| 19 | 🎻 Komolyzene | 25 | 25 | ✅ | fele magyar, fele nemzetközi |
-| 20 | 🍿 Nemzetközi filmek | 40 | 40 |  |  |
-| 21 | 🎤 Nemzetközi popzene | 40 | 40 |  |  |
-| 22 | 😂 Mémek és internetkultúra | 40 | 40 | ✅ |  |
-| 23 | ⚽ Sport | 60 | 40 |  | cél fölött, nem bővítendő |
+| # | Kategória | Kész | Cél | Megjegyzés |
+|---|---|---|---|---|
+| 1 | 🏰 Magyar történelem | 40 | 40 |  |
+| 2 | 📜 Magyar irodalom | 40 | 40 |  |
+| 3 | 🗺️ Magyarország földrajza | 40 | 40 |  |
+| 4 | 🗣️ Magyar nyelv és szólások | 40 | 40 |  |
+| 5 | 🎎 Magyar néphagyomány | 40 | 40 |  |
+| 6 | 🌶️ Gasztronómia | 70 | 70 | 30 magyar + 40 nemzetközi (vegyes: konyhák, ételek, alapanyagok) |
+| 7 | ⚔️ Világtörténelem | 40 | 40 |  |
+| 8 | 🌍 Világföldrajz | 40 | 40 |  |
+| 9 | 📖 Világirodalom | 40 | 40 |  |
+| 10 | 🖼️ Képzőművészet | 40 | 40 |  |
+| 11 | 🧠 Filozófia | 25 | 25 | nehéz téma, szándékosan kisebb |
+| 12 | 🦁 Állatok | 40 | 40 |  |
+| 13 | 🌿 Növények és kertészet | 40 | 40 |  |
+| 14 | ⚗️ Fizika, kémia, biológia | 40 | 40 |  |
+| 15 | 💡 Feltalálók és találmányok | 40 | 40 |  |
+| 16 | 🚀 Űrkutatás és informatika | 40 | 40 |  |
+| 17 | 🎬 Magyar film, tévé és sorozatok | 59 | 40 | cél fölött, nem bővítendő |
+| 18 | 🎸 Magyar könnyűzene | 40 | 40 |  |
+| 19 | 🎻 Komolyzene | 25 | 25 | fele magyar, fele nemzetközi |
+| 20 | 🍿 Nemzetközi filmek | 40 | 40 |  |
+| 21 | 🎤 Nemzetközi popzene | 40 | 40 |  |
+| 22 | 😂 Mémek és internetkultúra | 40 | 40 |  |
+| 23 | ⚽ Sport | 60 | 40 | cél fölött, nem bővítendő |
 
 **Összesen: 959 négy válaszos kérdés – a terv teljesítve (2026-08-08).**
 
-## Kihagyható témák
+## Témaszűrő
 
-A lobbyban csak ez a négy kategória kapcsolható ki (`opt:true` az adatfájlban):
-
-🧠 Filozófia · 🚀 Űrkutatás és informatika · 🎻 Komolyzene · 😂 Mémek és internetkultúra
-
-A szűrő **csak a négy válaszos kérdésekre hat** – a tippelős lista mindig teljes.
+**Nincs** – a kategória-szűrőt 2026-08-09-én a felhasználó kérésére kivezettük, minden
+téma mindig játékban van. A `Kihagyható` fogalom és az `opt` jelző megszűnt.
 
 ## Kérdésformátum
 

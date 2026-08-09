@@ -23,7 +23,7 @@ készült az átálláskor, minden tétel elérte a 40-es célszámot.
 
 ## Szabályok
 
-- A **kategória-szűrő a tippelős kérdésekre nem hat** – ez a lista mindig teljes, így sosem fogy ki a tipp.
+- Témaszűrő nincs a játékban – mind a 9 tétel mindig sorsolásban van.
 - A sorsolásban a fenti **tételek** szerepelnek egyenlő eséllyel: a magyar és a világföldrajz
   egy tétel, a két filmes kategória egy tétel, a feltalálók és az űrkutatás egy tétel.
 - A négy válaszos blokk után mindig tippelős blokk jön (lásd a pakli felépítését).

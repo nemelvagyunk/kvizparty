@@ -47,13 +47,9 @@ A klasszikus módban minden kérdés előtt kisorsoljuk a kategóriát: a kijelz
 
 A sorsolás nem véletlenszerű húzás a kérdéshalmazból: **minden kategória sorra kerül, mielőtt bármelyik megismétlődne.** Így egy 100 kérdéses kategória sem jön gyakrabban, mint egy 50 kérdéses.
 
-### Kategória-szűrő
+### Témák
 
-A lobbyban négy témát lehet kikapcsolni, ha a társasághoz nem illik:
-
-🧠 **Filozófia** · 🚀 **Űrkutatás és informatika** · 🎻 **Komolyzene** · 😂 **Mémek és internetkultúra**
-
-A többi kategória mindig játékban van. A szűrő **csak a „1 a 4-ből" kérdésekre hat** — a tippelős kérdéseknek saját, rövidebb listájuk van (magyar történelem, világtörténelem, földrajz, fizika-kémia-biológia, állatok, növények, feltalálók, filmek, sport), és azokból mindig jön kérdés.
+Minden kategória mindig játékban van – nincs témaszűrő, a lobby szándékosan egyszerű. A tippelős kérdéseknek saját, rövidebb listájuk van (magyar történelem, világtörténelem, földrajz, fizika-kémia-biológia, állatok, növények, feltalálók, filmek, sport), és azokból mindig jön kérdés.
 
 ## Kérdéstípusok és pontozás
 
@@ -114,7 +110,7 @@ A 🙈 díj **arányos hibát** mér, nem abszolútat — így nem az nyeri, aki
 
 ## Kérdésbázis
 
-**1472 kérdés, 23 kategória**, négy pillérre építve: magyar és nemzetközi általános műveltség, magyar és nemzetközi popkultúra – a családi játszhatóság jegyében. Minden kategória feltöltve (általában 40 kérdés, a Gasztronómia 70, a szándékosan kisebb Filozófia és Komolyzene 25-25), a tippelős kérdések kilenc témaköre mind legalább 40 kérdéssel. A lobbyban a kihagyható témákra és nehézségre is szűrhetsz.
+**1472 kérdés, 23 kategória**, négy pillérre építve: magyar és nemzetközi általános műveltség, magyar és nemzetközi popkultúra – a családi játszhatóság jegyében. Minden kategória feltöltve (általában 40 kérdés, a Gasztronómia 70, a szándékosan kisebb Filozófia és Komolyzene 25-25), a tippelős kérdések kilenc témaköre mind legalább 40 kérdéssel. A lobbyban nehézségre szűrhetsz.
 
 ## AI-ellenfelek
 

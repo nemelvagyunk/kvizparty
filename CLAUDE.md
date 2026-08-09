@@ -14,7 +14,7 @@
 ## Jelenlegi állapot (röviden)
 
 **Éles, tesztelt és kész** (120+ ellenőrzés zöld + mindkét hálózati teszt):
-Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő Büntetéssel · sorozat-bónusz · dupla pontos finálé · fix pakli-terv (10/15/20/30) · kategória-sorsolás + 10 mp visszaszámlálás · tipp-érték skálázás a létszámmal · végi díjátadó · egyszerűsített kategória-szűrő külön tipp-zsákkal · **teljes 23 kategóriás kérdésbázis (2026-08-08): minden kategória elérte a célszámát, mind a 9 tippelős tétel feltöltve**.
+Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő Büntetéssel · sorozat-bónusz · dupla pontos finálé · fix pakli-terv (10/15/20/30) · kategória-sorsolás + 10 mp visszaszámlálás · tipp-érték skálázás a létszámmal · végi díjátadó · külön tipp-zsák a 9 tippelős tétellel · **teljes 23 kategóriás kérdésbázis (2026-08-08): minden kategória elérte a célszámát** · **kategória-szűrő nélküli, letisztult lobby (a szűrő 2026-08-09-én kivezetve)**.
 
 **A kérdésbázis-terv LEZÁRVA** – nincs nyitott írási feladat. A felhasználó döntései az utolsó körből: Komolyzene fele magyar / fele nemzetközi (megvalósítva ~12/13 arányban) · a Gasztronómia nemzetközi része vegyes (konyhák, ételek és alapanyagok).
 
@@ -65,12 +65,11 @@ Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő
 - Időzítők: MC 20 mp, tip 25 mp; `#fast` hash-sel rövidítve (teszthez).
 - **Kategória-sorsolás minden kérdés előtt (klasszikus mód).** `hostNext()` már nem küld kérdést: `phase='catdraw'`, kimegy a `{t:'catdraw', …}` üzenet (kategória, típus, pontérték, finálé-jelzés), majd `CAT_SPIN_MS` (1,8 mp pörgetés) + `CAT_COUNT_MS` (10 mp visszaszámlálás) után a `hostAsk()` küldi a `question`-t. A host a „▶ Mehet, ne várjunk" gombbal bármikor előrehozhatja (`hostAsk()` közvetlenül). Kliens: `renderCatDraw()`.
 - **`catBag(pool)` – kategória-zsák.** A pakli nem a nyers kérdéspoolból épül, hanem megkevert kategórialistából: minden kategória sorra kerül, mielőtt bármelyik ismétlődne. Így a 100 kérdéses kategória **ugyanakkora eséllyel** jön, mint az 50 kérdéses – a kategóriaméret nem befolyásolja a gyakoriságot. A hódítás mód `cqDraw()`-ja is ezt használja (ott nincs sorsolás-képernyő).
-- Lobby-beállítások: **játékmód (Klasszikus / Hódítás)**, **hódításnál térkép (Nagy 13 / Kicsi 10)**, kérdésszám (`Q_COUNTS` = **10/15/20/30** – hódításban rejtve), **kategória-szűrő**, nehézségszűrő (1★–5★), AI hozzáadása (max 6 játékos összesen).
-- **Kategória-szűrő – csak a „kihagyható témák".** `host.settings.cats` = kategóriánkénti boolean tömb, de a lobbyban **kizárólag az `opt:true` jelzőjű kategóriák** jelennek meg kapcsolóként (`#seg-opt`, `optCats()`); a többi mindig játékban van. A `catOn(q)` szűri a négy válaszos paklit. Az új meccs megőrzi a beállítást, oldal-újratöltés nullázza.
-  - Kihagyható: **🧠 Filozófia · 🚀 Űrkutatás és informatika · 🎻 Komolyzene · 😂 Mémek és internetkultúra** – a 23-as listán már mind a négy létezik és kapcsolható a lobbyban. (A Filozófiában még nincs kérdés, a Komolyzenében 3 van – a kapcsoló attól még működik.)
-  - **Vezérelv: családi játék.**
+- Lobby-beállítások: **játékmód (Klasszikus / Hódítás)**, **hódításnál térkép (Nagy 13 / Kicsi 10)**, kérdésszám (`Q_COUNTS` = **10/15/20/30** – hódításban rejtve), nehézségszűrő (1★–5★), AI hozzáadása (max 6 játékos összesen).
+- **Kategória-szűrő NINCS (2026-08-08-án a felhasználó kérésére kivezetve** – túlbonyolította a felületet). Minden téma mindig játékban van; a `settings.cats`, a `catOn()`, az `optCats()` és az `opt` jelzők törölve lettek a kódból és az adatból. Ha valaha visszakerülne, a backup/ mappában megvan a szűrős verzió.
+  - **Vezérelv: családi játék** – a témaválogatás helyett maga a kérdésbázis családbarát.
 - **Külön, rövidebb kategórialista a TIPPELŐS kérdéseknek.** Sok témában a tippelős kérdés erőltetett lenne, ezért csak a `tip:true` jelzőjű kategóriákba kell (és szabad) tippet írni. Több kategória közös tételként szerepelhet a tippsorsolásban a `tipg` csoportkulccsal.
-  - **A lobby kategória-szűrője a tippekre NEM hat** – a tipplista mindig teljes. Így akkor is van elég tippelős kérdés, ha a szűrő szűkre van húzva (akár egyetlen kategóriára).
+  - A tipplista mindig teljes – mind a 9 tétel mindig sorsolásban van.
   - `isTipCat(cat)` / `tipKey(cat)` a segédfüggvények; a `catBag(mcPool, tipPool)` külön zsákot vezet a két típusnak (MC-nél kategóriánként, tippnél `tipg` szerint).
   - Tipp-tételek (9, mind feltöltve ≥40 kérdésre): Magyar történelem (40) · Világtörténelem (40) · Állatok (40) · Növények és kertészet (40) · Fizika-kémia-biológia (40) · Sport (40) · **foldrajz** (magyar + világ, 41) · **feltalalo** (feltalálók + űrkutatás/informatika, 40) · **film** (magyar film-tévé + nemzetközi film, 53).
   - **Következmény:** a `tip:false` kategóriák meglévő tippelős kérdései nem kerülnek elő. Ez tudatos döntés, nem hiba.
@@ -112,8 +111,8 @@ Hódítás mód (2 térkép, „Frontvonal" neon téma) · 3 AI-szint Robot Idő
 - **A kódban a 23 kategóriás lista él** (cat 1–23, a 2026-08-08-i átállás óta; ugyanaznap készült el a 398 új mc is). A part-fájlok: `part1_kat01-05.js` · `part2_kat06-10.js` · `part3_kat11-15.js` · `part4_kat16-19.js` · `part5_kat20-23.js`.
 - **Minden kategória a célszámán áll:** 40 mc/kategória, kivéve Gasztronómia 70 (30 magyar + 40 nemzetközi), Filozófia 25, Komolyzene 25, M. film 59, Sport 60 (utóbbi kettő a cél fölött). Tipp: mind a 9 tétel ≥40.
 - A `CATEGORIES` tömb a `src/questions/part1_kat01-05.js` elején él, egy sor egy kategória:
-  `{"id":16,"name":"…","icon":"🚀","tip":true,"tipg":"feltalalo","opt":true}`
-  – `tip` = szabad-e ide tippelős kérdést írni · `tipg` = közös tippsorsolási tétel kulcsa (hiányzik → saját tétel) · `opt` = kikapcsolható-e a lobbyban.
+  `{"id":16,"name":"…","icon":"🚀","tip":true,"tipg":"feltalalo"}`
+  – `tip` = szabad-e ide tippelős kérdést írni · `tipg` = közös tippsorsolási tétel kulcsa (hiányzik → saját tétel). (`opt` jelző már nincs – a kategória-szűrőt kivezettük.)
 - A 23 kategória: 1 🏰 Magyar történelem · 2 📜 Magyar irodalom · 3 🗺️ Magyarország földrajza · 4 🗣️ Magyar nyelv és szólások · 5 🎎 Magyar néphagyomány · 6 🌶️ Gasztronómia · 7 ⚔️ Világtörténelem · 8 🌍 Világföldrajz · 9 📖 Világirodalom · 10 🖼️ Képzőművészet · 11 🧠 Filozófia · 12 🦁 Állatok · 13 🌿 Növények és kertészet · 14 ⚗️ Fizika, kémia, biológia · 15 💡 Feltalálók és találmányok · 16 🚀 Űrkutatás és informatika · 17 🎬 Magyar film, tévé és sorozatok · 18 🎸 Magyar könnyűzene · 19 🎻 Komolyzene · 20 🍿 Nemzetközi filmek · 21 🎤 Nemzetközi popzene · 22 😂 Mémek és internetkultúra · 23 ⚽ Sport.
 - **Az átállás során eldobva:** a Videójátékok kategória (50), a nemzetközi sorozat-kérdések (13) és 6 duplikátum/szivárgó kérdés. A `tip:false` kategóriák tippjei (139 db) **megmaradtak a fájlokban** – nem kerülnek sorsolásba, de nem vesztek el.
 - Nehézség-eloszlás célja kategóriánként (40 kérdésnél): mc [4,8,16,8,4] és tip [4,8,16,8,4].

@@ -377,18 +377,18 @@ const CATEGORIES = [
  {"id":8, "name":"Világföldrajz", "icon":"🌍", "tip":true, "tipg":"foldrajz"},
  {"id":9, "name":"Világirodalom", "icon":"📖", "tip":false},
  {"id":10, "name":"Képzőművészet", "icon":"🖼️", "tip":false},
- {"id":11, "name":"Filozófia", "icon":"🧠", "tip":false},
+ {"id":11, "name":"Filozófia", "icon":"🧠", "tip":false, "opt":true},
  {"id":12, "name":"Állatok", "icon":"🦁", "tip":true},
  {"id":13, "name":"Növények és kertészet", "icon":"🌿", "tip":true},
  {"id":14, "name":"Fizika, kémia, biológia", "icon":"⚗️", "tip":true},
  {"id":15, "name":"Feltalálók és találmányok", "icon":"💡", "tip":true, "tipg":"feltalalo"},
- {"id":16, "name":"Űrkutatás és informatika", "icon":"🚀", "tip":true, "tipg":"feltalalo"},
+ {"id":16, "name":"Űrkutatás és informatika", "icon":"🚀", "tip":true, "tipg":"feltalalo", "opt":true},
  {"id":17, "name":"Magyar film, tévé és sorozatok", "icon":"🎬", "tip":true, "tipg":"film"},
  {"id":18, "name":"Magyar könnyűzene", "icon":"🎸", "tip":false},
- {"id":19, "name":"Komolyzene", "icon":"🎻", "tip":false},
+ {"id":19, "name":"Komolyzene", "icon":"🎻", "tip":false, "opt":true},
  {"id":20, "name":"Nemzetközi filmek", "icon":"🍿", "tip":true, "tipg":"film"},
  {"id":21, "name":"Nemzetközi popzene", "icon":"🎤", "tip":false},
- {"id":22, "name":"Mémek és internetkultúra", "icon":"😂", "tip":false},
+ {"id":22, "name":"Mémek és internetkultúra", "icon":"😂", "tip":false, "opt":true},
  {"id":23, "name":"Sport", "icon":"⚽", "tip":true}
 ];
 
@@ -2931,8 +2931,12 @@ const MC_DUR   = FAST?3000:20000;
 const TIP_DUR  = FAST?3500:25000;
 const REVEAL_AUTO = FAST?1800:7000;
 /* Kategória-sorsolás minden kérdés előtt: pörgetés, majd visszaszámlálás.
-   Ettől minden kategória egyenlő eséllyel jön, akárhány kérdés van benne.
-   Kategória-szűrő NINCS (2026-08-08-án kivezetve): minden téma mindig játékban van. */
+   Ettől minden kategória egyenlő eséllyel jön, akárhány kérdés van benne. */
+/* Kategória-szűrő: csak az `opt:true` jelzőjű kategóriák kapcsolhatók ki (a többi
+   mindig játékban van). A szűrő a NÉGY VÁLASZOS kérdésekre hat; a tippelős lista
+   mindig teljes. */
+function catOn(q){ const a=host.settings.cats; return a ? a[q.cat-1]!==false : true; }
+function optCats(){ return CATEGORIES.map((c,i)=>({c,i})).filter(x=>x.c.opt); }
 const CAT_SPIN_MS  = FAST?400:1800;
 const CAT_COUNT_MS = FAST?700:10000;
 const MAXP = 6;
@@ -3103,7 +3107,7 @@ function sendToHost(msg){ try{ net.conn.send(msg); }catch(e){} }
 
 /* ---------------- host: szoba ---------------- */
 function makeHost(solo){
-  return { solo, players:[], settings:{count:15, mode:'classic', mapKey:'big', diffs:[true,true,true,true,true]},
+  return { solo, players:[], settings:{count:15, mode:'classic', mapKey:'big', cats:CATEGORIES.map(()=>true), diffs:[true,true,true,true,true]},
     cq:null, cqPool:{mc:[],tip:[]}, stats:{},
     phase:'lobby', deck:[], qi:-1, answers:{}, qData:null, qCorrectIndex:0, qDur:0,
     qDeadlineT:null, autoNextT:null, aiTimers:[], usedIds:new Set() };
@@ -3111,7 +3115,7 @@ function makeHost(solo){
 function playersMin(){ return host.players.map(p=>({pid:p.pid,name:p.name,avatar:p.avatar,isAI:!!p.isAI,isHost:!!p.isHost,connected:p.connected!==false,score:p.score||0,streak:p.streak||0,best:p.best||0})); }
 function hostLobbyMsg(){
   return {t:'lobby', code:net.code, solo:host.solo, players:playersMin(),
-    settings:{...host.settings, diffs:host.settings.diffs.slice()}, phase:host.phase};
+    settings:{...host.settings, cats:host.settings.cats.slice(), diffs:host.settings.diffs.slice()}, phase:host.phase};
 }
 function hostAddAI(tier){
   if(host.players.length>=MAXP){ toast('A szoba megtelt (max 6 játékos)'); return; }
@@ -3256,8 +3260,9 @@ function catBag(mcPool, tipPool){
 }
 function buildDeck(){
   const df=host.settings.diffs;
-  /* Minden kategória mindig játékban van; csak a nehézségszűrő él. */
-  const mcAll =QUESTIONS.filter(q=>q.type==='mc'  && df[q.d-1]);
+  /* A lobby kategória-szűrője CSAK a négy válaszos kérdésekre hat. A tippelős lista
+     mindig teljes – így akkor is van elég tipp, ha a szűrő szűkre van húzva. */
+  const mcAll =QUESTIONS.filter(q=>q.type==='mc'  && df[q.d-1] && catOn(q));
   const tipAll=QUESTIONS.filter(q=>q.type==='tip' && df[q.d-1] && isTipCat(q.cat));
   const un=a=>{ const f=a.filter(q=>!host.usedIds.has(q.id)); return f.length>=Math.ceil(host.settings.count/2)?f:a; };
   const plan=qPlan(host.settings.count), draw=catBag(un(mcAll), un(tipAll));
@@ -3269,6 +3274,7 @@ function buildDeck(){
 }
 function hostStart(){
   if(host.players.length<2){ toast('Legalább 2 játékos kell – adj hozzá AI-t vagy várd meg a többieket!'); return; }
+  if(!host.settings.cats.some(Boolean)){ toast('Válassz legalább egy kategóriát!'); return; }
   if(!host.settings.diffs.some(Boolean)){ toast('Válassz legalább egy nehézségi szintet!'); return; }
   if(host.settings.mode==='conquest'){
     if(host.players.length!==2){ toast('A Hódítás mód pontosan 2 játékossal megy (ember vagy AI).'); return; }
@@ -3511,7 +3517,7 @@ function cqLater(fn,ms){ clearTimeout(host.cq.nextT); host.cq.nextT=setTimeout(f
 
 function cqBuildPools(){
   const df=host.settings.diffs;
-  const mcAll =QUESTIONS.filter(q=>q.type==='mc'  && df[q.d-1]);
+  const mcAll =QUESTIONS.filter(q=>q.type==='mc'  && df[q.d-1] && catOn(q));
   const tipAll=QUESTIONS.filter(q=>q.type==='tip' && df[q.d-1] && isTipCat(q.cat));
   host.cqPool={mc:mcAll, tip:tipAll, draw:catBag(mcAll,tipAll)};
   return host.cqPool;
@@ -3873,6 +3879,11 @@ function renderLobby(m){
         qPlan(m.settings.count).mc+' × 1 a 4-ből → '+qPlan(m.settings.count).tip+' × tippelős → '+
         '🎬 <b>'+qPlan(m.settings.count).fmc+' dupla 1 a 4-ből + '+qPlan(m.settings.count).ftip+' dupla tippelős</b>'+
       '</div>')+
+      (optCats().length ?
+        '<div class="setrow"><span class="lab">Kihagyható témák</span><span class="seg" id="seg-opt">'+
+          optCats().map(x=>'<button class="gtoggle'+(m.settings.cats[x.i]?' sel':'')+'" data-oi="'+x.i+'">'+
+            x.c.icon+' '+esc(x.c.name)+'</button>').join('')+
+        '</span></div>' : '')+
       '<div class="setrow"><span class="lab">Nehézség</span><span class="seg" id="seg-diffs">'+
         DIFF_NAMES.map((n,i)=>'<button class="gtoggle dtoggle diff'+(i+1)+' '+(m.settings.diffs[i]?'sel':'')+'" data-d="'+i+'" title="'+n+' – '+QVAL[i]+' pont">'+(i+1)+'★</button>').join('')+
       '</span></div>'+
@@ -3894,6 +3905,11 @@ function renderLobby(m){
     document.querySelectorAll('#seg-map button').forEach(b=>b.onclick=()=>{
       host.settings.mapKey=b.dataset.k; hostBroadcast(hostLobbyMsg()); });
     document.querySelectorAll('#seg-count button').forEach(b=>b.onclick=()=>{ host.settings.count=+b.dataset.c; hostBroadcast(hostLobbyMsg()); });
+    document.querySelectorAll('#seg-opt button').forEach(b=>b.onclick=()=>{
+      const i=+b.dataset.oi, a=host.settings.cats;
+      if(a[i]&&a.filter(Boolean).length===1){ toast('Legalább egy kategória maradjon bekapcsolva!'); return; }
+      a[i]=!a[i]; hostBroadcast(hostLobbyMsg());
+    });
     document.querySelectorAll('#seg-diffs .dtoggle').forEach(b=>b.onclick=()=>{
       const i=+b.dataset.d;
       const df=host.settings.diffs;
@@ -3905,11 +3921,13 @@ function renderLobby(m){
       ? 'Adj hozzá további AI-ellenfeleket, állítsd be a játékot, és indíts!'
       : 'Küldd el a fájlt vagy a linket a barátaidnak – ők a főmenüben a <b>Csatlakozás</b> gombbal, a fenti kóddal lépnek be. (2–6 játékos, AI is jöhet.)';
   } else {
+    const offNames=CATEGORIES.map((c,i)=>m.settings.cats[i]?null:c.name).filter(Boolean);
+    const groups=offNames.length?('kihagyva: '+offNames.join(', ')):'minden téma játékban';
     const diffs=(m.settings.diffs||[]).map((v,i)=>v?(i+1)+'★':null).filter(Boolean).join(' ');
     const head=m.settings.mode==='conquest'
       ? '⚔️ <b>Hódítás</b> – '+CQ_MAPS[m.settings.mapKey||'big'].desc
       : m.settings.count+' kérdés · 🎬 az utolsó '+finalLen(m.settings.count)+' dupla pontos';
-    $('lobby-settings').innerHTML='<div class="hint">'+head+' · minden téma játékban<br>Nehézség: '+(diffs||'vegyes')+'</div>';
+    $('lobby-settings').innerHTML='<div class="hint">'+head+' · '+groups+'<br>Nehézség: '+(diffs||'vegyes')+'</div>';
     $('lobby-actions').innerHTML='<div class="hint"><span class="spinner"></span>Várakozás, hogy a host elindítsa a játékot…</div>';
     $('lobby-hint').textContent='';
   }

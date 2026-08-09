@@ -393,11 +393,31 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   await page.waitForSelector('#s-lobby.on', { timeout: 5000 });
   console.log('REMATCH: OK (vissza a lobbyba)');
 
-  // --- nincs kategória-szűrő: a lobby nem mutat téma-kapcsolókat ---
-  console.log('KATEGÓRIA-SZŰRŐ NÉLKÜL:');
-  const chips = await page.$$eval('#seg-opt button', els => els.length).catch(() => 0);
-  ck('a lobbyban nincs téma-kapcsoló', chips, 0);
-  ck('a settings nem tartalmaz cats mezőt', await page.evaluate(() => 'cats' in __kv.host.settings), false);
+  // --- kategória-szűrő: csak a kihagyható témák kapcsolhatók ---
+  console.log('KATEGÓRIA-SZŰRŐ:');
+  const opts = await page.evaluate(() => CATEGORIES.map((c,i)=>({i,name:c.name,opt:!!c.opt})).filter(x=>x.opt));
+  console.log('    kihagyható: ' + opts.map(o => o.name).join(' · '));
+  ck('csak a kijelölt témák kapcsolhatók ki', opts.length > 0, true);
+  const chips = await page.$$eval('#seg-opt button', els => els.length);
+  ck('a lobbyban pont ennyi kapcsoló jelenik meg', chips, opts.length);
+  await page.click('#seg-opt button[data-oi="' + opts[0].i + '"]');
+  const off = await page.evaluate(() => __kv.host.settings.cats.map((v,i)=>v?null:i).filter(v=>v!==null));
+  ck('a kikapcsolt téma bejegyződik', off, [opts[0].i]);
+  await page.click('#btn-start');
+  await page.waitForSelector('#s-game.on', { timeout: 8000 });
+  const deck = await page.evaluate(() => {
+    const c = __kv.host.settings.cats, d = __kv.host.deck;
+    return { badMc: d.filter(q => q.type === 'mc' && !c[q.cat - 1]).length,
+             tipAll: d.filter(q => q.type === 'tip').length };
+  });
+  ck('a 4 válaszos kérdések közé nem kerül kikapcsolt téma', deck.badMc, 0);
+  ck('a tippelős a szűrőtől függetlenül jön', deck.tipAll > 0, true);
+  await page.evaluate(() => { __kv.host.qi = __kv.host.deck.length; hostNext(); });
+  await page.waitForSelector('#s-end.on', { timeout: 8000 });
+  await page.click('#btn-rematch');
+  await page.waitForSelector('#s-lobby.on', { timeout: 8000 });
+  const kept = await page.evaluate(() => __kv.host.settings.cats.filter(v=>v===false).length);
+  ck('a szűrés megmarad az új meccsre', kept, 1);
   if (sf) { console.error('❌ ' + sf + ' hibás ellenőrzés'); process.exitCode = 1; }
 
   console.log(errors.length ? 'HIBÁK:\n' + errors.join('\n') : 'KONZOL: tiszta ✔');

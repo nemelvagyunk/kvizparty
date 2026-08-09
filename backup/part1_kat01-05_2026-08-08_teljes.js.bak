@@ -18,18 +18,18 @@ const CATEGORIES = [
  {"id":8, "name":"Világföldrajz", "icon":"🌍", "tip":true, "tipg":"foldrajz"},
  {"id":9, "name":"Világirodalom", "icon":"📖", "tip":false},
  {"id":10, "name":"Képzőművészet", "icon":"🖼️", "tip":false},
- {"id":11, "name":"Filozófia", "icon":"🧠", "tip":false},
+ {"id":11, "name":"Filozófia", "icon":"🧠", "tip":false, "opt":true},
  {"id":12, "name":"Állatok", "icon":"🦁", "tip":true},
  {"id":13, "name":"Növények és kertészet", "icon":"🌿", "tip":true},
  {"id":14, "name":"Fizika, kémia, biológia", "icon":"⚗️", "tip":true},
  {"id":15, "name":"Feltalálók és találmányok", "icon":"💡", "tip":true, "tipg":"feltalalo"},
- {"id":16, "name":"Űrkutatás és informatika", "icon":"🚀", "tip":true, "tipg":"feltalalo"},
+ {"id":16, "name":"Űrkutatás és informatika", "icon":"🚀", "tip":true, "tipg":"feltalalo", "opt":true},
  {"id":17, "name":"Magyar film, tévé és sorozatok", "icon":"🎬", "tip":true, "tipg":"film"},
  {"id":18, "name":"Magyar könnyűzene", "icon":"🎸", "tip":false},
- {"id":19, "name":"Komolyzene", "icon":"🎻", "tip":false},
+ {"id":19, "name":"Komolyzene", "icon":"🎻", "tip":false, "opt":true},
  {"id":20, "name":"Nemzetközi filmek", "icon":"🍿", "tip":true, "tipg":"film"},
  {"id":21, "name":"Nemzetközi popzene", "icon":"🎤", "tip":false},
- {"id":22, "name":"Mémek és internetkultúra", "icon":"😂", "tip":false},
+ {"id":22, "name":"Mémek és internetkultúra", "icon":"😂", "tip":false, "opt":true},
  {"id":23, "name":"Sport", "icon":"⚽", "tip":true}
 ];
 
