@@ -59,15 +59,6 @@ input[type=number]{-moz-appearance:textfield;}
 .room-code .code{font-size:2.6rem; font-weight:900; letter-spacing:.45em; padding-left:.45em;
   background:linear-gradient(90deg,#fbbf24,#f472b6); -webkit-background-clip:text; background-clip:text; color:transparent;}
 .room-code .lbl{color:var(--dim); font-size:.85rem;}
-/* meghívó link a lobbyban */
-.invrow{display:flex; gap:8px; align-items:center; margin-top:10px;}
-.invrow input{flex:1; min-width:0; font-size:.78rem; padding:9px 10px; text-align:left;
-  color:var(--dim); background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); border-radius:10px;}
-.invrow .btn{flex:0 0 auto; white-space:nowrap;}
-/* meghívóval érkező játékos jelzése a főmenüben */
-.invite{margin:0 0 12px; padding:11px 13px; border-radius:12px; line-height:1.45; font-size:.9rem;
-  background:rgba(251,191,36,.12); border:1px solid rgba(251,191,36,.35);}
-.invite b{color:#fbbf24; letter-spacing:.12em;}
 .players{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0;}
 .pchip{display:flex; align-items:center; gap:8px; background:rgba(0,0,0,.28); padding:8px 12px; border-radius:999px; font-weight:600; border:1px solid rgba(255,255,255,.1);}
 .pchip .av{font-size:1.3rem;}
@@ -355,7 +346,6 @@ input[type=number]{-moz-appearance:textfield;}
   <div class="logo">🎉 KvízParty</div>
   <div class="tagline">2–6 fős kvízparti · 23 kategória · 1333 kérdés · 5 nehézségi szint · AI-ellenféllel is</div>
   <div class="card">
-    <div class="invite" id="invite-note" style="display:none"></div>
     <label>Játékosnév</label>
     <input type="text" id="inp-name" maxlength="14" placeholder="Add meg a neved…">
     <label>Válassz karaktert</label>
@@ -385,7 +375,6 @@ input[type=number]{-moz-appearance:textfield;}
         <summary>🎮 Hogyan indul egy játék?</summary>
         <div class="rules-body">
           <p>A KvízParty <b>2–6 fős</b> kvízparti. Egy játékos szobát nyit (🏠), és kap egy 4 jegyű kódot – a többiek ezzel csatlakoznak (🔗), mindenki a saját eszközéről. Egyedül is játszhatsz AI-ellenfelek ellen (🤖).</p>
-          <p>A kódot nem kötelező begépelni: a szoba képernyőjén ott a <b>🔗 Meghívó</b> gomb, amivel egy linket küldhetsz a családi chatbe. Aki megnyitja, annak a kód már ki lesz töltve – csak a nevét kell beírnia.</p>
           <p>A szobát nyitó játékos (a host) állítja be a játékmódot, a kérdésszámot és a tempót, és ő adhat a meccshez AI-játékosokat is – emberrel és robottal együtt legfeljebb 6 fő lehet.</p>
           <p class="dim">Ha nagyon ritkán nem jön létre a kapcsolat (szigorú céges/iskolai hálózaton fordulhat elő), mobilnetről vagy telefonos hotspotról szinte mindig működik.</p>
           <p class="dim">Ha valaki „eltérő játékverzió" üzenetet kap, az az eszköz a játék régebbi, elmentett változatát futtatja: elég frissíteni az oldalt (Ctrl+F5, mobilon húzd le a lapot). A főoldal alján mindenki látja a saját <b>játékverzióját</b> – együtt játszani csak azonos számmal lehet.</p>
@@ -2984,7 +2973,7 @@ const QUESTIONS = [
    ============================================================ */
 QUESTIONS.forEach((q,i)=>q.id=i);
 
-const FAST = /(^|[#&])fast(&|$)/.test(location.hash);   // teszt mód: #fast (pontos illesztés: egy szobakód is lehetne „FAST")
+const FAST = location.hash.indexOf('fast')>=0;   // teszt mód: #fast
 const MC_DUR   = FAST?3000:20000;
 const TIP_DUR  = FAST?3500:25000;
 const REVEAL_AUTO = FAST?1800:7000;
@@ -3224,54 +3213,6 @@ function peerOpts(){
   const m=location.hash.match(/srv=([^&#]+)/);
   if(m){ const parts=m[1].split(':'); return {host:parts[0], port:+(parts[1]||9000), path:'/', key:'peerjs'}; }
   return {};
-}
-
-/* ---- meghívó link ----
-   A 4 jegyű kód begépelése a családi partik legdrágább 3 perce. A link ugyanazt a
-   szobát nyitja meg: a hash `j=<KÓD>` tagja előre kitölti a kódmezőt. A meglévő
-   hash-kapcsolókat (#fast, #srv=, #pv=) megtartjuk, hogy a link teszt alatt is működjön. */
-function joinLink(code){
-  const tags=location.hash.replace(/^#/,'').split('&').filter(x=>x&&!/^j=/i.test(x));
-  tags.push('j='+code);
-  return location.origin+location.pathname+location.search+'#'+tags.join('&');
-}
-function inviteCode(){
-  const m=location.hash.match(/(?:^|[#&])j=([A-Za-z0-9]{4})(?:&|$)/);
-  return m?m[1].toUpperCase():null;
-}
-/* A meghívó sáv kitöltése. Nemcsak induláskor kell: ha valakinél MÁR nyitva van a
-   játék a főmenüben, és rákoppint a chatbe küldött linkre, a böngésző csak a hash-t
-   cseréli (nincs újratöltés, a boot() nem fut újra) – ezért a hashchange is ide vezet. */
-function applyInvite(){
-  const inv=inviteCode();
-  if(!inv) return false;
-  $('inp-code').value=inv;
-  $('invite-note').style.display='';
-  $('invite-note').innerHTML='🔗 Meghívót kaptál a <b>'+esc(inv)+'</b> szobába! Írd be a neved, '+
-                             'válassz karaktert, és nyomd meg a <b>Csatlakozás</b> gombot.';
-  /* meghívóval érkezőnek a Csatlakozás a fő gomb, nem a szobanyitás */
-  $('btn-join').classList.add('primary'); $('btn-create').classList.remove('primary');
-  setTimeout(()=>{ try{$('inp-name').focus();}catch(e){} },80);
-  return true;
-}
-function copyInvite(link){
-  const done=()=>toast('A meghívó link a vágólapon – illeszd be a családi chatbe! 📋',4500);
-  const fallback=()=>{ try{ const i=$('lobby-link'); i.focus(); i.select(); i.setSelectionRange(0,99999);
-                            document.execCommand('copy'); done(); }
-                       catch(e){ toast('Jelöld ki a linket a mezőben, és másold ki.',4500); } };
-  try{
-    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(link).then(done,fallback); return; }
-  }catch(e){}
-  fallback();
-}
-function shareInvite(link,code){
-  const data={title:'KvízParty', text:'Gyere kvízezni! Szobakód: '+code, url:link};
-  try{
-    if(navigator.share && (!navigator.canShare || navigator.canShare(data))){
-      navigator.share(data).catch(()=>{}); return;
-    }
-  }catch(e){}
-  copyInvite(link);
 }
 
 function destroyNet(){
@@ -4230,15 +4171,7 @@ function renderLobby(m){
   const isHost=me.isHost;
   $('lobby-code').innerHTML = m.solo
     ? '<div class="lbl">🤖 Szóló mód – AI ellenfelekkel</div>'
-    : '<div class="lbl">Szobakód – ezt add meg a többieknek:</div><div class="code">'+esc(m.code||'')+'</div>'+
-      '<div class="invrow"><input id="lobby-link" readonly onclick="this.select()">'+
-      '<button class="btn small" id="btn-share">🔗 Meghívó</button></div>'+
-      '<div class="lbl" id="lobby-linklbl">…vagy küldd el ezt a linket – kód nélkül belép.</div>';
-  if(!m.solo){
-    const link=joinLink(m.code||'');
-    $('lobby-link').value=link;
-    $('btn-share').onclick=()=>shareInvite(link, m.code||'');
-  }
+    : '<div class="lbl">Szobakód – ezt add meg a többieknek:</div><div class="code">'+esc(m.code||'')+'</div>';
   $('lobby-players').innerHTML = m.players.map(p=>{
     const badges=(p.isHost?' 👑':'')+(p.isAI?' <span title="AI">🤖</span>':'');
     const off=p.connected===false?' off':'';
@@ -4293,7 +4226,7 @@ function renderLobby(m){
     document.querySelectorAll('[data-kick]').forEach(el=>el.onclick=()=>hostRemovePlayer(el.dataset.kick));
     $('lobby-hint').innerHTML = m.solo
       ? 'Adj hozzá további AI-ellenfeleket, állítsd be a játékot, és indíts!'
-      : 'A <b>🔗 Meghívó</b> gombbal küldd el a linket a családi chatbe – aki megnyitja, annak a kód már ki lesz töltve, csak a nevét kell beírnia. (2–6 játékos, AI is jöhet.)';
+      : 'Küldd el a fájlt vagy a linket a barátaidnak – ők a főmenüben a <b>Csatlakozás</b> gombbal, a fenti kóddal lépnek be. (2–6 játékos, AI is jöhet.)';
   } else {
     const head=m.settings.mode==='conquest'
       ? '⚔️ <b>Hódítás</b> – '+CQ_MAPS[m.settings.mapKey||'big'].desc
@@ -4958,9 +4891,6 @@ function renderEnd(m){
 /* ---------------- indítás ---------------- */
 function boot(){
   $('ver-note').textContent='Játékverzió: v'+MY_PROTO+' · együtt játszani csak azonos verzióval lehet';
-  /* meghívó linkkel érkezett: a kód már ki van töltve, csak a név hiányzik */
-  applyInvite();
-  window.addEventListener('hashchange',()=>{ if(!net.mode) applyInvite(); });
   $('avatars').innerHTML=AVATARS.map((a,i)=>'<button data-a="'+a+'" class="'+(i===0?'sel':'')+'">'+a+'</button>').join('');
   document.querySelectorAll('#avatars button').forEach(b=>b.onclick=()=>{
     document.querySelectorAll('#avatars button').forEach(x=>x.classList.remove('sel'));
@@ -4968,9 +4898,6 @@ function boot(){
   });
   $('inp-code').addEventListener('input',()=>{ $('inp-code').value=$('inp-code').value.toUpperCase().replace(/[^A-Z0-9]/g,''); });
   $('inp-code').addEventListener('keydown',e=>{ if(e.key==='Enter') joinRoom(); });
-  /* meghívó linkkel érkezőnek a név beírása után az Enter is csatlakoztat */
-  $('inp-name').addEventListener('keydown',e=>{
-    if(e.key==='Enter' && ($('inp-code').value||'').length===4) joinRoom(); });
   $('btn-create').onclick=createRoom;
   $('btn-join').onclick=joinRoom;
   $('btn-solo').onclick=startSolo;

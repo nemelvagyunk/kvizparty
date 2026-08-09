@@ -747,23 +747,6 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   ck('a felfelé hazudott idő sem lehet több a host által mértnél', lat.liar <= 3060, true);
   ck('mérés nélkül (pl. teszt-injekció) a kliens ideje marad', lat.noAsk, 0);
 
-  // --- meghívó link ---
-  console.log('MEGHÍVÓ LINK:');
-  const inv = await page.evaluate(() => {
-    const out = {}, h = location.hash;
-    out.link = joinLink('AB3D');
-    out.keepsFlags = /(^|[#&])fast(&|$)/.test(out.link.split('#')[1] || '') && /j=AB3D$/.test(out.link);
-    location.hash = '#fast&j=xy7z'; out.parsed = inviteCode();
-    location.hash = '#fast&j=AB3D&j=ZZZZ'; out.first = inviteCode();
-    location.hash = '#fast'; out.none = inviteCode();
-    location.hash = h;
-    out.twice = /j=/g.test(out.link) && (joinLink('AB3D').match(/j=/g) || []).length;
-    return out;
-  });
-  ck('a link megtartja a hash-kapcsolókat, és a végén a kód áll', inv.keepsFlags, true);
-  ck('a linkből kiolvasható a szobakód (nagybetűsítve)', [inv.parsed, inv.none], ['XY7Z', null]);
-  ck('a link nem duplázza a kód-tagot', inv.twice, 1);
-
   if (sf) { console.error('❌ ' + sf + ' hibás ellenőrzés'); process.exitCode = 1; }
 
   console.log(errors.length ? 'HIBÁK:\n' + errors.join('\n') : 'KONZOL: tiszta ✔');

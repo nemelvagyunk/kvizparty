@@ -6,7 +6,7 @@
 
 ## Játékmódok
 
-- **Online szoba (2–6 fő):** a host a *Szoba létrehozása* gombbal 4 jegyű kódot kap, a többiek a *Csatlakozás* mezőbe írják be. Gépelni nem kötelező: a szoba képernyőjén a **🔗 Meghívó** gombbal egy linket lehet küldeni (mobilon a natív megosztással, gépen vágólapra másolva) – aki megnyitja, annál a kód már ki van töltve, csak a nevét kell beírnia. A kapcsolat közvetlen, böngészők közti (WebRTC/PeerJS), mindenki egyszerre válaszol a saját eszközén. A host AI-játékosokat is beültethet.
+- **Online szoba (2–6 fő):** a host a *Szoba létrehozása* gombbal 4 jegyű kódot kap, a többiek a *Csatlakozás* mezőbe írják be. A kapcsolat közvetlen, böngészők közti (WebRTC/PeerJS), mindenki egyszerre válaszol a saját eszközén. A host AI-játékosokat is beültethet.
 - **Szóló mód:** azonnali játék 1–5 AI-ellenfél ellen, internetkapcsolat nélkül is.
 - **⚔️ Hódítás (2 fő):** térképes párbaj — lásd lent.
 

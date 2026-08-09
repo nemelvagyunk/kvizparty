@@ -87,19 +87,10 @@ async function answerLoop(page, who, tipValue, cheat, slow) {
     await A.waitForTimeout(500);
   }
 
-  // Vendég csatlakozik – MEGHÍVÓ LINKKEL (a kódot nem gépeljük be)
-  const invite = await A.$eval('#lobby-link', e => e.value);
-  console.log('MEGHÍVÓ LINK:', invite);
-  if (invite.indexOf('j=' + code) < 0 || invite.indexOf('srv=127.0.0.1:9000') < 0)
-    throw new Error('a meghívó link hibás (kód vagy hash-kapcsoló hiányzik): ' + invite);
-  await B.goto(invite);
-  const pre = await B.$eval('#inp-code', e => e.value);
-  const banner = await B.$eval('#invite-note', e => e.textContent);
-  console.log('MEGHÍVÓ: a kód előre kitöltve ·', pre === code ? 'IGEN ✔' : 'NEM ✘ (' + pre + ')',
-              '· sáv:', /Meghívót kaptál/.test(banner) ? 'látszik ✔' : 'hiányzik ✘');
-  if (pre !== code || !/Meghívót kaptál/.test(banner)) throw new Error('a meghívó link nem töltötte ki a kódot');
+  // Vendég csatlakozik
   await B.fill('#inp-name', 'Viola');
   await B.click('#avatars button:nth-child(5)');
+  await B.fill('#inp-code', code);
   await B.click('#btn-join');
   await B.waitForSelector('#s-lobby.on', { timeout: 15000 });
   await A.waitForFunction(() => document.querySelectorAll('#lobby-players .pchip').length === 2, undefined, { timeout: 10000 });
