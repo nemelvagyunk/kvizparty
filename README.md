@@ -119,7 +119,7 @@ A 🙈 díj **arányos hibát** mér, nem abszolútat — így nem az nyeri, aki
 
 ## Kérdésbázis
 
-**1333 kérdés, 23 kategória**, négy pillérre építve: magyar és nemzetközi általános műveltség, magyar és nemzetközi popkultúra – a családi játszhatóság jegyében. Minden kategória feltöltve (általában 40 kérdés, a Gasztronómia 70, a szándékosan kisebb Filozófia és Komolyzene 25-25), a tippelős kérdések kilenc témaköre mind legalább 40 kérdéssel. A lobbyban nehézségre szűrhetsz.
+**1333 kérdés, 23 kategória**, négy pillérre építve: magyar és nemzetközi általános műveltség, magyar és nemzetközi popkultúra – a családi játszhatóság jegyében. Minden kategória feltöltve (általában 40 kérdés, a Gasztronómia 70, a szándékosan kisebb Filozófia és Komolyzene 25-25), a tippelős kérdések kilenc témaköre mind legalább 40 kérdéssel.
 
 ## AI-ellenfelek
 
@@ -142,7 +142,7 @@ A játék egyetlen fájlba fordul (`index.html`); a forrás a `src/` mappában v
 ```bash
 npm install            # peerjs + fejlesztői függőségek
 python3 src/build.py   # src/template.html + src/questions/part*.js -> index.html
-npm test               # Playwright e2e: szóló játszma + nehézségszűrő + AI-szintek + hódítás mód
+npm test               # Playwright e2e: szóló játszma + jokerek + AI-szintek + hódítás mód
 npm run test:cq        # csak a hódítás mód (logika + teljes játszma AI ellen)
 npm run test:ai        # csak az AI-szintek (találati arány, tipppontosság, időbüntetés)
 npm run test:net       # hálózati tesztek (helyi PeerJS szerverrel), klasszikus + hódítás
