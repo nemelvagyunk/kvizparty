@@ -85,12 +85,19 @@ Az első két találat még nem kap bónuszt — a szorzó a harmadik egymás ut
 
 ### 🃏 Jokerek (klasszikus mód)
 
-Minden játékos **két jokerrel** indul meccsenként (az AI-ellenfelek eggyel sem). Mindkettő csak a sima „1 a 4-ből" kérdéseknél vethető be, a válaszod elküldése előtt, és egy körben csak az egyik:
+Minden játékos jokerekkel indul (az AI-ellenfelek egy szál nélkül). Mind csak a sima (nem finálé) kérdéseknél vethető be, a válaszod elküldése előtt, és egy körben csak egy:
+
+**A „1 a 4-ből" kérdésekhez** két kártyád van:
 
 - **✂️ Felezés** – két rossz válasz eltűnik, kettő közül választhatsz. Ha az utolsó sima „1 a 4-ből" kérdésig nem használod el, ott **automatikusan aktiválódik** – ez a kártya sosem vész kárba.
 - **🎲 Dupla vagy semmi** – ha eltalálod, a kérdés **alapértékének dupláját** kapod (sorozat-szorzó és gyorsasági bónusz nélkül); ha elrontod vagy nem válaszolsz, **ugyanennyit levonunk** – a pontszámod akár mínuszba is fordulhat. Ezt a kártyát senki nem aktiválja helyetted: ha nem mered bevetni, elvész.
 
-Az eredményhirdetésnél mindenki látja, ki melyik jokerrel játszott (✂️/🎲).
+**A tippelős kérdésekhez** két kártyád van, de **a kettőből meccsenként csak egyet válthatsz be**:
+
+- **🔢 Első számjegy** – megmutatja a megoldás első számjegyét (1956 → 1).
+- **🔢 Utolsó számjegy** – megmutatja az utolsót (1956 → 6). Ha a megoldás egyjegyű, a kártya a teljes megoldást mutatja – de hogy ez így van-e, azt sosem tudhatod biztosan. 😉
+
+Az eredményhirdetésnél mindenki látja, ki melyik jokerrel játszott (✂️/🎲/🔢).
 
 ### 🎬 A meccs felépítése (klasszikus mód)
 

@@ -504,7 +504,7 @@ function showScreen(name){ document.querySelectorAll('.screen').forEach(s=>s.cla
 
 /* ---------------- globális állapot ---------------- */
 let me = {pid:null, name:'', avatar:AVATARS[0], isHost:false};
-let myJok = {fifty:true, double:true, tip:true};   // a saját joker-készletem (a host validál)
+let myJok = {fifty:true, double:true};   // a saját joker-készletem (a host validál)
 let net = {mode:null, peer:null, conn:null, conns:{}, code:null};  // mode: host | guest | solo
 let host = null;          // csak hostnál / szólónál
 let lastPlayers = [];     // legutóbb ismert játékoslista (render alap)
@@ -758,9 +758,8 @@ function hostStart(){
   if(host.deck.length<host.settings.count)
     toast('A szűrők miatt csak '+host.deck.length+' kérdés jött össze '+host.settings.count+' helyett.',4500);
   host.players.forEach(p=>{ p.score=0; p.streak=0; p.best=0; });
-  /* Jokerek: minden EMBER játékos 1 Felezést + 1 Dupla vagy semmit kap meccsenként (AI nem),
-     plusz EGY tipp-jokert, amit Első vagy Utolsó számjegy kártyaként válthat be. */
-  host.jokers={}; host.players.forEach(p=>{ if(!p.isAI) host.jokers[p.pid]={fifty:true,double:true,tip:true}; });
+  /* Jokerek: minden EMBER játékos 1 Felezést + 1 Dupla vagy semmit kap meccsenként (AI nem) */
+  host.jokers={}; host.players.forEach(p=>{ if(!p.isAI) host.jokers[p.pid]={fifty:true,double:true}; });
   host.stats={};
   host.qi=-1;
   hostNext();
@@ -804,8 +803,8 @@ function hostAsk(){
              val2: (q.type==='tip'&&host.qSecond) ? baseV : 0};
   if(q.type==='mc'){ const order=shuffle([0,1,2,3]); msg.options=order.map(i=>q.o[i]); host.qCorrectIndex=order.indexOf(0); }
   else msg.unit=q.unit||'';
-  /* joker a SIMA blokkokban: MC-nél Felezés/Dupla, tippnél a számjegy-kártyák (fináléban semmi) */
-  msg.jok = !host.qFinal && (q.type==='mc' ? host.qi < (host.sMcLen||0) : true);
+  /* joker csak a SIMA (nem finálé) „1 a 4-ből” blokkban használható */
+  msg.jok = q.type==='mc' && !host.qFinal && host.qi < (host.sMcLen||0);
   host.qJok={};
   hostBroadcast(msg);
   /* az utolsó sima MC-n a megmaradt Felezések automatikusan élesednek */
@@ -824,35 +823,21 @@ function hostAsk(){
 function jokerRemovePair(){
   return shuffle([0,1,2,3].filter(i=>i!==host.qCorrectIndex)).slice(0,2);
 }
-/* A tipp-joker által mutatott számjegy (előjelet nem nézünk; egyjegyűnél a teljes
-   megoldás jön vissza – de ezt a játékos nem tudhatja biztosan). */
-function tipDigit(a,kind){
-  const s=String(Math.abs(Math.trunc(a)));
-  return kind==='first' ? s[0] : s[s.length-1];
-}
 /* Joker-aktiválás (host oldali validáció). Szabályok:
-   – MC-joker (fifty/double): csak a sima MC-blokkban,
-   – tipp-joker (first/last): csak sima (nem finálé) tippelősön, és a KETTŐBŐL
-     meccsenként csak EGY váltható be,
-   – fináléban és hódításban semmilyen joker, csak válaszadás ELŐTT,
-   – körönként legfeljebb EGY joker. */
+   – csak sima MC-kérdés alatt (nem finálé, nem tipp, nem hódítás),
+   – csak válaszadás ELŐTT, körönként legfeljebb EGY joker,
+   – kártyánként meccsenként egyszer. */
 function hostJoker(pid,kind){
   if(!host||host.phase!=='q'||(host.cq&&host.cq.on)) return;
+  if(kind!=='fifty'&&kind!=='double') return;
   const q=host.qData;
-  if(!q||host.qFinal) return;
+  if(!q||q.type!=='mc'||host.qFinal||host.qi>=(host.sMcLen||0)) return;
   const j=host.jokers[pid];
-  if(!j||host.qJok[pid]||host.answers[pid]) return;
-  if(kind==='fifty'||kind==='double'){
-    if(q.type!=='mc'||host.qi>=(host.sMcLen||0)||!j[kind]) return;
-    j[kind]=false; host.qJok[pid]=kind;
-    const ack={t:'jokerack',kind,qi:host.qi};
-    if(kind==='fifty') ack.remove=jokerRemovePair();
-    sendTo(pid,ack);
-  } else if(kind==='first'||kind==='last'){
-    if(q.type!=='tip'||!j.tip) return;
-    j.tip=false; host.qJok[pid]=kind;                 // a másik számjegy-kártya is elveszik
-    sendTo(pid,{t:'jokerack',kind,qi:host.qi,digit:tipDigit(q.a,kind)});
-  }
+  if(!j||!j[kind]||host.qJok[pid]||host.answers[pid]) return;
+  j[kind]=false; host.qJok[pid]=kind;
+  const ack={t:'jokerack',kind,qi:host.qi};
+  if(kind==='fifty') ack.remove=jokerRemovePair();
+  sendTo(pid,ack);
 }
 function collectAnswer(pid,value,ms){
   if(!host||host.phase!=='q') return;
@@ -981,7 +966,7 @@ function finishQuestion(){
       if(isW){ pts=Vwin+(win.dist===0?Math.round(Vwin*TIP_EXACT_BONUS):0); p.score+=pts; }
       else if(isS){ pts=V; p.score+=pts; }             // a második legjobb tipp a normál kérdésértéket kapja
       results.push({pid:p.pid, val:c?c.val:null, ms:c?c.ms:null, dist:c?c.dist:null, pts, win:isW, second:isS,
-                    base:pts, mult:1, streak:p.streak||0, jok:(host.qJok&&host.qJok[p.pid])||0});
+                    base:pts, mult:1, streak:p.streak||0});
     }
   }
   const msg={t:'reveal', qi:host.qi, type:q.type, results, players:playersMin(),
@@ -1373,7 +1358,7 @@ function handleMsg(m){
     case 'kicked': toast('A host kitett a szobából.'); resetAll(); break;
     case 'hostbye': toast('A host bezárta a szobát.'); resetAll(); break;
     case 'lobby': lastPlayers=m.players; cqState=null; $('cq-wrap').classList.remove('on');
-                  myJok={fifty:true,double:true,tip:true};   // új meccs → új joker-készlet
+                  myJok={fifty:true,double:true};      // új meccs → új joker-készlet
                   renderLobby(m); showScreen('lobby'); break;
     case 'jokerack': jokerApply(m); break;
     case 'cq': cqOnState(m.st); break;
@@ -1565,27 +1550,12 @@ function renderQuestion(m){
       ? '<div class="tipprize">🎯 A legközelebbi tipp <b>'+m.val+' pont</b>'+
         (m.val2?' · a második legjobb <b>'+m.val2+' pont</b>':'')+'</div>'
       : '';
-    /* tipp-joker sáv: a két számjegy-kártyából meccsenként csak egy váltható be */
-    const jokBar=(m.jok&&myJok.tip)
-      ? '<div class="jokbar">'+
-        '<button class="jokbtn" id="jok-first">🔢 Első számjegy</button>'+
-        '<button class="jokbtn" id="jok-last">🔢 Utolsó számjegy</button>'+
-        '</div>'
-      : '';
     $('g-answers').innerHTML='<div class="tipbox">'+prize+'<div class="tiprow">'+
       '<input type="number" step="any" inputmode="decimal" id="tip-inp" placeholder="Tipped…">'+
       '<span class="unit">'+esc(m.unit||'')+'</span>'+
       '<button class="btn primary" id="tip-btn">🎯 Tippelek!</button></div>'+
-      jokBar+'<div class="jokmsg" id="jokmsg"></div>'+
       '<div class="sentmsg" id="sentmsg"></div></div>';
     $('tip-btn').onclick=submitTip;
-    if(m.jok){
-      const req=k=>{ jokBtnsOff();
-        if(me.isHost) hostJoker(me.pid,k); else sendToHost({t:'joker',kind:k,qi:view.qi}); };
-      const b1=$('jok-first'), b2=$('jok-last');
-      if(b1) b1.onclick=()=>{ if(myJok.tip&&!view.answered&&!view.locked) req('first'); };
-      if(b2) b2.onclick=()=>{ if(myJok.tip&&!view.answered&&!view.locked) req('last'); };
-    }
     $('tip-inp').addEventListener('keydown',e=>{ if(e.key==='Enter') submitTip(); });
     setTimeout(()=>{ try{$('tip-inp').focus();}catch(e){} },50);
   }
@@ -1602,7 +1572,7 @@ function renderQuestion(m){
   };
   tick();
 }
-function jokBtnsOff(){ ['jok-fifty','jok-double','jok-first','jok-last'].forEach(id=>{ const b=$(id); if(b) b.disabled=true; }); }
+function jokBtnsOff(){ ['jok-fifty','jok-double'].forEach(id=>{ const b=$(id); if(b) b.disabled=true; }); }
 /* joker-visszaigazolás a hosttól (privát üzenet) */
 function jokerApply(m){
   if(m.qi!==view.qi) return;
@@ -1617,9 +1587,6 @@ function jokerApply(m){
   } else if(m.kind==='double'){
     myJok.double=false;
     if(jm) jm.textContent='🎲 Dupla vagy semmi: a helyes válasz duplát ér, a rossz (vagy elmaradt) ugyanannyit levon!';
-  } else if(m.kind==='first'||m.kind==='last'){
-    myJok.tip=false;                                   // a másik számjegy-kártya is odalett
-    if(jm) jm.textContent='🔢 A megoldás '+(m.kind==='first'?'ELSŐ':'UTOLSÓ')+' számjegye: '+m.digit;
   }
 }
 function submitMC(i){
@@ -1637,7 +1604,6 @@ function submitTip(){
   const v=parseFloat(raw);
   if(!isFinite(v)){ toast('Írj be egy számot!'); return; }
   view.answered=true;
-  jokBtnsOff();
   const ms=Math.round(performance.now()-view.qStart);
   $('tip-inp').disabled=true; $('tip-btn').disabled=true;
   $('sentmsg').textContent='Tipped elment: '+fmtNum(v)+' ✔';
@@ -1962,8 +1928,7 @@ function renderReveal(m){
     const pts=r.pts>0?('+'+r.pts):(r.pts<0?String(r.pts):'0');
     const strk=(r.mult>1)?'<span class="strk">🔥'+fmtMult(r.mult)+'</span>':'';
     const jk=r.jok==='double'?'<span class="jk" title="Dupla vagy semmi">🎲</span>'
-            :(r.jok==='fifty'?'<span class="jk" title="Felezés">✂️</span>'
-            :((r.jok==='first'||r.jok==='last')?'<span class="jk" title="Számjegy-joker">🔢</span>':''));
+            :(r.jok==='fifty'?'<span class="jk" title="Felezés">✂️</span>':'');
     const rk=r.win?'<span class="rk">👑</span>':(r.second?'<span class="rk">🥈</span>':'');
     return '<div class="rrow'+(r.win?' win':(r.second?' second':''))+(r.pid===me.pid?' me':'')+'">'+
       '<span class="av">'+p.avatar+'</span><span class="nm">'+esc(p.name)+'</span>'+rk+jk+

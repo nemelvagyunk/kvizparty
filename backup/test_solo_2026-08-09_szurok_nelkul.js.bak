@@ -470,43 +470,6 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#fast';
   ck('a sima MC-blokk után nem aktiválható joker', jok.pastBlocked, true);
   ck('az utolsó sima MC-n automatikusan élesedik a megmaradt Felezés (AI-nak nincs)', jok.auto, [false, 'fifty', 0, 0, true]);
 
-  // --- TIPP-JOKEREK: első/utolsó számjegy ---
-  console.log('TIPP-JOKEREK:');
-  const tj = await page.evaluate(() => {
-    const out = {};
-    out.digits = [tipDigit(1956, 'first'), tipDigit(1956, 'last'),
-                  tipDigit(7, 'first'), tipDigit(7, 'last'), tipDigit(-273, 'last')];
-    __kv.me = { pid: 'H', isHost: true, name: 'T', avatar: '🦊' };
-    __kv.host = makeHost(true);
-    const mk = pid => ({ pid, name: pid, avatar: '🐼', connected: true, score: 0, streak: 0, best: 0 });
-    __kv.host.players = [mk('A'), mk('B')];
-    __kv.host.sMcLen = 5; __kv.host.finalFrom = 8;
-    const tipQ = () => { __kv.host.phase = 'q'; __kv.host.qDur = 25000; __kv.host.qFinal = false; __kv.host.qi = 5;
-      __kv.host.qData = { type: 'tip', d: 3, q: 'x', a: 1956, unit: '', note: '' };
-      __kv.host.qJok = {}; __kv.host.answers = {}; };
-    __kv.host.jokers = { A: { fifty: true, double: true, tip: true } };
-    // 1) aktiválás: a kör bejegyzi, MINDKÉT számjegy-kártya elfogy
-    tipQ(); hostJoker('A', 'first');
-    out.used = [__kv.host.qJok.A, __kv.host.jokers.A.tip];        // ['first', false]
-    // 2) a másik kártya már nem váltható be egy későbbi tippen sem
-    tipQ(); hostJoker('A', 'last');
-    out.second = __kv.host.qJok.A || 0;                            // 0
-    // 3) MC-kérdésen és finálé-tippen nem megy
-    __kv.host.jokers.A.tip = true;
-    tipQ(); __kv.host.qData.type = 'mc'; __kv.host.qCorrectIndex = 0; hostJoker('A', 'first');
-    out.onMc = __kv.host.qJok.A || 0;                              // 0
-    tipQ(); __kv.host.qFinal = true; hostJoker('A', 'last');
-    out.onFinal = __kv.host.qJok.A || 0;                           // 0
-    // 4) az MC-jokerek viszont tippen nem aktiválhatók
-    tipQ(); hostJoker('A', 'double');
-    out.mcJokOnTip = __kv.host.qJok.A || 0;                        // 0
-    return out;
-  });
-  ck('számjegyek: 1956→1/6, egyjegyű 7→7/7, −273 utolsó→3', tj.digits, ['1', '6', '7', '7', '3']);
-  ck('a számjegy-kártya beváltása MINDKÉT tipp-jokert elhasználja', tj.used, ['first', false]);
-  ck('a másik számjegy-kártya már nem váltható be', tj.second, 0);
-  ck('MC-n, finálé-tippen és tippre húzott MC-jokerrel nem megy', [tj.onMc, tj.onFinal, tj.mcJokOnTip], [0, 0, 0]);
-
   // --- KÉRDÉS-MEMÓRIA: a feltett kérdések a munkameneten át nem térnek vissza ---
   console.log('KÉRDÉS-MEMÓRIA:');
   const rep = await page.evaluate(() => {
